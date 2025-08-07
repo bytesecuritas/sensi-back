@@ -1,0 +1,35 @@
+### login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "user@gmail.com",
+    "password": "user123"
+}
+
+### Register
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NDU2OTg2NCwiZXhwIjoxNzU0NTczNDY0fQ.LrI_cF_KxTdnHKmosVfpDHhq5EdTkCHser0xP30ClQw
+
+{
+    "email": "user@gmail.com",
+    "password": "user123",
+    "nom": "user-nom",
+    "prenom": "user-prenom",
+    "age": 20,
+    "code_langue": "fr",
+    "role": "user"
+}
+
+### Get all users
+GET http://localhost:3000/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NDU2OTg2NCwiZXhwIjoxNzU0NTczNDY0fQ.LrI_cF_KxTdnHKmosVfpDHhq5EdTkCHser0xP30ClQw
+
+### Get user by id
+GET http://localhost:3000/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NDU2OTg2NCwiZXhwIjoxNzU0NTczNDY0fQ.LrI_cF_KxTdnHKmosVfpDHhq5EdTkCHser0xP30ClQw
+
+### Update user
+PUT http://localhost:3000/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NDU2OTg2NCwiZXhwIjoxNzU0NTczNDY0fQ.LrI_cF_KxTdnHKmosVfpDHhq5EdTkCHser0xP30ClQw
