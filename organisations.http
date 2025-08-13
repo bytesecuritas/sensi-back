@@ -1,0 +1,106 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTA0Nzk5MSwiZXhwIjoxNzU1MDUxNTkxfQ.0fMliz53ArhK2zwT5aSOymYtwfoft1DK_ZBh79Fsft0
+
+### 1. Authentification en tant que superadmin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "camara13fs@gmail.com",
+  "password": "admin123"
+}
+
+### 2. Créer une nouvelle organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "BytCode Solutions",
+  "type": "entreprise",
+  "code_pays": "GN"
+}
+
+### 3. Créer une autre organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "CS Roi Hassant 2",
+  "type": "ecole",
+  "code_pays": "GN"
+}
+
+### 4. Récupérer toutes les organisations
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+
+### 5. Récupérer une organisation spécifique (remplacer {id} par l'ID réel)
+GET {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+
+### 6. Obtenir les statistiques d'une organisation
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{authToken}}
+
+### 7. Mettre à jour une organisation
+PATCH {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "BytCode Solutions - Mise à jour",
+  "type": "association"
+}
+
+### 8. Ajouter un utilisateur à une organisation (remplacer {userId} par l'ID réel)
+POST {{baseUrl}}/organisations/1/users/2
+Authorization: Bearer {{authToken}}
+
+### 9. Récupérer les utilisateurs d'une organisation
+GET {{baseUrl}}/organisations/1/users
+Authorization: Bearer {{authToken}}
+
+### 10. Retirer un utilisateur d'une organisation
+DELETE {{baseUrl}}/organisations/1/users/2
+Authorization: Bearer {{authToken}}
+
+### 11. Supprimer une organisation (seulement si elle n'a pas d'utilisateurs)
+DELETE {{baseUrl}}/organisations/2
+Authorization: Bearer {{authToken}}
+
+### 12. Test d'erreur - Créer une organisation avec des données invalides
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "",
+  "type": "type_invalide",
+  "code_pays": "FR"
+}
+
+### 13. Test d'erreur - Accès sans authentification
+GET {{baseUrl}}/organisations
+
+### 14. Test d'erreur - Accès avec un rôle insuffisant (utilisateur normal)
+# D'abord, connectez-vous en tant qu'utilisateur normal
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@gmail.com",
+  "password": "user123"
+}
+
+### 15
+# Puis essayez d'accéder aux organisations
+GET {{baseUrl}}/organisations
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZ21haWwuY29tIiwic3ViIjoyLCJyb2xlIjoidXNlciIsImlhdCI6MTc1NTA0OTA3MCwiZXhwIjoxNzU1MDUyNjcwfQ.tKB2I3bTFUckK-3Ep06JTdxQDLD6ZBywsl3C5f1rOUQ
+
+### 9. Récupérer les utilisateurs d'une organisation
+GET {{baseUrl}}/organisations/1/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZ21haWwuY29tIiwic3ViIjoyLCJyb2xlIjoidXNlciIsImlhdCI6MTc1NTA0OTA3MCwiZXhwIjoxNzU1MDUyNjcwfQ.tKB2I3bTFUckK-3Ep06JTdxQDLD6ZBywsl3C5f1rOUQ

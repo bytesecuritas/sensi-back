@@ -44,6 +44,10 @@ export class AuthService {
       age,
       code_langue,
     });
-    return user;
+    // retourne le user créer avec le mot de passe non hashé
+    return {
+      ...user,
+      password: password,
+    };
   }
 }

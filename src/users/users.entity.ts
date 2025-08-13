@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Organisation } from '../organisations/organisations.entity';
 
 @Entity('users')
 export class User {
@@ -17,8 +18,15 @@ export class User {
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'enum', enum: ['user', 'admin', 'superadmin'] }) // Adjust enum values as needed
+  @Column({ type: 'enum', enum: ['user', 'admin', 'superadmin'] })
   role: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  organisation_id: number | null;
+
+  @ManyToOne(() => Organisation, organisation => organisation.utilisateurs, { nullable: true })
+  @JoinColumn({ name: 'organisation_id' })
+  organisation: Organisation;
 
   @Column({ type: 'integer' })
   age: number;
