@@ -25,6 +25,7 @@ async function createOrganisation() {
     const response = await axios.post(`${BASE_URL}/organisations`, {
       nom: 'Test Organisation',
       type: 'entreprise',
+      date_creation: new Date().toISOString().split('T')[0],
       code_pays: 'F'
     }, {
       headers: { Authorization: `Bearer ${authToken}` }

@@ -21,6 +21,7 @@
     "test:security": "node test-security.js",
     "test:permissions": "node test-user-permissions.js",
     "test:organisations": "node test-organisations.js",
+    "test:user-creation": "node test-user-creation.js",
     "create-superadmin": "npm run build && node scripts/create-superadmin.js",
     "check-superadmin": "npm run build && node scripts/check-superadmin.js"
   },

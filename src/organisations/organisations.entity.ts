@@ -26,8 +26,12 @@ export class Organisation {
   @Column({ type: 'varchar', length: 3 })
   code_pays: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  // La date de création de l'organisation 
+  @Column({type: 'date'})
   date_creation: Date;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  date_ins: Date;
 
   @UpdateDateColumn({ type: 'timestamp', nullable: true })
   date_maj: Date;

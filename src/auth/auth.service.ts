@@ -3,6 +3,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/users.entity';
+import { CreateUserDto } from '../users/dto';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,7 @@ export class AuthService {
     };
   }
 
-  async register(email: string, password: string, nom: string, prenom: string, age: number, role: string ='user', code_langue: string = 'FR') {
+  async register(email: string, password: string, nom: string, prenom: string, age: number, role: string ='user', code_langue: string = 'FR', organisation_id?: string) {
     // Check if user already exists
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
@@ -35,15 +36,20 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.usersService.create({
+    
+    const createUserDto: CreateUserDto = {
       email,
       password: hashedPassword,
       nom,
       prenom,
-      role,
+      role: role as any,
       age,
       code_langue,
-    });
+      organisation_id
+    };
+
+    const user = await this.usersService.createWithOrganisation(createUserDto);
+    
     // retourne le user créer avec le mot de passe non hashé
     return {
       ...user,

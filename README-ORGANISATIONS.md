@@ -16,7 +16,8 @@ Ce module gère les organisations dans le système de sensibilisation. Il implé
 - **Suppression** : Supprimer une organisation (seulement si elle n'a pas d'utilisateurs)
 
 ### 👥 Gestion des utilisateurs
-- **Ajout d'utilisateur** : Ajouter un utilisateur à une organisation
+- **Création d'utilisateur avec organisation** : L'organisation est choisie lors de la création de l'utilisateur
+- **Ajout d'utilisateur** : Ajouter un utilisateur existant à une organisation
 - **Retrait d'utilisateur** : Retirer un utilisateur d'une organisation
 - **Liste des utilisateurs** : Consulter tous les utilisateurs d'une organisation
 - **Statistiques** : Obtenir les statistiques d'une organisation
@@ -119,9 +120,10 @@ Obtenir les statistiques d'une organisation
 
 ### 👤 Utilisateurs
 1. **Superadmin indépendant** : Les superadmins ne peuvent pas appartenir à une organisation
-2. **Admin obligatoire** : Chaque organisation doit avoir au moins un administrateur
-3. **Protection des admins** : Impossible de retirer le dernier admin d'une organisation
-4. **Suppression sécurisée** : Impossible de supprimer une organisation qui contient des utilisateurs
+2. **Organisation obligatoire** : Les utilisateurs et admins doivent obligatoirement appartenir à une organisation lors de leur création
+3. **Admin obligatoire** : Chaque organisation doit avoir au moins un administrateur
+4. **Protection des admins** : Impossible de retirer le dernier admin d'une organisation
+5. **Suppression sécurisée** : Impossible de supprimer une organisation qui contient des utilisateurs
 
 ### 🔒 Sécurité
 1. **Accès restreint** : Seul le superadmin peut gérer les organisations
@@ -150,9 +152,15 @@ curl -X POST http://localhost:3000/auth/login \
 curl -X POST http://localhost:3000/organisations \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"nom": "Ma Société", "type": "entreprise", "code_pays": "F"}'
+  -d '{"nom": "Ma Société", "type": "entreprise", "date_creation": "2025-01-15", "code_pays": "F"}'
 
-# 3. Récupérer toutes les organisations
+# 3. Créer un utilisateur avec organisation
+curl -X POST http://localhost:3000/auth/register \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123", "nom": "Dupont", "prenom": "Jean", "age": 25, "role": "user", "organisation_id": "1"}'
+
+# 4. Récupérer toutes les organisations
 curl -X GET http://localhost:3000/organisations \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```

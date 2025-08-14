@@ -1,0 +1,165 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTEzMTEwMiwiZXhwIjoxNzU1MTM0NzAyfQ.CD6bOARrcZ7G4jCkCy3sn-LK_v5ElOmA7g3sQrIQWfc
+
+### 1. Authentification en tant que superadmin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "camara13fs@gmail.com",
+  "password": "admin123"
+}
+
+### 2. Créer une organisation pour les tests
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Organisation Test Utilisateurs",
+  "type": "entreprise",
+  "date_creation": "2025-01-15",
+  "code_pays": "GN"
+}
+
+### 3. Créer un utilisateur avec organisation
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "user1@example.com",
+  "password": "password123",
+  "nom": "Dupont",
+  "prenom": "Jean",
+  "age": 25,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "3"
+}
+
+### 4. Créer un admin avec organisation
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "admin1@example.com",
+  "password": "password123",
+  "nom": "Martin",
+  "prenom": "Sophie",
+  "age": 30,
+  "role": "admin",
+  "code_langue": "FR",
+  "organisation_id": "3"
+}
+
+### 5. Créer un superadmin (sans organisation)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "superadmin2@example.com",
+  "password": "password123",
+  "nom": "Admin",
+  "prenom": "Super",
+  "age": 35,
+  "role": "superadmin",
+  "code_langue": "FR"
+}
+
+### 6. Test d'erreur - Créer un utilisateur sans organisation (devrait échouer)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "password123",
+  "nom": "Test",
+  "prenom": "User",
+  "age": 25,
+  "role": "user",
+  "code_langue": "FR"
+}
+
+### 7. Test d'erreur - Créer un utilisateur avec une organisation inexistante
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "user3@example.com",
+  "password": "password123",
+  "nom": "Test",
+  "prenom": "User3",
+  "age": 25,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "999"
+}
+
+### 8. Test d'erreur - Créer un admin sans organisation (devrait échouer)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "admin2@example.com",
+  "password": "password123",
+  "nom": "Test",
+  "prenom": "Admin",
+  "age": 30,
+  "role": "admin",
+  "code_langue": "FR"
+}
+
+### 9. Vérifier les utilisateurs d'une organisation
+GET {{baseUrl}}/organisations/3/users
+Authorization: Bearer {{authToken}}
+
+### 10. Obtenir les statistiques de l'organisation
+GET {{baseUrl}}/organisations/3/stats
+Authorization: Bearer {{authToken}}
+
+### 11. Test d'erreur - Accès sans authentification
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "nom": "Test",
+  "prenom": "User",
+  "age": 25,
+  "role": "user",
+  "organisation_id": "1"
+}
+
+### 12. Test d'erreur - Accès avec un rôle insuffisant
+# D'abord, connectez-vous en tant qu'utilisateur normal
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user1@example.com",
+  "password": "password123"
+}
+
+# Puis essayez de créer un utilisateur
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "nom": "Test",
+  "prenom": "User",
+  "age": 25,
+  "role": "user",
+  "organisation_id": "1"
+}

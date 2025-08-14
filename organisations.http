@@ -1,6 +1,6 @@
 ### Variables d'environnement
 @baseUrl = http://localhost:3000
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTA0Nzk5MSwiZXhwIjoxNzU1MDUxNTkxfQ.0fMliz53ArhK2zwT5aSOymYtwfoft1DK_ZBh79Fsft0
+@authToken =   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTEzMTEwMiwiZXhwIjoxNzU1MTM0NzAyfQ.CD6bOARrcZ7G4jCkCy3sn-LK_v5ElOmA7g3sQrIQWfc
 
 ### 1. Authentification en tant que superadmin
 # @name login
@@ -20,6 +20,7 @@ Content-Type: application/json
 {
   "nom": "BytCode Solutions",
   "type": "entreprise",
+  "date_creation": "2025-05-22",
   "code_pays": "GN"
 }
 
@@ -31,6 +32,7 @@ Content-Type: application/json
 {
   "nom": "CS Roi Hassant 2",
   "type": "ecole",
+  "date_creation": "2022-06-15",
   "code_pays": "GN"
 }
 
@@ -52,8 +54,7 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "nom": "BytCode Solutions - Mise à jour",
-  "type": "association"
+  "date_creation": "2025-03-13"
 }
 
 ### 8. Ajouter un utilisateur à une organisation (remplacer {userId} par l'ID réel)

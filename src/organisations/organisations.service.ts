@@ -55,7 +55,7 @@ export class OrganisationsService {
     
     // Vérifier qu'il n'y a pas d'utilisateurs dans l'organisation
     const userCount = await this.usersRepository.count({
-      where: { organisation_id: id }
+      where: { organisation: { organisation_id: id } }
     });
 
     if (userCount > 0) {
@@ -67,37 +67,26 @@ export class OrganisationsService {
     await this.organisationsRepository.remove(organisation);
   }
 
-  async addUserToOrganisation(organisationId: number, userId: number): Promise<void> {
-    const organisation = await this.findOne(organisationId);
-    const user = await this.usersRepository.findOne({
-      where: { users_id: userId }
-    });
 
-    if (!user) {
-      throw new NotFoundException(`Utilisateur avec l'ID ${userId} non trouvé`);
-    }
-
-    if (user.role === 'superadmin') {
-      throw new BadRequestException('Un superadmin ne peut pas appartenir à une organisation');
-    }
-
-    user.organisation_id = organisationId;
-    await this.usersRepository.save(user);
-  }
 
   async removeUserFromOrganisation(organisationId: number, userId: number): Promise<void> {
     const user = await this.usersRepository.findOne({
-      where: { users_id: userId, organisation_id: organisationId }
+      where: { users_id: userId },
+      relations: ['organisation']
     });
 
     if (!user) {
+      throw new NotFoundException(`Utilisateur ${userId} non trouvé`);
+    }
+
+    if (!user.organisation || user.organisation.organisation_id !== organisationId) {
       throw new NotFoundException(`Utilisateur ${userId} non trouvé dans l'organisation ${organisationId}`);
     }
 
     // Vérifier qu'il reste au moins un admin dans l'organisation
     const adminCount = await this.usersRepository.count({
       where: { 
-        organisation_id: organisationId,
+        organisation: { organisation_id: organisationId },
         role: 'admin'
       }
     });
@@ -108,7 +97,7 @@ export class OrganisationsService {
       );
     }
 
-    user.organisation_id = null;
+    user.organisation = undefined as any;
     await this.usersRepository.save(user);
   }
 
@@ -116,7 +105,7 @@ export class OrganisationsService {
     await this.findOne(organisationId); // Vérifier que l'organisation existe
     
     return await this.usersRepository.find({
-      where: { organisation_id: organisationId },
+      where: { organisation: { organisation_id: organisationId } },
       select: ['users_id', 'email', 'nom', 'prenom', 'role', 'age', 'code_langue', 'date_creation']
     });
   }
@@ -124,7 +113,7 @@ export class OrganisationsService {
   async validateOrganisationHasAdmin(organisationId: number): Promise<void> {
     const adminCount = await this.usersRepository.count({
       where: { 
-        organisation_id: organisationId,
+        organisation: { organisation_id: organisationId },
         role: 'admin'
       }
     });
@@ -140,9 +129,9 @@ export class OrganisationsService {
     const organisation = await this.findOne(organisationId);
     
     const [totalUsers, adminCount, userCount] = await Promise.all([
-      this.usersRepository.count({ where: { organisation_id: organisationId } }),
-      this.usersRepository.count({ where: { organisation_id: organisationId, role: 'admin' } }),
-      this.usersRepository.count({ where: { organisation_id: organisationId, role: 'user' } })
+      this.usersRepository.count({ where: { organisation: { organisation_id: organisationId } } }),
+      this.usersRepository.count({ where: { organisation: { organisation_id: organisationId }, role: 'admin' } }),
+      this.usersRepository.count({ where: { organisation: { organisation_id: organisationId }, role: 'user' } })
     ]);
 
     return {

@@ -1,5 +1,7 @@
-import { IsString, IsEnum, IsNotEmpty, Length } from 'class-validator';
+import { IsString, IsEnum, IsNotEmpty, Length, MaxDate } from 'class-validator';
 import { OrganisationType } from '../organisations.entity';
+import { IsDate } from '@nestjs/class-validator';
+import { Type } from '@nestjs/class-transformer';
 
 export class CreateOrganisationDto {
   @IsString()
@@ -9,6 +11,12 @@ export class CreateOrganisationDto {
 
   @IsEnum(OrganisationType)
   type: OrganisationType;
+
+  @IsNotEmpty()
+  @Type(() => Date) // important pour transformer la chaîne en Date
+  @IsDate()
+  @MaxDate(new Date()) // date maximale
+  date_creation: Date;
 
   @IsString()
   @IsNotEmpty()

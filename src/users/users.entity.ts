@@ -21,9 +21,6 @@ export class User {
   @Column({ type: 'enum', enum: ['user', 'admin', 'superadmin'] })
   role: string;
 
-  @Column({ type: 'bigint', nullable: true })
-  organisation_id: number | null;
-
   @ManyToOne(() => Organisation, organisation => organisation.utilisateurs, { nullable: true })
   @JoinColumn({ name: 'organisation_id' })
   organisation: Organisation;

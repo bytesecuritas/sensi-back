@@ -1,13 +1,17 @@
-import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './users.entity';
+import { Organisation } from '../organisations/organisations.entity';
+import { CreateUserDto } from './dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Organisation)
+    private organisationsRepository: Repository<Organisation>,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -44,16 +48,42 @@ export class UsersService {
     return this.usersRepository.find({ where: { role } });
   }
 
-  async create(userData: Partial<User>): Promise<User> {
+
+
+  async createWithOrganisation(createUserDto: CreateUserDto): Promise<User> {
     // Check if user with email already exists
-    if (userData.email) {
-      const existingUser = await this.findByEmail(userData.email);
-      if (existingUser) {
-        throw new ConflictException('User with this email already exists');
+    const existingUser = await this.findByEmail(createUserDto.email);
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Vérifier l'organisation si l'utilisateur n'est pas superadmin
+    let organisation: Organisation | null = null;
+    if (createUserDto.role !== 'superadmin') {
+      if (!createUserDto.organisation_id) {
+        throw new BadRequestException('Organisation is required for non-superadmin users');
+      }
+
+      organisation = await this.organisationsRepository.findOne({
+        where: { organisation_id: parseInt(createUserDto.organisation_id) }
+      });
+
+      if (!organisation) {
+        throw new BadRequestException(`Organisation with ID ${createUserDto.organisation_id} not found`);
       }
     }
 
-    const user = this.usersRepository.create(userData);
+    const user = this.usersRepository.create({
+      email: createUserDto.email,
+      password: createUserDto.password,
+      nom: createUserDto.nom,
+      prenom: createUserDto.prenom,
+      role: createUserDto.role,
+      age: createUserDto.age,
+      code_langue: createUserDto.code_langue || 'FR',
+      organisation: organisation || undefined
+    });
+
     return this.usersRepository.save(user);
   }
 

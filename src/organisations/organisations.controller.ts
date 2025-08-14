@@ -47,7 +47,7 @@ export class OrganisationsController {
   }
 
   @Get(':id/users')
-  @Roles('superadmin')
+  @Roles('superadmin', 'admin')
   getOrganisationUsers(@Param('id', ParseIntPipe) id: number) {
     return this.organisationsService.getOrganisationUsers(id);
   }
@@ -68,18 +68,8 @@ export class OrganisationsController {
     return this.organisationsService.remove(id);
   }
 
-  @Post(':id/users/:userId')
-  @Roles('superadmin')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  addUserToOrganisation(
-    @Param('id', ParseIntPipe) organisationId: number,
-    @Param('userId', ParseIntPipe) userId: number
-  ) {
-    return this.organisationsService.addUserToOrganisation(organisationId, userId);
-  }
-
   @Delete(':id/users/:userId')
-  @Roles('superadmin')
+  @Roles('superadmin', 'admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeUserFromOrganisation(
     @Param('id', ParseIntPipe) organisationId: number,

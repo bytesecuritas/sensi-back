@@ -30,6 +30,9 @@ class RegisterDto {
   @IsString()
   @IsOptional()
   code_langue?: string;
+  @IsString()
+  @IsOptional()
+  organisation_id?: string;
 }
 
 class LoginDto {
@@ -57,7 +60,8 @@ export class AuthController {
         body.prenom, 
         body.age, 
         body.role,
-        body.code_langue
+        body.code_langue,
+        body.organisation_id
       );
     } catch (error) {
       if (error instanceof HttpException) {
@@ -66,7 +70,6 @@ export class AuthController {
       throw new HttpException('Registration failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
 
   @Post('login')
   async login(@Body() body: LoginDto) {
@@ -82,11 +85,5 @@ export class AuthController {
       }
       throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  @Post('protected')
-  @UseGuards(AuthGuard('jwt'))
-  protectedRoute() {
-    return { message: 'This is a protected route' };
   }
 }
