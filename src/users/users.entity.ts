@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Organisation } from '../organisations/organisations.entity';
+import { Certification } from '../learning/entities/certification.entity';
+import { Progress } from '../learning/entities/progress.entity';
 
 @Entity('users')
 export class User {
@@ -36,4 +38,11 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   date_maj: Date;
+
+  // Relations avec les entités d'apprentissage
+  @OneToMany(() => Certification, certification => certification.utilisateur)
+  certifications: Certification[];
+
+  @OneToMany(() => Progress, progression => progression.utilisateur)
+  progressions: Progress[];
 }

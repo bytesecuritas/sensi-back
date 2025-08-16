@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { User } from '../users/users.entity';
+import { OrganisationLearningPath } from '../learning/entities/organisation-learning-path.entity';
 
 export enum OrganisationType {
   ENTREPRISE = 'entreprise',
@@ -39,4 +40,8 @@ export class Organisation {
   // Relation avec les utilisateurs
   @OneToMany(() => User, user => user.organisation)
   utilisateurs: User[];
+
+  // Relation many-to-many avec les parcours d'apprentissage via la table de liaison
+  @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.organisation)
+  parcoursApprentissage: OrganisationLearningPath[];
 }
