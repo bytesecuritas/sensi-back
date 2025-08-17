@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/users.entity';
-import { LearningModule } from './learning-module.entity';
+import { LearningPathModule } from './learning-module.entity';
 
 export enum ProgressStatus {
   NON_COMMENCE = 'non_commence',
@@ -23,9 +23,9 @@ export class Progress {
   utilisateur_id: number;
 
   // Relation avec le module d'apprentissage
-  @ManyToOne(() => LearningModule, module => module.progressions)
+  @ManyToOne(() => LearningPathModule, module => module.progressions)
   @JoinColumn({ name: 'module_id' })
-  module: LearningModule;
+  module: LearningPathModule;
 
   @Column({ type: 'bigint' })
   module_id: number;

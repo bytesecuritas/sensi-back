@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LearningPath } from './entities/learning-path.entity';
-import { LearningModule } from './entities/learning-module.entity';
+import { LearningPathModule } from './entities/learning-module.entity';
 import { MediaContent } from './entities/media-content.entity';
 import { Certification } from './entities/certification.entity';
 import { Progress } from './entities/progress.entity';
@@ -15,8 +15,8 @@ export class LearningService {
   constructor(
     @InjectRepository(LearningPath)
     private learningPathRepository: Repository<LearningPath>,
-    @InjectRepository(LearningModule)
-    private learningModuleRepository: Repository<LearningModule>,
+    @InjectRepository(LearningPathModule)
+    private learningModuleRepository: Repository<LearningPathModule>,
     @InjectRepository(MediaContent)
     private mediaContentRepository: Repository<MediaContent>,
     @InjectRepository(Certification)
@@ -55,12 +55,12 @@ export class LearningService {
   }
 
   // Méthodes pour les modules d'apprentissage
-  async createLearningModule(moduleData: Partial<LearningModule>): Promise<LearningModule> {
+  async createLearningModule(moduleData: Partial<LearningPathModule>): Promise<LearningPathModule> {
     const module = this.learningModuleRepository.create(moduleData);
     return await this.learningModuleRepository.save(module);
   }
 
-  async getModulesByLearningPath(parcoursId: number): Promise<LearningModule[]> {
+  async getModulesByLearningPath(parcoursId: number): Promise<LearningPathModule[]> {
     return await this.learningModuleRepository.find({
       where: { parcours_id: parcoursId },
       relations: ['contenus_media'],
@@ -86,8 +86,14 @@ export class LearningService {
   }
 
   async updateProgress(id: number, progressData: Partial<Progress>): Promise<Progress> {
-    await this.progressRepository.update(id, progressData);
-    return await this.progressRepository.findOne({ where: { progression_id: id } });
+    const progress = await this.progressRepository.findOne({ where: { progression_id: id } });
+
+    if(!progress){
+      throw new NotFoundException(`La progression d'id ${id} introuvable!`);
+    }
+
+    Object.assign(progress, progressData);
+    return await this.progressRepository.save(progress);
   }
 
   async getUserProgress(userId: number): Promise<Progress[]> {
@@ -98,9 +104,14 @@ export class LearningService {
   }
 
   async getModuleProgress(userId: number, moduleId: number): Promise<Progress> {
-    return await this.progressRepository.findOne({
+    const progress = await this.progressRepository.findOne({
       where: { utilisateur_id: userId, module_id: moduleId },
-    });
+    })
+
+    if(!progress){
+      throw new NotFoundException(`La progression de l'utilisateur ${userId} pour le module ${moduleId} n'existe pas!`)
+    }
+    return progress;
   }
 
   // Méthodes pour les certifications

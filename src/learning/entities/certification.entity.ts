@@ -3,10 +3,13 @@ import { User } from '../../users/users.entity';
 import { LearningPath } from './learning-path.entity';
 
 export enum CertificationType {
-  COMPLETION = 'completion',
-  COMPETENCE = 'competence',
-  MAITRISE = 'maitrise',
-  SPECIALISATION = 'specialisation'
+  SENSIBILISATION_BASIQUE = 'sensibilisation_basique',   // Niveau débutant
+  VIGILANCE_NUMERIQUE = 'vigilance_numerique',           // Niveau intermédiaire
+  EXPERT_CYBERSECURITE = 'expert_cybersecurite',         // Niveau avancé
+  SPECIALISTE_ANTI_PHISHING = 'specialiste_anti_phishing', // Spécialisation phishing
+  PROTECTION_DONNEES = 'protection_donnees',             // Spécialisation RGPD
+  SECURITE_MOBILE = 'securite_mobile',                   // Spécialisation mobile
+  SECURITE_ENFANTS = 'securite_enfants'                  // Spécialisation sécurité enfants
 }
 
 @Entity('certification')
@@ -33,7 +36,7 @@ export class Certification {
   @Column({ 
     type: 'enum', 
     enum: CertificationType,
-    default: CertificationType.COMPLETION
+    default: CertificationType.SENSIBILISATION_BASIQUE
   })
   type_certification: CertificationType;
 

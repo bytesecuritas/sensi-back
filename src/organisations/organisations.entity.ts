@@ -3,10 +3,13 @@ import { User } from '../users/users.entity';
 import { OrganisationLearningPath } from '../learning/entities/organisation-learning-path.entity';
 
 export enum OrganisationType {
-  ENTREPRISE = 'entreprise',
-  ECOLE = 'ecole',
-  ASSOCIATION = 'association',
-  AUTRE = 'autre'
+  ENTREPRISE_PRIVEE = 'entreprise_privee',       // Entreprises du secteur privé
+  ORGANISME_PUBLIC = 'organisme_public',         // Administrations, collectivités
+  ETABLISSEMENT_SCOLAIRE = 'etablissement_scolaire', // Écoles, collèges, lycées
+  ENSEIGNEMENT_SUPERIEUR = 'enseignement_superieur', // Universités, grandes écoles
+  ASSOCIATION = 'association',                   // Associations et ONG
+  CENTRE_FORMATION = 'centre_formation',          // Centres de formation professionnelle
+  AUTRE = 'autre'                                // Autres organisations
 }
 
 @Entity('organisations')

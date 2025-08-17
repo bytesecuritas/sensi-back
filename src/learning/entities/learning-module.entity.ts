@@ -8,7 +8,11 @@ export enum ContentType {
   PDF = 'pdf',
   QUIZ = 'quiz',
   INTERACTIF = 'interactif',
-  AUDIO = 'audio'
+  AUDIO = 'audio',
+  SIMULATION = 'simulation',       // Simulation d'attaques
+  JEU_SERIEUX = 'jeu_serieux',     // Serious games
+  BANDE_DESSINEE = 'bande_dessinee', // Pour les enfants
+  ETUDE_DE_CAS = 'etude_de_cas'    // Cas réels d'attaques
 }
 
 export enum DifficultyLevel {
@@ -18,8 +22,22 @@ export enum DifficultyLevel {
   EXPERT = 'expert'
 }
 
+export enum ThematiqueCyber {
+  PHISHING = 'phishing',                   // Hameçonnage
+  SOCIAL_ENGINEERING = 'social_engineering', // Ingénierie sociale
+  PASSWORD_MANAGEMENT = 'password_management', // Gestion des mots de passe
+  RANSOMWARE = 'ransomware',               // Rançongiciels
+  DATA_PROTECTION = 'data_protection',     // Protection des données
+  MOBILE_SECURITY = 'mobile_security',     // Sécurité mobile
+  SOCIAL_MEDIA = 'social_media',           // Sécurité sur réseaux sociaux
+  CYBERHARASSMENT = 'cyberharassment',     // Cyberharcèlement
+  PRIVACY = 'privacy',                     // Protection de la vie privée
+  MALWARE = 'malware',                     // Logiciels malveillants
+  SECURE_BROWSING = 'secure_browsing'      // Navigation sécurisée
+}
+
 @Entity('module_apprentissage')
-export class LearningModule {
+export class LearningPathModule {
   @PrimaryGeneratedColumn()
   module_id: number;
 
@@ -55,6 +73,13 @@ export class LearningModule {
     default: DifficultyLevel.MOYEN
   })
   niveau_difficulte: DifficultyLevel;
+
+  @Column({ 
+    type: 'enum', 
+    enum: ThematiqueCyber,
+    default: ThematiqueCyber.SECURE_BROWSING
+  })
+  thematique_cyber: ThematiqueCyber;
 
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;

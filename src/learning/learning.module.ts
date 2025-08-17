@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LearningPath } from './entities/learning-path.entity';
-import { LearningModule } from './entities/learning-module.entity';
+import { LearningPathModule } from './entities/learning-module.entity';
 import { MediaContent } from './entities/media-content.entity';
 import { Certification } from './entities/certification.entity';
 import { Progress } from './entities/progress.entity';
@@ -13,7 +13,7 @@ import { LearningService } from './learning.service';
   imports: [
     TypeOrmModule.forFeature([
       LearningPath,
-      LearningModule,
+      LearningPathModule,
       MediaContent,
       Certification,
       Progress,

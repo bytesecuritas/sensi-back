@@ -19,7 +19,7 @@ Content-Type: application/json
 
 {
   "nom": "Organisation Test Utilisateurs",
-  "type": "entreprise",
+  "type": "ENTREPRISE_PRIVEE",
   "date_creation": "2025-01-15",
   "code_pays": "GN"
 }

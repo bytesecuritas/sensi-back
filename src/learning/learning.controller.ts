@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { LearningService } from './learning.service';
 import { LearningPath } from './entities/learning-path.entity';
-import { LearningModule } from './entities/learning-module.entity';
+import { LearningPathModule } from './entities/learning-module.entity';
 import { MediaContent } from './entities/media-content.entity';
 import { Certification } from './entities/certification.entity';
 import { Progress } from './entities/progress.entity';
@@ -52,12 +52,12 @@ export class LearningController {
   // ===== MODULES D'APPRENTISSAGE =====
 
   @Post('modules')
-  async createLearningModule(@Body() moduleData: Partial<LearningModule>): Promise<LearningModule> {
+  async createLearningModule(@Body() moduleData: Partial<LearningPathModule>): Promise<LearningPathModule> {
     return await this.learningService.createLearningModule(moduleData);
   }
 
   @Get('parcours/:parcoursId/modules')
-  async getModulesByLearningPath(@Param('parcoursId') parcoursId: string): Promise<LearningModule[]> {
+  async getModulesByLearningPath(@Param('parcoursId') parcoursId: string): Promise<LearningPathModule[]> {
     return await this.learningService.getModulesByLearningPath(+parcoursId);
   }
 

@@ -11,7 +11,7 @@ Content-Type: application/json
 {
   "titre": "Formation Cybersécurité Avancée",
   "description": "Parcours complet sur la cybersécurité pour les professionnels expérimentés",
-  "public_cible": "avance"
+  "public_cible": "ENTREPRISE"
 }
 
 ### Récupérer tous les parcours
@@ -33,11 +33,12 @@ Content-Type: application/json
 {
   "titre": "Introduction aux Menaces Avancées",
   "description": "Module d'introduction aux techniques d'attaques avancées",
-  "type_contenu": "video",
+  "type_contenu": "VIDEO",
   "code_langue": "fr",
   "duree_minutes": 60,
-  "niveau_difficulte": "difficile",
-  "parcours_id": 1
+  "niveau_difficulte": "DIFFICILE",
+  "parcours_id": 1,
+  "thematique_cyber": "PHISHING"
 }
 
 ### Récupérer les modules d'un parcours
@@ -51,11 +52,12 @@ Content-Type: application/json
 
 {
   "module_id": 1,
-  "type_media": "video",
+  "type_media": "VIDEO",
   "url_fichier": "https://example.com/video-menaces-avancees.mp4",
   "nom_fichier": "video-menaces-avancees.mp4",
   "taille_fichier": 104857600,
-  "description": "Vidéo explicative sur les menaces avancées en cybersécurité"
+  "description": "Vidéo explicative sur les menaces avancées en cybersécurité",
+  "type_attaque": "PHISHING_EMAIL"
 }
 
 ### Récupérer les contenus média d'un module
@@ -70,7 +72,7 @@ Content-Type: application/json
 {
   "utilisateur_id": 1,
   "module_id": 1,
-  "statut": "en_cours",
+  "statut": "EN_COURS",
   "score": 0,
   "temps_passe": 0
 }
@@ -80,7 +82,7 @@ PUT {{baseUrl}}/learning/progress/1
 Content-Type: application/json
 
 {
-  "statut": "termine",
+  "statut": "TERMINE",
   "score": 85.5,
   "temps_passe": 3600,
   "date_completion": "2024-01-15T10:30:00Z"
@@ -103,7 +105,7 @@ Content-Type: application/json
 {
   "utilisateur_id": 1,
   "parcours_id": 1,
-  "type_certification": "completion",
+  "type_certification": "SENSIBILISATION_BASIQUE",
   "date_emission": "2024-01-15T10:30:00Z",
   "url_certification": "https://example.com/certifications/user1-parcours1.pdf"
 }
@@ -139,7 +141,7 @@ Content-Type: application/json
 {
   "titre": "Formation Sensibilisation Cybersécurité",
   "description": "Parcours de sensibilisation à la cybersécurité pour tous les employés",
-  "public_cible": "tous"
+  "public_cible": "GRAND_PUBLIC"
 }
 
 ###
@@ -151,11 +153,12 @@ Content-Type: application/json
 {
   "titre": "Les Bases de la Cybersécurité",
   "description": "Introduction aux concepts fondamentaux de la cybersécurité",
-  "type_contenu": "video",
+  "type_contenu": "VIDEO",
   "code_langue": "fr",
   "duree_minutes": 30,
-  "niveau_difficulte": "facile",
-  "parcours_id": 1
+  "niveau_difficulte": "FACILE",
+  "parcours_id": 1,
+  "thematique_cyber": "SECURE_BROWSING"
 }
 
 ###
@@ -166,11 +169,12 @@ Content-Type: application/json
 
 {
   "module_id": 1,
-  "type_media": "video",
+  "type_media": "VIDEO",
   "url_fichier": "https://example.com/videos/bases-cybersecurite.mp4",
   "nom_fichier": "bases-cybersecurite.mp4",
   "taille_fichier": 52428800,
-  "description": "Vidéo d'introduction aux bases de la cybersécurité"
+  "description": "Vidéo d'introduction aux bases de la cybersécurité",
+  "type_attaque": "FAKE_WEBSITE"
 }
 
 ###
@@ -182,11 +186,12 @@ Content-Type: application/json
 {
   "titre": "Reconnaître les Menaces",
   "description": "Apprendre à identifier les différents types de menaces",
-  "type_contenu": "interactif",
+  "type_contenu": "INTERACTIF",
   "code_langue": "fr",
   "duree_minutes": 45,
-  "niveau_difficulte": "moyen",
-  "parcours_id": 1
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 1,
+  "thematique_cyber": "SOCIAL_ENGINEERING"
 }
 
 ###
@@ -197,11 +202,12 @@ Content-Type: application/json
 
 {
   "module_id": 2,
-  "type_media": "document",
+  "type_media": "DOCUMENT",
   "url_fichier": "https://example.com/documents/guide-menaces.pdf",
   "nom_fichier": "guide-menaces.pdf",
   "taille_fichier": 2097152,
-  "description": "Guide pratique pour reconnaître les menaces"
+  "description": "Guide pratique pour reconnaître les menaces",
+  "type_attaque": "SOCIAL_MEDIA_SCAM"
 }
 
 ###
@@ -218,7 +224,7 @@ Content-Type: application/json
 {
   "utilisateur_id": 1,
   "module_id": 1,
-  "statut": "en_cours",
+  "statut": "EN_COURS",
   "score": 0,
   "temps_passe": 0
 }

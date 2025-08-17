@@ -19,7 +19,7 @@ Content-Type: application/json
 
 {
   "nom": "BytCode Solutions",
-  "type": "entreprise",
+  "type": "ENTREPRISE_PRIVEE",
   "date_creation": "2025-05-22",
   "code_pays": "GN"
 }
@@ -31,7 +31,7 @@ Content-Type: application/json
 
 {
   "nom": "CS Roi Hassant 2",
-  "type": "ecole",
+  "type": "ETABLISSEMENT_SCOLAIRE",
   "date_creation": "2022-06-15",
   "code_pays": "GN"
 }
@@ -81,7 +81,8 @@ Content-Type: application/json
 {
   "nom": "",
   "type": "type_invalide",
-  "code_pays": "FR"
+  "code_pays": "FR",
+  "date_creation": "2025-05-22"
 }
 
 ### 13. Test d'erreur - Accès sans authentification
