@@ -1,0 +1,221 @@
+### Variables globales
+@baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTg2ODUzOSwiZXhwIjoxNzU1ODcyMTM5fQ.R_0QjGAD4vIwb-_Fotu1BicnHJg3Gy09PfLcZOOPIxY
+
+### 1. Authentication Tests
+### Login as superadmin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "camara13fs@gmail.com",
+    "password": "admin123"
+}
+
+### Get Profile
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### Register new admin user
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "email": "admin@organisation.com",
+    "password": "Admin123!",
+    "nom": "Martin",
+    "prenom": "Jean",
+    "age": 35,
+    "role": "admin",
+    "code_langue": "FR",
+    "organisation_id": "1"
+}
+
+### 2. Organisation Management
+### Create new organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nom": "BytCode Academy",
+    "description": "Centre de formation en cybersécurité",
+    "adresse": "123 Rue de la Technologie",
+    "telephone": "+33123456789",
+    "email": "contact@bytcode.fr"
+}
+
+### Get all organisations
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+
+### Get organisation by ID
+GET {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+
+### Get organisation stats
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{authToken}}
+
+### Get organisation users
+GET {{baseUrl}}/organisations/1/users
+Authorization: Bearer {{authToken}}
+
+### 3. Learning Path Management
+### Create learning path
+POST {{baseUrl}}/learning/parcours
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "titre": "Cybersécurité Fondamentaux",
+    "description": "Formation complète sur les bases de la cybersécurité",
+    "niveau_difficulte": "Débutant",
+    "duree_estimee": 120,
+    "objectifs": ["Comprendre les menaces", "Maîtriser les bonnes pratiques"]
+}
+
+### Create learning module
+POST {{baseUrl}}/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "titre": "Introduction à la Sécurité",
+    "description": "Module d'introduction aux concepts de base",
+    "ordre": 1,
+    "duree": 30,
+    "parcours_id": 1,
+    "thematique_cyber": "BASICS"
+}
+
+### Upload media content
+POST {{baseUrl}}/learning/media/upload
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_officiel_(480p).mp4"
+Content-Type: video/mp4
+
+< C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
+------WebKitFormBoundary
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="titre"
+
+Introduction Video
+------WebKitFormBoundary
+Content-Disposition: form-data; name="description"
+
+Vidéo d'introduction au module
+------WebKitFormBoundary--
+
+### Upload a new media file
+POST http://localhost:3000/learning/media/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gI
+
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="description"
+
+Vidéo d'introduction au module
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="file"; filename="mohamed2.jpg"
+Content-Type: image/jpeg
+
+< C:/Users/Mossoko/Pictures/mohamed2.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gI--
+
+###
+
+# Update an existing media file
+PUT http://localhost:3000/learning/media/1/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gI
+
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gI
+Content-Disposition: form-data; name="file"; filename="updated-image.jpg"
+Content-Type: image/jpeg
+
+< ./updated-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gI--
+
+### Get available learning paths for user
+GET {{baseUrl}}/learning/parcours/user/available
+Authorization: Bearer {{authToken}}
+
+### Get modules for learning path
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{authToken}}
+
+### Get media content for module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{authToken}}
+
+### Create progress entry
+POST {{baseUrl}}/learning/progress
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "users_id": 1,
+    "module_id": 1,
+    "progression": 0,
+    "date_debut": "2024-01-15T10:00:00Z",
+    "statut": "En cours"
+}
+
+### Get user progress
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{authToken}}
+
+### Create certification
+POST {{baseUrl}}/learning/certifications
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "users_id": 1,
+    "parcours_id": 1,
+    "date_obtention": "2024-01-15T15:00:00Z",
+    "score": 95
+}
+
+### 4. User Management
+### Get all users
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+
+### Get user by ID
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+
+### Update user
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nom": "Martin Updated",
+    "prenom": "Jean Updated",
+    "age": 36
+}
+
+### Check learning path access
+GET {{baseUrl}}/learning/access/check/1
+Authorization: Bearer {{authToken}}

@@ -1,0 +1,306 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = your_auth_token_here
+
+### ===== AUTHENTIFICATION =====
+
+### Connexion en tant qu'administrateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### ===== PARCOURS D'APPRENTISSAGE SUR LE PHISHING =====
+
+### Créer un parcours sur le phishing
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Détection et Prévention du Phishing",
+  "description": "Parcours complet pour identifier et se protéger contre les attaques de phishing sous toutes leurs formes",
+  "public_cible": "ENTREPRISE",
+  "niveau_global": "INTERMEDIAIRE",
+  "duree_estimee_heures": 5
+}
+
+### Récupérer le parcours créé
+GET {{baseUrl}}/learning/parcours/2
+Authorization: Bearer {{authToken}}
+
+### ===== MODULES D'APPRENTISSAGE =====
+
+### Créer un module sur les bases du phishing
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Introduction au Phishing",
+  "description": "Module expliquant les concepts de base du phishing et son évolution",
+  "code_langue": "fr",
+  "niveau_difficulte": "FACILE",
+  "parcours_id": 2,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 45,
+  "objectifs_apprentissage": "Comprendre ce qu'est le phishing et ses différentes variantes"
+}
+
+### Créer un module sur la détection des emails de phishing
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Identifier les Emails de Phishing",
+  "description": "Module sur les indices permettant de repérer les emails frauduleux",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 2,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 60,
+  "objectifs_apprentissage": "Reconnaître les caractéristiques des emails de phishing, vérifier l'authenticité des expéditeurs"
+}
+
+### Créer un module sur les sites web frauduleux
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Reconnaître les Sites Web Frauduleux",
+  "description": "Module sur l'identification des sites web de phishing et des faux formulaires",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 2,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 50,
+  "objectifs_apprentissage": "Identifier les signes d'un site web frauduleux, vérifier les certificats SSL et les URL"
+}
+
+### Créer un module sur les mesures de protection
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Mesures de Protection contre le Phishing",
+  "description": "Module sur les outils et pratiques pour se protéger contre le phishing",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 2,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 55,
+  "objectifs_apprentissage": "Mettre en place des mesures de protection efficaces, utiliser l'authentification à deux facteurs"
+}
+
+### Récupérer les modules du parcours
+GET {{baseUrl}}/learning/parcours/2/modules
+Authorization: Bearer {{authToken}}
+
+### ===== CONTENUS MÉDIAS =====
+
+### Créer un contenu vidéo avec upload de fichier
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 5,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 20,
+  "description": "Vidéo explicative sur les principes du phishing et son évolution historique",
+  "type_attaque": "PHISHING_EMAIL",
+  "file": "@/path/to/phishing-basics.mp4"
+}
+
+### Créer un contenu vidéo sur les bases du phishing (URL externe)
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 5,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 20,
+  "url_fichier": "https://cybersecure-training.com/videos/phishing-basics.mp4",
+  "nom_fichier": "phishing-basics.mp4",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Introduction au Phishing/phishing-basics.mp4",
+  "taille_fichier": 52428800,
+  "description": "Vidéo explicative sur les principes du phishing et son évolution historique",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Créer une simulation d'email de phishing
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 6,
+  "type_contenu": "INTERACTIF",
+  "duree_minutes": 25,
+  "url_fichier": "https://cybersecure-training.com/interactive/phishing-email-simulation.html",
+  "nom_fichier": "phishing-email-simulation.html",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Identifier les Emails de Phishing/phishing-email-simulation.html",
+  "taille_fichier": 2097152,
+  "description": "Simulation interactive d'emails de phishing permettant de s'entraîner à les identifier",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Créer un quiz sur les sites web frauduleux
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 7,
+  "type_contenu": "QUIZ",
+  "duree_minutes": 15,
+  "url_fichier": "https://cybersecure-training.com/quiz/fake-website-detection-quiz.json",
+  "nom_fichier": "fake-website-detection-quiz.json",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Reconnaître les Sites Web Frauduleux/fake-website-detection-quiz.json",
+  "taille_fichier": 1048576,
+  "description": "Quiz interactif pour tester sa capacité à identifier les sites web frauduleux",
+  "type_attaque": "FAKE_WEBSITE"
+}
+
+### Créer un guide sur les mesures de protection
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 8,
+  "type_contenu": "DOCUMENT",
+  "duree_minutes": 30,
+  "url_fichier": "https://cybersecure-training.com/documents/phishing-protection-guide.pdf",
+  "nom_fichier": "phishing-protection-guide.pdf",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Mesures de Protection contre le Phishing/phishing-protection-guide.pdf",
+  "taille_fichier": 5242880,
+  "description": "Guide complet sur les mesures de protection contre le phishing, incluant les outils recommandés",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Récupérer les contenus média d'un module
+GET {{baseUrl}}/learning/modules/5/media
+Authorization: Bearer {{authToken}}
+
+### ===== PROGRESSIONS =====
+
+### Créer une progression pour un utilisateur
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 6,
+  "module_id": 5,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### Mettre à jour une progression après complétion d'un module
+PUT {{baseUrl}}/learning/progress/10
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 92,
+  "temps_passe": 2700,
+  "date_completion": "2024-02-12T10:30:00Z"
+}
+
+### Récupérer les progressions de l'utilisateur
+GET {{baseUrl}}/learning/progress/user/6
+Authorization: Bearer {{authToken}}
+
+### ===== CERTIFICATIONS =====
+
+### Créer une certification pour un utilisateur ayant complété le parcours
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 6,
+  "parcours_id": 2,
+  "type_certification": "DEFENSE_PHISHING",
+  "date_emission": "2024-02-25T14:00:00Z",
+  "url_certification": "https://cybersecure-training.com/certifications/user6-phishing-defense.pdf"
+}
+
+### Récupérer les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user/6
+Authorization: Bearer {{authToken}}
+
+### ===== SCÉNARIO COMPLET: CAMPAGNE DE SENSIBILISATION =====
+
+### 1. Ajouter le parcours à plusieurs organisations
+POST {{baseUrl}}/learning/organisations/2/parcours/2
+Authorization: Bearer {{authToken}}
+
+###
+
+POST {{baseUrl}}/learning/organisations/3/parcours/2
+Authorization: Bearer {{authToken}}
+
+### 2. Créer des progressions pour plusieurs utilisateurs
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 7,
+  "module_id": 5,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 8,
+  "module_id": 5,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### 3. Simuler une campagne de test de phishing
+# Créer un contenu média spécial pour la campagne
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 6,
+  "type_contenu": "INTERACTIF",
+  "duree_minutes": 40,
+  "url_fichier": "https://cybersecure-training.com/simulations/phishing-campaign-simulation.html",
+  "nom_fichier": "phishing-campaign-simulation.html",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Identifier les Emails de Phishing/phishing-campaign-simulation.html",
+  "taille_fichier": 3145728,
+  "description": "Simulation d'une campagne de phishing permettant d'évaluer la réactivité des employés",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### 4. Récupérer les statistiques de la campagne pour une organisation
+GET {{baseUrl}}/organisations/2/stats
+Authorization: Bearer {{authToken}}
+
+### 5. Comparer les résultats entre organisations
+GET {{baseUrl}}/organisations/compare?org_ids=2,3&metric=phishing_awareness
+Authorization: Bearer {{authToken}}

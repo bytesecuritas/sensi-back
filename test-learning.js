@@ -10,9 +10,9 @@ async function testLearningModule() {
     // 1. Créer un parcours d'apprentissage
     console.log('1. Création d\'un parcours d\'apprentissage...');
     const learningPathData = {
-      titre: 'Formation Cybersécurité',
-      description: 'Parcours complet sur la cybersécurité pour débutants',
-      public_cible: 'debutant'
+      titre: 'Sensibilisation à la Cybersécurité en Entreprise',
+      description: 'Parcours complet de sensibilisation aux risques cyber pour les employés',
+      public_cible: 'ENTREPRISE'
     };
 
     const learningPathResponse = await axios.post(`${BASE_URL}/learning/parcours`, learningPathData);
@@ -22,13 +22,12 @@ async function testLearningModule() {
     // 2. Créer un module d'apprentissage
     console.log('\n2. Création d\'un module d\'apprentissage...');
     const moduleData = {
-      titre: 'Introduction à la cybersécurité',
-      description: 'Module d\'introduction aux concepts de base de la cybersécurité',
-      type_contenu: 'video',
+      titre: 'Reconnaître les emails de phishing',
+      description: 'Module d\'apprentissage sur la détection des emails frauduleux et les bonnes pratiques',
       code_langue: 'fr',
-      duree_minutes: 45,
       niveau_difficulte: 'facile',
-      parcours_id: learningPath.parcours_id
+      parcours_id: learningPath.parcours_id,
+      thematique_cyber: 'PHISHING'
     };
 
     const moduleResponse = await axios.post(`${BASE_URL}/learning/modules`, moduleData);
@@ -39,11 +38,14 @@ async function testLearningModule() {
     console.log('\n3. Création d\'un contenu média...');
     const mediaData = {
       module_id: learningModule.module_id,
-      type_media: 'video',
-      url_fichier: 'https://example.com/video-intro-cybersecurite.mp4',
-      nom_fichier: 'video-intro-cybersecurite.mp4',
+      type_contenu: 'VIDEO',
+      duree_minutes: 30,
+      url_fichier: 'https://example.com/video-phishing-awareness.mp4',
+      nom_fichier: 'phishing-awareness.mp4',
+      chemin_stockage: `src/resource/${learningPath.titre}/${learningModule.titre}/phishing-awareness.mp4`,
       taille_fichier: 52428800, // 50MB
-      description: 'Vidéo d\'introduction à la cybersécurité'
+      description: 'Vidéo de sensibilisation aux techniques de phishing et comment les détecter',
+      type_attaque: 'PHISHING_EMAIL'
     };
 
     const mediaResponse = await axios.post(`${BASE_URL}/learning/media`, mediaData);

@@ -12,16 +12,10 @@ export class OrganisationLearningPath {
   @JoinColumn({ name: 'organisation_id' })
   organisation: Organisation;
 
-  @Column({ type: 'bigint' })
-  organisation_id: number;
-
   // Relation avec le parcours d'apprentissage
   @ManyToOne(() => LearningPath, parcours => parcours.organisationParcours)
   @JoinColumn({ name: 'parcours_id' })
   parcours: LearningPath;
-
-  @Column({ type: 'bigint' })
-  parcours_id: number;
 
   // Date d'ajout du parcours à l'organisation (comme un panier)
   @CreateDateColumn({ type: 'timestamp' })

@@ -3,18 +3,6 @@ import { LearningPath } from './learning-path.entity';
 import { MediaContent } from './media-content.entity';
 import { Progress } from './progress.entity';
 
-export enum ContentType {
-  VIDEO = 'video',
-  PDF = 'pdf',
-  QUIZ = 'quiz',
-  INTERACTIF = 'interactif',
-  AUDIO = 'audio',
-  SIMULATION = 'simulation',       // Simulation d'attaques
-  JEU_SERIEUX = 'jeu_serieux',     // Serious games
-  BANDE_DESSINEE = 'bande_dessinee', // Pour les enfants
-  ETUDE_DE_CAS = 'etude_de_cas'    // Cas réels d'attaques
-}
-
 export enum DifficultyLevel {
   FACILE = 'facile',
   MOYEN = 'moyen',
@@ -49,13 +37,6 @@ export class LearningPathModule {
 
   @Column({ 
     type: 'enum', 
-    enum: ContentType,
-    default: ContentType.VIDEO
-  })
-  type_contenu: ContentType;
-
-  @Column({ 
-    type: 'enum', 
     enum: ['debutant', 'intermediaire', 'avance', 'tous'],
     default: 'tous'
   })
@@ -63,9 +44,6 @@ export class LearningPathModule {
 
   @Column({ type: 'char', length: 2 })
   code_langue: string;
-
-  @Column({ type: 'integer' })
-  duree_minutes: number;
 
   @Column({ 
     type: 'enum', 
@@ -91,9 +69,6 @@ export class LearningPathModule {
   @ManyToOne(() => LearningPath, parcours => parcours.modules)
   @JoinColumn({ name: 'parcours_id' })
   parcours: LearningPath;
-
-  @Column({ type: 'bigint' })
-  parcours_id: number;
 
   // Relation avec les contenus médias
   @OneToMany(() => MediaContent, media => media.module)

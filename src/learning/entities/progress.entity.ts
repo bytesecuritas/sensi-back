@@ -19,16 +19,10 @@ export class Progress {
   @JoinColumn({ name: 'utilisateur_id' })
   utilisateur: User;
 
-  @Column({ type: 'bigint' })
-  utilisateur_id: number;
-
   // Relation avec le module d'apprentissage
   @ManyToOne(() => LearningPathModule, module => module.progressions)
   @JoinColumn({ name: 'module_id' })
   module: LearningPathModule;
-
-  @Column({ type: 'bigint' })
-  module_id: number;
 
   @Column({ 
     type: 'enum', 

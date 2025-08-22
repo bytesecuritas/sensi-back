@@ -17,7 +17,7 @@ export class Organisation {
   @PrimaryGeneratedColumn()
   organisation_id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique:true })
   nom: string;
 
   @Column({ 

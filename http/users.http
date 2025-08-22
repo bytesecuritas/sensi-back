@@ -1,0 +1,23 @@
+@access_token = your_access
+@refresh_token = your_refresh
+
+### GET ALL USERS (admin ou superadmin)
+GET http://localhost:3000/users
+Authorization: Bearer {{access_token}}
+
+### GET USER BY ID
+GET http://localhost:3000/users/1
+Authorization: Bearer {{access_token}}
+
+### UPDATE USER
+PUT http://localhost:3000/users/1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "nom": "NomModifié"
+}
+
+### DELETE USER (admin ou superadmin)
+DELETE http://localhost:3000/users/2
+Authorization: Bearer {{access_token}}

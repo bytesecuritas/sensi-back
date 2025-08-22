@@ -15,8 +15,8 @@ async function testUserPermissions() {
     // 2. Connexion du SuperAdmin
     console.log('2. Connexion du SuperAdmin...');
     const superAdminLogin = await axios.post(`${BASE_URL}/auth/login`, {
-      email: 'superadmin@example.com', // Remplacer par l'email du SuperAdmin créé
-      password: 'password123' // Remplacer par le mot de passe du SuperAdmin créé
+      email: 'camara13fs@gmail.com', // Remplacer par l'email du SuperAdmin créé
+      password: 'admin123' // Remplacer par le mot de passe du SuperAdmin créé
     });
     console.log('✅ Connexion SuperAdmin réussie');
     const superAdminToken = superAdminLogin.data.access_token;

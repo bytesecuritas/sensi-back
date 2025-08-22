@@ -1,0 +1,30 @@
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTg2ODUzOSwiZXhwIjoxNzU1ODcyMTM5fQ.R_0QjGAD4vIwb-_Fotu1BicnHJg3Gy09PfLcZOOPIxY
+@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTg2ODUzOSwiZXhwIjoxNzU2NDczMzM5fQ.0g4TJRhhaV2uBJKJbfaApZFfeLw_TBqoJygAw91tx9c
+
+### LOGIN
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "camara13fs@gmail.com",
+  "password": "admin123"
+}
+
+### REGISTER (superadmin ou admin)
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "email": "newuser@example.com",
+  "password": "motdepasse123",
+  "nom": "Nouveau",
+  "prenom": "User",
+  "age": 25,
+  "role": "user",
+  "organisation_id": "1"
+}
+
+### GET PROFILE (utilisateur connecté)
+GET http://localhost:3000/auth/profile
+Authorization: Bearer {{access_token}}

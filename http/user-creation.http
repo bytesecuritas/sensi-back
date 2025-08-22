@@ -1,7 +1,6 @@
 ### Variables d'environnement
 @baseUrl = http://localhost:3000
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTEzMTEwMiwiZXhwIjoxNzU1MTM0NzAyfQ.CD6bOARrcZ7G4jCkCy3sn-LK_v5ElOmA7g3sQrIQWfc
-
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTc4Mjc1NywiZXhwIjoxNzU1Nzg2MzU3fQ.HRrKO_ITHUL55Ht2fJVNVIMo9UuwObDQyV736zk4xMQ
 ### 1. Authentification en tant que superadmin
 # @name login
 POST {{baseUrl}}/auth/login
@@ -20,7 +19,7 @@ Content-Type: application/json
 {
   "nom": "Organisation Test Utilisateurs",
   "type": "ENTREPRISE_PRIVEE",
-  "date_creation": "2025-01-15",
+  "date_creation": "2024-01-15",
   "code_pays": "GN"
 }
 
@@ -37,7 +36,7 @@ Content-Type: application/json
   "age": 25,
   "role": "user",
   "code_langue": "FR",
-  "organisation_id": "3"
+  "organisation_id": "1"
 }
 
 ### 4. Créer un admin avec organisation
@@ -53,7 +52,7 @@ Content-Type: application/json
   "age": 30,
   "role": "admin",
   "code_langue": "FR",
-  "organisation_id": "3"
+  "organisation_id": "1"
 }
 
 ### 5. Créer un superadmin (sans organisation)
@@ -67,7 +66,7 @@ Content-Type: application/json
   "nom": "Admin",
   "prenom": "Super",
   "age": 35,
-  "role": "superadmin",
+  "role": "SUPERADMIN",
   "code_langue": "FR"
 }
 
@@ -82,7 +81,7 @@ Content-Type: application/json
   "nom": "Test",
   "prenom": "User",
   "age": 25,
-  "role": "user",
+  "role": "USER",
   "code_langue": "FR"
 }
 
@@ -97,7 +96,7 @@ Content-Type: application/json
   "nom": "Test",
   "prenom": "User3",
   "age": 25,
-  "role": "user",
+  "role": "USER",
   "code_langue": "FR",
   "organisation_id": "999"
 }
@@ -113,16 +112,16 @@ Content-Type: application/json
   "nom": "Test",
   "prenom": "Admin",
   "age": 30,
-  "role": "admin",
+  "role": "ADMIN",
   "code_langue": "FR"
 }
 
 ### 9. Vérifier les utilisateurs d'une organisation
-GET {{baseUrl}}/organisations/3/users
+GET {{baseUrl}}/organisations/1/users
 Authorization: Bearer {{authToken}}
 
 ### 10. Obtenir les statistiques de l'organisation
-GET {{baseUrl}}/organisations/3/stats
+GET {{baseUrl}}/organisations/1/stats
 Authorization: Bearer {{authToken}}
 
 ### 11. Test d'erreur - Accès sans authentification
@@ -135,7 +134,7 @@ Content-Type: application/json
   "nom": "Test",
   "prenom": "User",
   "age": 25,
-  "role": "user",
+  "role": "USER",
   "organisation_id": "1"
 }
 

@@ -105,4 +105,12 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
+
+  // Exposer les repositories pour AuthService
+  get usersRepositoryInstance() {
+    return this.usersRepository;
+  }
+  get organisationsRepositoryInstance() {
+    return this.organisationsRepository;
+  }
 }

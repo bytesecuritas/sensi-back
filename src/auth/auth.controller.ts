@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, HttpException, HttpStatus, Get, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { IsEmail, IsString, MinLength, IsNotEmpty, IsNumber, IsOptional, Min } from 'class-validator';
@@ -78,6 +78,7 @@ export class AuthController {
       if (!user) {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
+      // Retourne access_token et refresh_token
       return this.authService.login(user);
     } catch (error) {
       if (error instanceof HttpException) {
@@ -85,5 +86,15 @@ export class AuthController {
       }
       throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Get('profile')
+  @UseGuards(AuthGuard('jwt'))
+  async getProfile(@Request() req) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
+    }
+    return await this.authService.getProfile(userId);
   }
 }

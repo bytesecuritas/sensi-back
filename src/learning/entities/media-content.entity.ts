@@ -1,13 +1,16 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { LearningPathModule } from './learning-module.entity';
 
-export enum MediaType {
-  VIDEO = 'video',
-  PDF = 'pdf',
-  IMAGE = 'image',
-  AUDIO = 'audio',
-  DOCUMENT = 'document',
-  PRESENTATION = 'presentation'
+export enum ContentType {
+  VIDEO = 'video',               // Contenu vidéo explicatif
+  PDF = 'pdf',                  // Document PDF
+  QUIZ = 'quiz',                // Questionnaire interactif
+  INTERACTIF = 'interactif',    // Contenu nécessitant une interaction
+  AUDIO = 'audio',              // Contenu audio uniquement
+  SIMULATION = 'simulation',    // Simulation d'attaques
+  JEU_SERIEUX = 'jeu_serieux',  // Serious games
+  BANDE_DESSINEE = 'bande_dessinee', // Pour les enfants
+  ETUDE_DE_CAS = 'etude_de_cas' // Cas réels d'attaques
 }
 
 export enum AttackType {
@@ -31,21 +34,24 @@ export class MediaContent {
   @JoinColumn({ name: 'module_id' })
   module: LearningPathModule;
 
-  @Column({ type: 'bigint' })
-  module_id: number;
-
   @Column({ 
     type: 'enum', 
-    enum: MediaType,
-    default: MediaType.VIDEO
+    enum: ContentType,
+    default: ContentType.VIDEO
   })
-  type_media: MediaType;
+  type_contenu: ContentType;
+  
+  @Column({ type: 'integer' })
+  duree_minutes: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  url_fichier: string;
+  @Column({ type: 'varchar', length: 255, nullable:true })
+  url_fichier: string; // URL externe du contenu (si hébergé en dehors du serveur)
 
   @Column({ type: 'varchar', length: 255 })
   nom_fichier: string;
+  
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  chemin_stockage: string; // Chemin local sur le serveur: src/resource/[nom_parcours]/[nom_module]/[nom_fichier]
 
   @Column({ type: 'bigint' })
   taille_fichier: number;

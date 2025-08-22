@@ -1,0 +1,325 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = your_auth_token_here
+
+### ===== AUTHENTIFICATION =====
+
+### Connexion en tant qu'administrateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### ===== PARCOURS D'APPRENTISSAGE SUR LA PROTECTION DES DONNÉES =====
+
+### Créer un parcours sur la protection des données et la vie privée
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Protection des Données et Vie Privée",
+  "description": "Parcours complet pour comprendre les enjeux de la protection des données personnelles et les bonnes pratiques à adopter",
+  "public_cible": "ENTREPRISE",
+  "niveau_global": "INTERMEDIAIRE",
+  "duree_estimee_heures": 6
+}
+
+### Récupérer le parcours créé
+GET {{baseUrl}}/learning/parcours/5
+Authorization: Bearer {{authToken}}
+
+### ===== MODULES D'APPRENTISSAGE =====
+
+### Créer un module sur les principes du RGPD
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Principes Fondamentaux du RGPD",
+  "description": "Module expliquant les principes clés du Règlement Général sur la Protection des Données",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 5,
+  "thematique_cyber": "DATA_PRIVACY",
+  "duree_minutes": 75,
+  "objectifs_apprentissage": "Comprendre les principes fondamentaux du RGPD et leurs implications pour les entreprises"
+}
+
+### Créer un module sur la classification des données
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Classification et Protection des Données Sensibles",
+  "description": "Module sur l'identification et la protection des différentes catégories de données sensibles",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 5,
+  "thematique_cyber": "DATA_CLASSIFICATION",
+  "duree_minutes": 60,
+  "objectifs_apprentissage": "Savoir identifier et classifier les données sensibles, mettre en place des mesures de protection adaptées"
+}
+
+### Créer un module sur les fuites de données
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Prévention et Gestion des Fuites de Données",
+  "description": "Module sur les causes des fuites de données et les mesures préventives",
+  "code_langue": "fr",
+  "niveau_difficulte": "AVANCE",
+  "parcours_id": 5,
+  "thematique_cyber": "DATA_BREACH",
+  "duree_minutes": 90,
+  "objectifs_apprentissage": "Comprendre les causes des fuites de données, mettre en place des mesures préventives et un plan de réponse"
+}
+
+### Créer un module sur le chiffrement des données
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Chiffrement et Sécurisation des Données",
+  "description": "Module sur les techniques de chiffrement et leur mise en œuvre",
+  "code_langue": "fr",
+  "niveau_difficulte": "AVANCE",
+  "parcours_id": 5,
+  "thematique_cyber": "ENCRYPTION",
+  "duree_minutes": 80,
+  "objectifs_apprentissage": "Comprendre les principes du chiffrement et savoir mettre en œuvre des solutions de protection des données"
+}
+
+### Récupérer les modules du parcours
+GET {{baseUrl}}/learning/parcours/5/modules
+Authorization: Bearer {{authToken}}
+
+### ===== CONTENUS MÉDIAS =====
+
+### Créer un contenu vidéo sur les principes du RGPD
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 17,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 30,
+  "url_fichier": "https://cybersecure-training.com/videos/gdpr-principles.mp4",
+  "nom_fichier": "gdpr-principles.mp4",
+  "chemin_stockage": "src/resource/Protection des Données et Vie Privée/Principes Fondamentaux du RGPD/gdpr-principles.mp4",
+  "taille_fichier": 62914560,
+  "description": "Vidéo explicative sur les principes fondamentaux du RGPD et leurs implications",
+  "type_attaque": "DATA_PRIVACY"
+}
+
+### Créer un guide sur la classification des données
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 18,
+  "type_contenu": "DOCUMENT",
+  "duree_minutes": 25,
+  "url_fichier": "https://cybersecure-training.com/documents/data-classification-guide.pdf",
+  "nom_fichier": "data-classification-guide.pdf",
+  "chemin_stockage": "src/resource/Protection des Données et Vie Privée/Classification et Protection des Données Sensibles/data-classification-guide.pdf",
+  "taille_fichier": 4194304,
+  "description": "Guide complet sur la classification des données et les mesures de protection adaptées",
+  "type_attaque": "DATA_LEAKAGE"
+}
+
+### Créer une étude de cas sur les fuites de données
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 19,
+  "type_contenu": "ETUDE_DE_CAS",
+  "duree_minutes": 40,
+  "url_fichier": "https://cybersecure-training.com/case-studies/data-breach-analysis.html",
+  "nom_fichier": "data-breach-analysis.html",
+  "chemin_stockage": "src/resource/Protection des Données et Vie Privée/Prévention et Gestion des Fuites de Données/data-breach-analysis.html",
+  "taille_fichier": 3145728,
+  "description": "Étude de cas détaillée sur des incidents majeurs de fuites de données et les leçons à en tirer",
+  "type_attaque": "DATA_BREACH"
+}
+
+### Créer un tutoriel sur le chiffrement des données
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 20,
+  "type_contenu": "TUTORIEL",
+  "duree_minutes": 35,
+  "url_fichier": "https://cybersecure-training.com/tutorials/data-encryption-guide.html",
+  "nom_fichier": "data-encryption-guide.html",
+  "chemin_stockage": "src/resource/Protection des Données et Vie Privée/Chiffrement et Sécurisation des Données/data-encryption-guide.html",
+  "taille_fichier": 2097152,
+  "description": "Tutoriel pratique sur la mise en œuvre de solutions de chiffrement pour protéger les données sensibles",
+  "type_attaque": "DATA_THEFT"
+}
+
+### Récupérer les contenus média d'un module
+GET {{baseUrl}}/learning/modules/17/media
+Authorization: Bearer {{authToken}}
+
+### ===== PROGRESSIONS =====
+
+### Créer une progression pour un utilisateur
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 16,
+  "module_id": 17,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### Mettre à jour une progression après complétion d'un module
+PUT {{baseUrl}}/learning/progress/35
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 88,
+  "temps_passe": 4500,
+  "date_completion": "2024-02-22T14:15:00Z"
+}
+
+### Récupérer les progressions de l'utilisateur
+GET {{baseUrl}}/learning/progress/user/16
+Authorization: Bearer {{authToken}}
+
+### ===== CERTIFICATIONS =====
+
+### Créer une certification pour un utilisateur ayant complété le parcours
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 16,
+  "parcours_id": 5,
+  "type_certification": "DATA_PROTECTION_SPECIALIST",
+  "date_emission": "2024-03-05T10:00:00Z",
+  "url_certification": "https://cybersecure-training.com/certifications/user16-data-protection.pdf"
+}
+
+### Récupérer les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user/16
+Authorization: Bearer {{authToken}}
+
+### ===== SCÉNARIO COMPLET: AUDIT DE CONFORMITÉ RGPD =====
+
+### 1. Ajouter le parcours à une organisation
+POST {{baseUrl}}/learning/organisations/6/parcours/5
+Authorization: Bearer {{authToken}}
+
+### 2. Créer un contenu média spécial pour l'audit RGPD
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 17,
+  "type_contenu": "OUTIL",
+  "duree_minutes": 60,
+  "url_fichier": "https://cybersecure-training.com/tools/gdpr-compliance-audit.html",
+  "nom_fichier": "gdpr-compliance-audit.html",
+  "chemin_stockage": "src/resource/Protection des Données et Vie Privée/Principes Fondamentaux du RGPD/gdpr-compliance-audit.html",
+  "taille_fichier": 5242880,
+  "description": "Outil d'audit permettant d'évaluer la conformité d'une organisation au RGPD",
+  "type_attaque": "COMPLIANCE"
+}
+
+### 3. Créer des progressions pour l'équipe juridique et DPO
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 17,
+  "module_id": 17,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 18,
+  "module_id": 17,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### 4. Mettre à jour les progressions après l'audit
+PUT {{baseUrl}}/learning/progress/40
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 95,
+  "temps_passe": 3600,
+  "date_completion": "2024-03-10T16:45:00Z"
+}
+
+###
+
+PUT {{baseUrl}}/learning/progress/41
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 92,
+  "temps_passe": 3600,
+  "date_completion": "2024-03-10T16:45:00Z"
+}
+
+### 5. Obtenir un rapport d'audit de conformité RGPD
+GET {{baseUrl}}/organisations/6/gdpr-compliance-audit
+Authorization: Bearer {{authToken}}
+
+### 6. Mettre en place un plan d'action basé sur l'audit
+POST {{baseUrl}}/organisations/6/compliance-action-plan
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "category": "GDPR_COMPLIANCE",
+  "actions": [
+    "Mettre à jour les politiques de confidentialité",
+    "Implémenter un système de gestion des consentements",
+    "Former tous les employés aux principes du RGPD",
+    "Mettre en place un registre des traitements de données"
+  ],
+  "priority": "HIGH",
+  "implementation_deadline": "2024-04-15T00:00:00Z",
+  "responsible_person": "DPO"
+}

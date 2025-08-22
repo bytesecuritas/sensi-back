@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { ContentType, DifficultyLevel } from '../entities/learning-module.entity';
+import { DifficultyLevel, ThematiqueCyber } from '../entities/learning-module.entity';
 
 export class CreateLearningModuleDto {
   @IsString()
@@ -10,10 +10,6 @@ export class CreateLearningModuleDto {
   @IsNotEmpty()
   description: string;
 
-  @IsEnum(ContentType)
-  @IsOptional()
-  type_contenu?: ContentType;
-
   @IsString()
   @IsOptional()
   public_cible?: string;
@@ -22,13 +18,13 @@ export class CreateLearningModuleDto {
   @IsNotEmpty()
   code_langue: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  duree_minutes: number;
-
   @IsEnum(DifficultyLevel)
   @IsOptional()
   niveau_difficulte?: DifficultyLevel;
+
+  @IsEnum(ThematiqueCyber)
+  @IsOptional()
+  thematique_cyber?: ThematiqueCyber;
 
   @IsNumber()
   @IsNotEmpty()

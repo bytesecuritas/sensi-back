@@ -1,0 +1,339 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = your_auth_token_here
+
+### ===== AUTHENTIFICATION =====
+
+### Connexion en tant qu'administrateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### ===== PARCOURS D'APPRENTISSAGE SUR L'INGÉNIERIE SOCIALE =====
+
+### Créer un parcours sur l'ingénierie sociale
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Défense contre l'Ingénierie Sociale",
+  "description": "Parcours complet pour comprendre et se protéger contre les techniques d'ingénierie sociale",
+  "public_cible": "ENTREPRISE",
+  "niveau_global": "INTERMEDIAIRE",
+  "duree_estimee_heures": 6
+}
+
+### Récupérer le parcours créé
+GET {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{authToken}}
+
+### ===== MODULES D'APPRENTISSAGE =====
+
+### Créer un module sur les principes de l'ingénierie sociale
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Principes Fondamentaux de l'Ingénierie Sociale",
+  "description": "Module expliquant les concepts de base de l'ingénierie sociale et les principes psychologiques exploités",
+  "code_langue": "fr",
+  "niveau_difficulte": "FACILE",
+  "parcours_id": 1,
+  "thematique_cyber": "SOCIAL_ENGINEERING",
+  "duree_minutes": 60,
+  "objectifs_apprentissage": "Comprendre les mécanismes psychologiques exploités par l'ingénierie sociale"
+}
+
+### Créer un module sur les attaques par téléphone (vishing)
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Reconnaître et Contrer le Vishing",
+  "description": "Module sur les techniques d'arnaque par téléphone et les moyens de s'en protéger",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 1,
+  "thematique_cyber": "SOCIAL_ENGINEERING",
+  "duree_minutes": 45,
+  "objectifs_apprentissage": "Identifier les signes d'une tentative de vishing, apprendre les protocoles de vérification"
+}
+
+### Créer un module sur les attaques par SMS (smishing)
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Détecter et Éviter le Smishing",
+  "description": "Module sur les arnaques par SMS et les bonnes pratiques pour s'en protéger",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 1,
+  "thematique_cyber": "SOCIAL_ENGINEERING",
+  "duree_minutes": 30,
+  "objectifs_apprentissage": "Reconnaître les SMS frauduleux, comprendre les risques associés aux liens dans les SMS"
+}
+
+### Créer un module sur la manipulation psychologique
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Techniques de Manipulation Psychologique",
+  "description": "Module avancé sur les techniques de persuasion et de manipulation utilisées par les attaquants",
+  "code_langue": "fr",
+  "niveau_difficulte": "AVANCE",
+  "parcours_id": 1,
+  "thematique_cyber": "SOCIAL_ENGINEERING",
+  "duree_minutes": 90,
+  "objectifs_apprentissage": "Comprendre les principes d'autorité, de réciprocité, de rareté et d'urgence exploités par les attaquants"
+}
+
+### Récupérer les modules du parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{authToken}}
+
+### ===== CONTENUS MÉDIAS =====
+
+### Créer un contenu vidéo sur les principes de l'ingénierie sociale
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 25,
+  "url_fichier": "https://cybersecure-training.com/videos/social-engineering-basics.mp4",
+  "nom_fichier": "social-engineering-basics.mp4",
+  "chemin_stockage": "src/resource/Défense contre l'Ingénierie Sociale/Principes Fondamentaux de l'Ingénierie Sociale/social-engineering-basics.mp4",
+  "taille_fichier": 62914560,
+  "description": "Vidéo explicative sur les principes fondamentaux de l'ingénierie sociale et les mécanismes psychologiques exploités",
+  "type_attaque": "SOCIAL_ENGINEERING"
+}
+
+### Créer une simulation de vishing
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 2,
+  "type_contenu": "AUDIO",
+  "duree_minutes": 15,
+  "url_fichier": "https://cybersecure-training.com/audio/vishing-simulation.mp3",
+  "nom_fichier": "vishing-simulation.mp3",
+  "chemin_stockage": "src/resource/Défense contre l'Ingénierie Sociale/Reconnaître et Contrer le Vishing/vishing-simulation.mp3",
+  "taille_fichier": 15728640,
+  "description": "Simulation audio d'un appel de vishing permettant d'identifier les techniques de manipulation utilisées",
+  "type_attaque": "VISHING"
+}
+
+### Créer un quiz interactif sur le smishing
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 3,
+  "type_contenu": "QUIZ",
+  "duree_minutes": 20,
+  "url_fichier": "https://cybersecure-training.com/quiz/smishing-detection-quiz.json",
+  "nom_fichier": "smishing-detection-quiz.json",
+  "chemin_stockage": "src/resource/Défense contre l'Ingénierie Sociale/Détecter et Éviter le Smishing/smishing-detection-quiz.json",
+  "taille_fichier": 1048576,
+  "description": "Quiz interactif pour tester sa capacité à identifier les SMS frauduleux",
+  "type_attaque": "SMISHING"
+}
+
+### Créer une étude de cas sur la manipulation psychologique
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 4,
+  "type_contenu": "ETUDE_DE_CAS",
+  "duree_minutes": 40,
+  "url_fichier": "https://cybersecure-training.com/case-studies/psychological-manipulation-case.pdf",
+  "nom_fichier": "psychological-manipulation-case.pdf",
+  "chemin_stockage": "src/resource/Défense contre l'Ingénierie Sociale/Techniques de Manipulation Psychologique/psychological-manipulation-case.pdf",
+  "taille_fichier": 8388608,
+  "description": "Étude de cas détaillée d'une attaque réelle utilisant des techniques avancées de manipulation psychologique",
+  "type_attaque": "SOCIAL_ENGINEERING"
+}
+
+### Récupérer les contenus média d'un module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{authToken}}
+
+### ===== PROGRESSIONS =====
+
+### Créer une progression pour un utilisateur
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 3,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### Mettre à jour une progression après complétion d'un module
+PUT {{baseUrl}}/learning/progress/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 88,
+  "temps_passe": 3600,
+  "date_completion": "2024-02-10T15:45:00Z"
+}
+
+### Récupérer les progressions de l'utilisateur
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{authToken}}
+
+### ===== CERTIFICATIONS =====
+
+### Créer une certification pour un utilisateur ayant complété le parcours
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 3,
+  "parcours_id": 1,
+  "type_certification": "DEFENSE_INGENIERIE_SOCIALE",
+  "date_emission": "2024-02-20T10:00:00Z",
+  "url_certification": "https://cybersecure-training.com/certifications/user3-social-engineering-defense.pdf"
+}
+
+### Récupérer les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user
+Authorization: Bearer {{authToken}}
+
+### ===== SCÉNARIO COMPLET: FORMATION D'UNE ÉQUIPE =====
+
+### 1. Ajouter le parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{authToken}}
+
+### 2. Créer plusieurs progressions pour différents utilisateurs
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 4,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 5,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### 3. Simuler la complétion du parcours par un utilisateur
+# Mettre à jour la progression du module 1
+PUT {{baseUrl}}/learning/progress/2
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 95,
+  "temps_passe": 3600,
+  "date_completion": "2024-02-15T09:30:00Z"
+}
+
+###
+
+# Créer une progression pour le module 2
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 4,
+  "module_id": 2,
+  "statut": "TERMINE",
+  "score": 90,
+  "temps_passe": 2700,
+  "date_completion": "2024-02-16T14:00:00Z"
+}
+
+###
+
+# Créer une progression pour le module 3
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 4,
+  "module_id": 3,
+  "statut": "TERMINE",
+  "score": 85,
+  "temps_passe": 1800,
+  "date_completion": "2024-02-17T11:15:00Z"
+}
+
+###
+
+# Créer une progression pour le module 4
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 4,
+  "module_id": 4,
+  "statut": "TERMINE",
+  "score": 88,
+  "temps_passe": 5400,
+  "date_completion": "2024-02-18T16:45:00Z"
+}
+
+### 4. Créer une certification pour l'utilisateur ayant complété le parcours
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 4,
+  "parcours_id": 1,
+  "type_certification": "DEFENSE_INGENIERIE_SOCIALE",
+  "date_emission": "2024-02-20T10:00:00Z",
+  "url_certification": "https://cybersecure-training.com/certifications/user4-social-engineering-defense.pdf"
+}
+
+### 5. Obtenir les statistiques de progression pour l'organisation
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{authToken}}

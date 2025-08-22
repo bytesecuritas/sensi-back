@@ -1,0 +1,382 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = your_auth_token_here
+
+### ===== AUTHENTIFICATION =====
+
+### Connexion en tant qu'administrateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### ===== ORGANISATIONS =====
+
+### Créer une organisation spécialisée en cybersécurité
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "CyberSecure Solutions",
+  "type": "ENTREPRISE_PRIVEE",
+  "date_creation": "2023-05-15",
+  "code_pays": "FR",
+  "description": "Entreprise spécialisée dans la formation et la sensibilisation à la cybersécurité"
+}
+
+### ===== UTILISATEURS =====
+
+### Créer un utilisateur formateur en cybersécurité
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "formateur@cybersecure.com",
+  "password": "SecurePass123!",
+  "nom": "Dubois",
+  "prenom": "Marie",
+  "age": 35,
+  "role": "ADMIN",
+  "code_langue": "FR",
+  "organisation_id": "1",
+  "specialite": "Sensibilisation Phishing"
+}
+
+### Créer un utilisateur apprenant
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "email": "apprenant@entreprise.com",
+  "password": "LearnSafe2023",
+  "nom": "Leroy",
+  "prenom": "Thomas",
+  "age": 28,
+  "role": "USER",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+### ===== PARCOURS D'APPRENTISSAGE =====
+
+### Créer un parcours sur la sensibilisation au phishing
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Détection et Prévention du Phishing",
+  "description": "Parcours complet pour apprendre à identifier et se protéger contre les attaques de phishing",
+  "public_cible": "ENTREPRISE",
+  "niveau_global": "DEBUTANT",
+  "duree_estimee_heures": 5
+}
+
+### Créer un parcours sur la sécurité des mots de passe
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Gestion Sécurisée des Mots de Passe",
+  "description": "Parcours pour comprendre l'importance des mots de passe forts et apprendre à les gérer efficacement",
+  "public_cible": "GRAND_PUBLIC",
+  "niveau_global": "DEBUTANT",
+  "duree_estimee_heures": 3
+}
+
+### Récupérer tous les parcours
+GET {{baseUrl}}/learning/parcours
+Authorization: Bearer {{authToken}}
+
+### ===== MODULES D'APPRENTISSAGE =====
+
+### Créer un module sur les bases du phishing
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Comprendre les Mécanismes du Phishing",
+  "description": "Module expliquant les principes fondamentaux des attaques de phishing et leur fonctionnement",
+  "code_langue": "fr",
+  "niveau_difficulte": "FACILE",
+  "parcours_id": 1,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 60,
+  "objectifs_apprentissage": "Comprendre les mécanismes du phishing, identifier les différents types d'attaques"
+}
+
+### Créer un module sur la détection des emails frauduleux
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Identifier les Emails de Phishing",
+  "description": "Module pratique pour apprendre à repérer les indices révélateurs d'un email frauduleux",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 1,
+  "thematique_cyber": "PHISHING",
+  "duree_minutes": 90,
+  "objectifs_apprentissage": "Analyser les en-têtes d'emails, repérer les fautes d'orthographe, identifier les URL suspectes"
+}
+
+### Créer un module sur les mots de passe sécurisés
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Créer et Gérer des Mots de Passe Forts",
+  "description": "Module sur les bonnes pratiques de création et de gestion des mots de passe",
+  "code_langue": "fr",
+  "niveau_difficulte": "FACILE",
+  "parcours_id": 2,
+  "thematique_cyber": "PASSWORD_SECURITY",
+  "duree_minutes": 45,
+  "objectifs_apprentissage": "Comprendre les critères d'un mot de passe fort, apprendre à utiliser un gestionnaire de mots de passe"
+}
+
+### Récupérer les modules d'un parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{authToken}}
+
+### ===== CONTENUS MÉDIAS =====
+
+### Créer un contenu vidéo avec upload de fichier
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 20,
+  "description": "Vidéo explicative sur les principes fondamentaux du phishing et les techniques utilisées par les attaquants",
+  "type_attaque": "PHISHING_EMAIL",
+  "file": "@/path/to/phishing-basics.mp4"
+}
+
+### Créer un contenu vidéo sur le phishing (URL externe)
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 20,
+  "url_fichier": "https://cybersecure-training.com/videos/phishing-basics.mp4",
+  "nom_fichier": "phishing-basics.mp4",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Comprendre les Mécanismes du Phishing/phishing-basics.mp4",
+  "taille_fichier": 52428800,
+  "description": "Vidéo explicative sur les principes fondamentaux du phishing et les techniques utilisées par les attaquants",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Créer un contenu interactif sur la détection d'emails frauduleux
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 2,
+  "type_contenu": "INTERACTIF",
+  "duree_minutes": 30,
+  "url_fichier": "https://cybersecure-training.com/interactifs/phishing-email-detection.html",
+  "nom_fichier": "phishing-email-detection.html",
+  "chemin_stockage": "src/resource/Détection et Prévention du Phishing/Identifier les Emails de Phishing/phishing-email-detection.html",
+  "taille_fichier": 2097152,
+  "description": "Exercice interactif permettant de s'entraîner à identifier les emails de phishing à travers des exemples réels",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Créer un contenu quiz sur les mots de passe
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 3,
+  "type_contenu": "QUIZ",
+  "duree_minutes": 15,
+  "url_fichier": "https://cybersecure-training.com/quiz/password-security-quiz.json",
+  "nom_fichier": "password-security-quiz.json",
+  "chemin_stockage": "src/resource/Gestion Sécurisée des Mots de Passe/Créer et Gérer des Mots de Passe Forts/password-security-quiz.json",
+  "taille_fichier": 512000,
+  "description": "Quiz pour tester ses connaissances sur les bonnes pratiques de création et de gestion des mots de passe"
+}
+
+### Récupérer les contenus média d'un module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{authToken}}
+
+### ===== PROGRESSIONS =====
+
+### Créer une progression pour un utilisateur
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 3,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### Mettre à jour une progression
+PUT {{baseUrl}}/learning/progress/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "statut": "TERMINE",
+  "score": 92.5,
+  "temps_passe": 1800,
+  "date_completion": "2024-01-20T14:30:00Z"
+}
+
+### Récupérer les progressions de l'utilisateur
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{authToken}}
+
+### ===== CERTIFICATIONS =====
+
+### Créer une certification pour un utilisateur
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "utilisateur_id": 3,
+  "parcours_id": 1,
+  "type_certification": "SENSIBILISATION_PHISHING",
+  "date_emission": "2024-01-25T10:00:00Z",
+  "url_certification": "https://cybersecure-training.com/certifications/user3-phishing-awareness.pdf"
+}
+
+### Récupérer les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user
+Authorization: Bearer {{authToken}}
+
+### ===== GESTION DES PARCOURS PAR ORGANISATION =====
+
+### Ajouter un parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{authToken}}
+
+### Récupérer les parcours d'une organisation
+GET {{baseUrl}}/learning/organisations/1/parcours
+Authorization: Bearer {{authToken}}
+
+### ===== SCÉNARIOS COMPLETS =====
+
+### Scénario 1: Création d'un parcours complet sur la protection contre les ransomwares
+
+# 1. Créer le parcours
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Protection contre les Ransomwares",
+  "description": "Parcours complet pour comprendre, prévenir et réagir face aux attaques par ransomware",
+  "public_cible": "ENTREPRISE",
+  "niveau_global": "INTERMEDIAIRE",
+  "duree_estimee_heures": 8
+}
+
+###
+
+# 2. Créer le premier module
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Comprendre les Ransomwares",
+  "description": "Module expliquant le fonctionnement des ransomwares et leur évolution",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 3,
+  "thematique_cyber": "MALWARE",
+  "duree_minutes": 60
+}
+
+###
+
+# 3. Créer le contenu média pour le premier module
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 4,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 25,
+  "url_fichier": "https://cybersecure-training.com/videos/ransomware-explained.mp4",
+  "nom_fichier": "ransomware-explained.mp4",
+  "chemin_stockage": "src/resource/Protection contre les Ransomwares/Comprendre les Ransomwares/ransomware-explained.mp4",
+  "taille_fichier": 78643200,
+  "description": "Vidéo explicative sur le fonctionnement des ransomwares, leur cycle d'infection et leurs impacts",
+  "type_attaque": "MALWARE"
+}
+
+###
+
+# 4. Créer le deuxième module
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "titre": "Prévention des Ransomwares",
+  "description": "Module sur les mesures préventives contre les ransomwares",
+  "code_langue": "fr",
+  "niveau_difficulte": "MOYEN",
+  "parcours_id": 3,
+  "thematique_cyber": "MALWARE",
+  "duree_minutes": 90
+}
+
+###
+
+# 5. Créer le contenu média pour le deuxième module
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+
+{
+  "module_id": 5,
+  "type_contenu": "INTERACTIF",
+  "duree_minutes": 45,
+  "url_fichier": "https://cybersecure-training.com/interactifs/ransomware-prevention.html",
+  "nom_fichier": "ransomware-prevention.html",
+  "chemin_stockage": "src/resource/Protection contre les Ransomwares/Prévention des Ransomwares/ransomware-prevention.html",
+  "taille_fichier": 3145728,
+  "description": "Simulation interactive permettant d'apprendre à identifier et bloquer les vecteurs d'infection par ransomware",
+  "type_attaque": "MALWARE"
+}
+
+###
+
+# 6. Ajouter le parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/3
+Authorization: Bearer {{authToken}}
+
+###
+
+# 7. Récupérer le parcours complet avec tous ses modules et contenus
+GET {{baseUrl}}/learning/parcours/3
+Authorization: Bearer {{authToken}}

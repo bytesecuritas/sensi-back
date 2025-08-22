@@ -1,0 +1,400 @@
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTgyMTUzNywiZXhwIjoxNzU1ODI1MTM3fQ.kVjvcCFPQr1JPkp8Sx0ejc586GlzZGVqV_MZgUlz38I
+
+### ===== PARCOURS D'APPRENTISSAGE =====
+
+### Créer un parcours d'apprentissage
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+
+{
+  "titre": "Sensibilisation aux Cybermenaces en Entreprise",
+  "description": "Parcours complet de sensibilisation aux risques cybernétiques pour tous les employés",
+  "public_cible": "entreprise"
+}
+
+### Récupérer tous les parcours
+GET {{baseUrl}}/learning/parcours
+
+### Récupérer un parcours par ID
+GET {{baseUrl}}/learning/parcours/1
+
+### Récupérer les parcours disponibles pour l'utilisateur connecté
+GET {{baseUrl}}/learning/parcours/user/available
+Authorization: Bearer {{authToken}}
+
+### ===== MODULES D'APPRENTISSAGE =====
+
+### Créer un module d'apprentissage
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+
+{
+  "titre": "Reconnaître et Éviter le Phishing",
+  "description": "Module d'apprentissage sur la détection des tentatives de phishing et les bonnes pratiques pour s'en protéger",
+  "code_langue": "fr",
+  "niveau_difficulte": "moyen",
+  "parcours_id": 1,
+  "thematique_cyber": "phishing"
+}
+
+### Récupérer les modules d'un parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+
+### ===== CONTENUS MÉDIAS =====
+
+### Créer un contenu média avec upload de fichier
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+
+{
+  "module_id": 1,
+  "type_contenu": "video",
+  "duree_minutes": 45,
+  "description": "Vidéo explicative sur la détection des emails de phishing et les techniques utilisées par les attaquants",
+  "type_attaque": "phishing_email",
+  "file": "@/path/to/phishing-detection.mp4"
+}
+
+### Créer un contenu média sans upload (URL externe)
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 45,
+  "url_fichier": "https://example.com/video-phishing-detection.mp4",
+  "nom_fichier": "phishing-detection.mp4",
+  "chemin_stockage": "src/resource/Formation Cybersécurité Avancée/Introduction aux Menaces Avancées/phishing-detection.mp4",
+  "taille_fichier": 104857600,
+  "description": "Vidéo explicative sur la détection des emails de phishing et les techniques utilisées par les attaquants",
+  "type_attaque": "PHISHING_EMAIL"
+}
+
+### Récupérer les contenus média d'un module
+GET {{baseUrl}}/learning/modules/1/media
+
+### Mettre à jour un contenu média avec upload de fichier
+PUT {{baseUrl}}/learning/media/1/upload
+Content-Type: multipart/form-data
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 50,
+  "description": "Vidéo mise à jour sur la détection des emails de phishing",
+  "type_attaque": "PHISHING_EMAIL",
+  "file": "@/path/to/updated-phishing-detection.mp4"
+}
+
+### ===== PROGRESSIONS =====
+
+### Créer une progression
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+
+{
+  "utilisateur_id": 3,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+### Mettre à jour une progression
+PUT {{baseUrl}}/learning/progress/1
+Content-Type: application/json
+
+{
+  "statut": "TERMINE",
+  "score": 85.5,
+  "temps_passe": 3600,
+  "date_completion": "2024-01-15T10:30:00Z"
+}
+
+### Récupérer les progressions de l'utilisateur connecté
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{authToken}}
+
+### Récupérer la progression d'un module spécifique
+GET {{baseUrl}}/learning/progress/user/1
+Authorization: Bearer {{authToken}}
+
+### ===== CERTIFICATIONS =====
+
+### Créer une certification
+POST {{baseUrl}}/learning/certifications
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "type_certification": "SENSIBILISATION_BASIQUE",
+  "date_emission": "2024-01-15T10:30:00Z",
+  "url_certification": "https://example.com/certifications/user1-parcours1.pdf"
+}
+
+### Récupérer les certifications de l'utilisateur connecté
+GET {{baseUrl}}/learning/certifications/user
+Authorization: Bearer {{authToken}}
+
+### ===== GESTION DES PARCOURS PAR ORGANISATION =====
+
+### Ajouter un parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+
+### Récupérer les parcours d'une organisation
+GET {{baseUrl}}/learning/organisations/1/parcours
+
+### Retirer un parcours d'une organisation
+DELETE {{baseUrl}}/learning/organisations/1/parcours/1
+
+### ===== VÉRIFICATION D'ACCÈS =====
+
+### Vérifier si l'utilisateur a accès à un parcours
+GET {{baseUrl}}/learning/access/check/1
+Authorization: Bearer {{authToken}}
+
+### ===== EXEMPLES DE DONNÉES COMPLÈTES =====
+
+### Créer un parcours complet avec modules et contenus
+# 1. Créer le parcours
+POST {{baseUrl}}/learning/parcours
+Content-Type: application/json
+
+{
+  "titre": "Cybersécurité pour Tous",
+  "description": "Parcours de sensibilisation aux bonnes pratiques de cybersécurité pour le grand public",
+  "public_cible": "grand_public"
+}
+
+###
+
+# 2. Créer le premier module
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+
+{
+  "titre": "Navigation Sécurisée sur Internet",
+  "description": "Apprendre à naviguer en toute sécurité et à identifier les sites web frauduleux",
+  "code_langue": "fr",
+  "niveau_difficulte": "facile",
+  "parcours_id": 2,
+  "thematique_cyber": "secure_browsing"
+}
+
+###
+
+# 3. Créer le contenu média pour le premier module
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+
+{
+  "module_id": 1,
+  "type_contenu": "VIDEO",
+  "duree_minutes": 30,
+  "url_fichier": "https://example.com/videos/fake-website-detection.mp4",
+  "nom_fichier": "fake-website-detection.mp4",
+  "chemin_stockage": "src/resource/Sensibilisation à la Cybersécurité/Bases de la Cybersécurité/fake-website-detection.mp4",
+  "taille_fichier": 52428800,
+  "description": "Vidéo montrant comment identifier les sites web frauduleux et les techniques de sécurité à appliquer",
+  "type_attaque": "FAKE_WEBSITE"
+}
+
+###
+
+# 4. Créer le deuxième module
+POST {{baseUrl}}/learning/modules
+Content-Type: application/json
+
+{
+  "titre": "Manipulation Psychologique et Ingénierie Sociale",
+  "description": "Comprendre les techniques de manipulation utilisées par les cybercriminels et apprendre à s'en protéger",
+  "code_langue": "fr",
+  "niveau_difficulte": "moyen",
+  "parcours_id": 2,
+  "thematique_cyber": "social_engineering"
+}
+
+###
+
+# 5. Créer le contenu média pour le deuxième module
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data
+
+{
+  "module_id": 2,
+  "type_contenu": "INTERACTIF",
+  "duree_minutes": 45,
+  "url_fichier": "https://example.com/interactifs/social-media-scam-simulation.html",
+  "nom_fichier": "social-media-scam-simulation.html",
+  "chemin_stockage": "src/resource/Sensibilisation à la Cybersécurité/Reconnaître les Menaces/social-media-scam-simulation.html",
+  "taille_fichier": 2097152,
+  "description": "Simulation interactive d'arnaques sur les réseaux sociaux permettant aux utilisateurs d'apprendre à identifier les signaux d'alerte",
+  "type_attaque": "SOCIAL_MEDIA_SCAM"
+}
+
+###
+
+# 6. Ajouter le parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+
+###
+
+# 7. Créer une progression pour un utilisateur
+POST {{baseUrl}}/learning/progress
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "module_id": 1,
+  "statut": "EN_COURS",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+# 8. Récupérer le parcours complet avec tous ses modules et contenus
+GET {{baseUrl}}/learning/parcours/1
+
+### Exemple d'upload d'un fichier vidéo local
+POST {{baseUrl}}/learning/media/upload
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data
+"module_id": 1,
+"type_contenu": "video",
+"duree_minutes": 10,
+"description" : "Vidéo GIMS BABY",
+"type_attaque": "social_media_scam",
+file: @C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
+
+
+
+# test après ajout de profiles
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTgxOTI5MSwiZXhwIjoxNzU1ODIyODkxfQ.DyKXINXuhRcIVdqZ5J96jSKY7HTBtj9y-_UzvtWPpEs
+@refresh_token = your_refresh
+### CREATE LEARNING PATH
+POST http://localhost:3000/learning/parcours
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "titre": "Parcours Sécurité",
+  "description": "Apprendre la sécurité informatique"
+}
+
+### GET ALL LEARNING PATHS
+GET http://localhost:3000/learning/parcours
+Authorization: Bearer {{access_token}}
+
+### GET LEARNING PATH BY ID
+GET http://localhost:3000/learning/parcours/1
+Authorization: Bearer {{access_token}}
+
+### GET USER AVAILABLE LEARNING PATHS
+GET http://localhost:3000/learning/parcours/user/available
+Authorization: Bearer {{access_token}}
+
+### DELETE LEARNING PATH
+DELETE http://localhost:3000/learning/parcours/2
+Authorization: Bearer {{access_token}}
+
+### CREATE MODULE
+POST http://localhost:3000/learning/modules
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "titre": "Module 1",
+  "parcours_id": 1
+}
+
+### GET MODULES BY LEARNING PATH
+GET http://localhost:3000/learning/parcours/1/modules
+Authorization: Bearer {{access_token}}
+
+### UPDATE MODULE
+PUT http://localhost:3000/learning/modules/1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "titre": "Module Modifié"
+}
+
+### DELETE MODULE
+DELETE http://localhost:3000/learning/modules/1
+Authorization: Bearer {{access_token}}
+
+### UPLOAD MEDIA CONTENT
+POST http://localhost:3000/learning/media/upload
+Authorization: Bearer {{access_token}}
+Content-Type: multipart/form-data; boundary=---011000010111000001101001
+
+---011000010111000001101001
+Content-Disposition: form-data; name="module_id"
+
+1
+---011000010111000001101001
+Content-Disposition: form-data; name="file"; filename="Django_start.pdf"
+Content-Type: application/pdf
+
+< C:/Users/Mossoko/Documents/Django_start.pdf"
+---011000010111000001101001--
+
+### GET MEDIA CONTENT BY MODULE
+GET http://localhost:3000/learning/modules/1/media
+Authorization: Bearer {{access_token}}
+
+### CREATE PROGRESS
+POST http://localhost:3000/learning/progress
+Content-Type: application/json
+Authorization: Bearer {{{access_token}}
+
+{
+  "utilisateur": 1,
+  "module": 1,
+  "statut": "completed",
+  "temps_passe": 120
+}
+
+### GET USER PROGRESS
+GET http://localhost:3000/learning/progress/user
+Authorization: Bearer {{access_token}}
+
+### GET MODULE PROGRESS
+GET http://localhost:3000/learning/progress/user/1
+Authorization: Bearer {{access_token}}
+
+### CREATE CERTIFICATION
+POST http://localhost:3000/learning/certifications
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "utilisateur": 1,
+  "parcours": 1
+}
+
+### GET USER CERTIFICATIONS
+GET http://localhost:3000/learning/certifications/user
+Authorization: Bearer {{access_token}}
+
+### ADD LEARNING PATH TO ORGANISATION
+POST http://localhost:3000/learning/organisations/1/parcours/1
+Authorization: Bearer {{access_token}}
+
+### REMOVE LEARNING PATH FROM ORGANISATION
+DELETE http://localhost:3000/learning/organisations/1/parcours/1
+Authorization: Bearer {{access_token}}
+
+### GET ORGANISATION LEARNING PATHS
+GET http://localhost:3000/learning/organisations/1/parcours
+Authorization: Bearer {{access_token}}
+
+### CHECK USER ACCESS TO LEARNING PATH
+GET http://localhost:3000/learning/access/check/1
+Authorization: Bearer {{access_token}}

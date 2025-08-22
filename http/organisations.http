@@ -1,6 +1,6 @@
 ### Variables d'environnement
 @baseUrl = http://localhost:3000
-@authToken =   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTEzMTEwMiwiZXhwIjoxNzU1MTM0NzAyfQ.CD6bOARrcZ7G4jCkCy3sn-LK_v5ElOmA7g3sQrIQWfc
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTgxOTI5MSwiZXhwIjoxNzU1ODIyODkxfQ.DyKXINXuhRcIVdqZ5J96jSKY7HTBtj9y-_UzvtWPpEs
 
 ### 1. Authentification en tant que superadmin
 # @name login
@@ -19,8 +19,8 @@ Content-Type: application/json
 
 {
   "nom": "BytCode Solutions",
-  "type": "ENTREPRISE_PRIVEE",
-  "date_creation": "2025-05-22",
+  "type": "entreprise_privee",
+  "date_creation": "2024-05-22",
   "code_pays": "GN"
 }
 
@@ -31,7 +31,7 @@ Content-Type: application/json
 
 {
   "nom": "CS Roi Hassant 2",
-  "type": "ETABLISSEMENT_SCOLAIRE",
+  "type": "etablissement_scolaire",
   "date_creation": "2022-06-15",
   "code_pays": "GN"
 }
@@ -54,12 +54,8 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "date_creation": "2025-03-13"
+  "date_creation": "2024-03-13"
 }
-
-### 8. Ajouter un utilisateur à une organisation (remplacer {userId} par l'ID réel)
-POST {{baseUrl}}/organisations/1/users/2
-Authorization: Bearer {{authToken}}
 
 ### 9. Récupérer les utilisateurs d'une organisation
 GET {{baseUrl}}/organisations/1/users
@@ -70,7 +66,7 @@ DELETE {{baseUrl}}/organisations/1/users/2
 Authorization: Bearer {{authToken}}
 
 ### 11. Supprimer une organisation (seulement si elle n'a pas d'utilisateurs)
-DELETE {{baseUrl}}/organisations/2
+DELETE {{baseUrl}}/organisations/1
 Authorization: Bearer {{authToken}}
 
 ### 12. Test d'erreur - Créer une organisation avec des données invalides
@@ -80,9 +76,9 @@ Content-Type: application/json
 
 {
   "nom": "",
-  "type": "type_invalide",
+  "type": "TYPE_INVALIDE",
   "code_pays": "FR",
-  "date_creation": "2025-05-22"
+  "date_creation": "2024-05-22"
 }
 
 ### 13. Test d'erreur - Accès sans authentification
@@ -106,3 +102,52 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZ
 ### 9. Récupérer les utilisateurs d'une organisation
 GET {{baseUrl}}/organisations/1/users
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZ21haWwuY29tIiwic3ViIjoyLCJyb2xlIjoidXNlciIsImlhdCI6MTc1NTA0OTA3MCwiZXhwIjoxNzU1MDUyNjcwfQ.tKB2I3bTFUckK-3Ep06JTdxQDLD6ZBywsl3C5f1rOUQ
+
+
+
+# test après ajout des profiles
+@access_token = your_access
+@refresh_token = your_refresh
+### CREATE ORGANISATION (superadmin)
+POST http://localhost:3000/organisations
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "nom": "Nouvelle Organisation",
+  "type": "Entreprise",
+  "code_pays": "FR"
+}
+
+### GET ALL ORGANISATIONS
+GET http://localhost:3000/organisations
+Authorization: Bearer {{access_token}}
+
+### GET ORGANISATION BY ID
+GET http://localhost:3000/organisations/1
+Authorization: Bearer {{access_token}}
+
+### GET ORGANISATION STATS
+GET http://localhost:3000/organisations/1/stats
+Authorization: Bearer {{access_token}}
+
+### GET ORGANISATION USERS
+GET http://localhost:3000/organisations/1/users
+Authorization: Bearer {{access_token}}
+
+### UPDATE ORGANISATION
+PATCH http://localhost:3000/organisations/1
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "nom": "Organisation Modifiée"
+}
+
+### DELETE ORGANISATION
+DELETE http://localhost:3000/organisations/2
+Authorization: Bearer {{access_token}}
+
+### REMOVE USER FROM ORGANISATION
+DELETE http://localhost:3000/organisations/1/users/3
+Authorization: Bearer {{access_token}}

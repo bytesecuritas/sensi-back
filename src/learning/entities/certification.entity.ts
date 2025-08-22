@@ -22,16 +22,10 @@ export class Certification {
   @JoinColumn({ name: 'utilisateur_id' })
   utilisateur: User;
 
-  @Column({ type: 'bigint' })
-  utilisateur_id: number;
-
   // Relation avec le parcours d'apprentissage
   @ManyToOne(() => LearningPath, parcours => parcours.certifications)
   @JoinColumn({ name: 'parcours_id' })
   parcours: LearningPath;
-
-  @Column({ type: 'bigint' })
-  parcours_id: number;
 
   @Column({ 
     type: 'enum', 
