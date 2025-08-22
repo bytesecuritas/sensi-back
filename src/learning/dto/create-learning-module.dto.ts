@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional, IsArray } from 'class-validator';
 import { DifficultyLevel, ThematiqueCyber } from '../entities/learning-module.entity';
 
 export class CreateLearningModuleDto {
@@ -29,4 +29,9 @@ export class CreateLearningModuleDto {
   @IsNumber()
   @IsNotEmpty()
   parcours_id: number;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  objectifs_apprentissage?: string[];
 }

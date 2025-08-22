@@ -12,11 +12,11 @@ export class CreateProgressDto {
 
   @IsEnum(ProgressStatus)
   @IsOptional()
-  statut?: ProgressStatus;
+  statut?: ProgressStatus = ProgressStatus.NON_COMMENCE;
 
   @IsDecimal()
   @IsOptional()
-  score?: number;
+  score?: number = 0;
 
   @IsNumber()
   @IsOptional()

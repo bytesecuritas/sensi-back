@@ -1,30 +1,40 @@
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTg2ODUzOSwiZXhwIjoxNzU1ODcyMTM5fQ.R_0QjGAD4vIwb-_Fotu1BicnHJg3Gy09PfLcZOOPIxY
-@refresh_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTg2ODUzOSwiZXhwIjoxNzU2NDczMzM5fQ.0g4TJRhhaV2uBJKJbfaApZFfeLw_TBqoJygAw91tx9c
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.access_token}}
 
-### LOGIN
-POST http://localhost:3000/auth/login
+### Login - Obtenir le token
+# @name login
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "camara13fs@gmail.com",
-  "password": "admin123"
+    "email": "camara13fs@gmail.com",
+    "password": "admin123"
 }
 
-### REGISTER (superadmin ou admin)
-POST http://localhost:3000/auth/register
+### Register - Créer un nouvel utilisateur (requires admin/superadmin)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
-Authorization: Bearer {{access_token}}
 
 {
-  "email": "newuser@example.com",
-  "password": "motdepasse123",
-  "nom": "Nouveau",
-  "prenom": "User",
-  "age": 25,
-  "role": "user",
-  "organisation_id": "1"
+    "email": "user@test.com",
+    "password": "Password123!",
+    "nom": "Test",
+    "prenom": "User",
+    "age": 30,
+    "role": "user",
+    "code_langue": "FR",
+    "organisation_id": "1"
 }
 
-### GET PROFILE (utilisateur connecté)
-GET http://localhost:3000/auth/profile
-Authorization: Bearer {{access_token}}
+### Get Profile - Obtenir le profil de l'utilisateur connecté
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+### Refresh Token - Obtenir un nouveau token d'accès
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+    "refresh_token": "your_refresh_token_here"
+}

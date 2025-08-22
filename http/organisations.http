@@ -1,6 +1,19 @@
 ### Variables d'environnement
 @baseUrl = http://localhost:3000
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTgxOTI5MSwiZXhwIjoxNzU1ODIyODkxfQ.DyKXINXuhRcIVdqZ5J96jSKY7HTBtj9y-_UzvtWPpEs
+@authToken = {{login.response.body.access_token}}
+
+### Créer une organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nom": "BytCode Academy",
+    "description": "Centre de formation en cybersécurité",
+    "adresse": "123 Rue de la Tech",
+    "telephone": "+224 623456789",
+    "email": "contact@bytcode.com"
+}
 
 ### 1. Authentification en tant que superadmin
 # @name login

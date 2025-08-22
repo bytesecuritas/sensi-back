@@ -1,17 +1,19 @@
 ### Variables d'environnement
 @baseUrl = http://localhost:3000
-@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbWFyYTEzZnNAZ21haWwuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NTgyMTUzNywiZXhwIjoxNzU1ODI1MTM3fQ.kVjvcCFPQr1JPkp8Sx0ejc586GlzZGVqV_MZgUlz38I
+@authToken = {{login.response.body.access_token}}
 
 ### ===== PARCOURS D'APPRENTISSAGE =====
 
-### Créer un parcours d'apprentissage
+### Créer un parcours
 POST {{baseUrl}}/learning/parcours
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "titre": "Sensibilisation aux Cybermenaces en Entreprise",
-  "description": "Parcours complet de sensibilisation aux risques cybernétiques pour tous les employés",
-  "public_cible": "entreprise"
+    "titre": "Cybersécurité Fondamentale",
+    "description": "Formation complète sur les bases de la cybersécurité",
+    "public_cible": "ENTREPRISE",
+    "duree_estimee_heures": 10
 }
 
 ### Récupérer tous les parcours
@@ -46,16 +48,27 @@ GET {{baseUrl}}/learning/parcours/1/modules
 
 ### Créer un contenu média avec upload de fichier
 POST {{baseUrl}}/learning/media/upload
-Content-Type: multipart/form-data
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
-{
-  "module_id": 1,
-  "type_contenu": "video",
-  "duree_minutes": 45,
-  "description": "Vidéo explicative sur la détection des emails de phishing et les techniques utilisées par les attaquants",
-  "type_attaque": "phishing_email",
-  "file": "@/path/to/phishing-detection.mp4"
-}
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="video.mp4"
+Content-Type: video/mp4
+
+< ./test-files/video.mp4
+------WebKitFormBoundary
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary
+Content-Disposition: form-data; name="type_contenu"
+
+VIDEO
+------WebKitFormBoundary
+Content-Disposition: form-data; name="description"
+
+Description de la vidéo
+------WebKitFormBoundary--
 
 ### Créer un contenu média sans upload (URL externe)
 POST {{baseUrl}}/learning/media/upload

@@ -30,11 +30,16 @@ export class LearningPath {
   })
   public_cible: TargetAudience;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  duree_estimee_heures: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
   date_maj: Date;
+
+  
 
   // Relation avec les modules d'apprentissage
   @OneToMany(() => LearningPathModule, module => module.parcours)

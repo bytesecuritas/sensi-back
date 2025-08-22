@@ -59,6 +59,9 @@ export class LearningPathModule {
   })
   thematique_cyber: ThematiqueCyber;
 
+  @Column('simple-array', { nullable: true })
+  objectifs_apprentissage: string[];
+
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;
 

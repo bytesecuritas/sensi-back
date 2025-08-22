@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsNumber, Min } from 'class-validator';
 import { TargetAudience } from '../entities/learning-path.entity';
 
 export class CreateLearningPathDto {
@@ -13,4 +13,9 @@ export class CreateLearningPathDto {
   @IsEnum(TargetAudience)
   @IsOptional()
   public_cible?: TargetAudience;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  duree_estimee_heures?: number;
 }

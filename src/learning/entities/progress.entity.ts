@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BeforeUpdate } from 'typeorm';
 import { User } from '../../users/users.entity';
 import { LearningPathModule } from './learning-module.entity';
 
@@ -45,4 +45,19 @@ export class Progress {
 
   @UpdateDateColumn({ type: 'timestamp' })
   date_maj: Date;
+
+  @BeforeUpdate()
+  updateTempsPasseAndDateCompletion() {
+    if (this.statut === ProgressStatus.TERMINE && !this.date_completion) {
+      this.date_completion = new Date();
+      
+      // Utiliser date_creation au lieu de date_debut
+      const debut = new Date(this.date_creation);
+      const fin = new Date(this.date_completion);
+      const diffMilliseconds = fin.getTime() - debut.getTime();
+      const diffHeures = diffMilliseconds / (1000 * 60 * 60);
+      this.temps_passe = Math.round(diffHeures * 100) / 100;
+    }
+  }
 }
+

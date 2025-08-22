@@ -13,6 +13,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { User } from '../users/users.entity';
 import { Organisation } from '../organisations/organisations.entity';
+import { ProgressStatus } from './entities/progress.entity';
+
 
 @Injectable()
 export class LearningService {
@@ -279,48 +281,13 @@ export class LearningService {
   }
 
   async updateProgress(id: number, progressData: Partial<Progress>): Promise<Progress> {
-    const progress = await this.progressRepository.findOne({ where: { progression_id: id }, relations: ['utilisateur', 'module', 'module.parcours', 'utilisateur.organisation'] });
+    const progress = await this.progressRepository.findOne({ 
+      where: { progression_id: id },
+      relations: ['utilisateur', 'module', 'module.parcours', 'utilisateur.organisation']
+    });
 
-    if(!progress){
+    if (!progress) {
       throw new NotFoundException(`La progression d'id ${id} introuvable!`);
-    }
-
-    // Si on veut changer le module ou l'utilisateur, récupérer les nouvelles entités
-    let user: User = progress.utilisateur;
-    let module: LearningPathModule = progress.module;
-    if (progressData.utilisateur && typeof progressData.utilisateur === 'number') {
-      const foundUser = await this.userRepository.findOne({ where: { users_id: progressData.utilisateur }, relations: ['organisation'] });
-      if (!foundUser) {
-        throw new NotFoundException(`User with ID ${progressData.utilisateur} not found`);
-      }
-      user = foundUser;
-      progressData.utilisateur = user;
-    }
-    if (progressData.module && typeof progressData.module === 'number') {
-      const foundModule = await this.learningModuleRepository.findOne({ where: { module_id: progressData.module }, relations: ['parcours'] });
-      if (!foundModule) {
-        throw new NotFoundException(`Module with ID ${progressData.module} not found`);
-      }
-      module = foundModule;
-      progressData.module = module;
-    }
-    // Vérification d'accès : le module doit appartenir à un parcours accessible par l'organisation de l'utilisateur
-    if (user && module) {
-      const organisationId = user.organisation?.organisation_id;
-      const parcoursId = module.parcours?.parcours_id;
-      if (!organisationId || !parcoursId) {
-        throw new ForbiddenException('Utilisateur ou module non lié à une organisation ou un parcours.');
-      }
-      const association = await this.organisationLearningPathRepository.findOne({
-        where: {
-          organisation: { organisation_id: organisationId },
-          parcours: { parcours_id: parcoursId },
-          actif: true,
-        },
-      });
-      if (!association) {
-        throw new ForbiddenException('Ce module n\'est pas accessible pour l\'organisation de l\'utilisateur.');
-      }
     }
 
     Object.assign(progress, progressData);
