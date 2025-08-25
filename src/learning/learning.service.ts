@@ -176,6 +176,17 @@ export class LearningService {
     });
   }
 
+  async getMediaContentById(mediaId: number): Promise<MediaContent> {
+    const media = await this.mediaContentRepository.findOne({
+      where: { media_id: mediaId },
+      relations: ['module'],
+    });
+    if (!media) {
+      throw new NotFoundException(`Contenu média avec l'ID ${mediaId} non trouvé`);
+    }
+    return media;
+  }
+
   async updateMediaContent(id: number, mediaData: Partial<CreateMediaContentDto>): Promise<MediaContent> {
     const media = await this.mediaContentRepository.findOne({ where: { media_id: id }, relations: ['module'] });
     if (!media) {

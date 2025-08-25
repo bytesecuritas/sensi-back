@@ -91,7 +91,7 @@ export class AuthController {
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
   async getProfile(@Request() req) {
-    const userId = req.user?.sub;
+    const userId = req.user?.users_id;
     if (!userId) {
       throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
     }

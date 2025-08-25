@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.access_token}}
+
+### 1. Connexion du SuperAdmin
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "morykoulibaly2023@gmail.com",
+    "password": "1234567890"
+}
+
+### 2. Récupérer le profil utilisateur (utilise /api/auth/profile)
+GET {{baseUrl}}/api/auth/profile
+Authorization: Bearer {{authToken}}
+
+### 3. Récupérer les détails utilisateur par ID
+GET {{baseUrl}}/api/users/1
+Authorization: Bearer {{authToken}}
+
+### 4. Mettre à jour le profil utilisateur
+PUT {{baseUrl}}/api/users/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nom": "Koulibaly",
+    "prenom": "Mory"
+}
+
+### 5. Changer le mot de passe
+PUT {{baseUrl}}/api/users/1/password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "currentPassword": "1234567890",
+    "newPassword": "nouveauMotDePasse123!"
+}
+
+### 6. Vérifier que le changement de mot de passe fonctionne
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "morykoulibaly2023@gmail.com",
+    "password": "nouveauMotDePasse123!"
+}

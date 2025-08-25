@@ -1,40 +1,43 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Request,
-  ForbiddenException,
-  UseInterceptors,
-  UploadedFile,
-  BadRequestException,
-  ValidationPipe,
-  Logger,
-  ParseIntPipe,
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    ForbiddenException,
+    Get,
+    Param,
+    ParseIntPipe,
+    Post,
+    Put,
+    Query,
+    Request,
+    Response,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors,
+    ValidationPipe
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import * as fs from 'fs';
 import { diskStorage } from 'multer';
 import * as path from 'path';
-import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LearningService } from './learning.service';
-import { LearningPath } from './entities/learning-path.entity';
-import { LearningPathModule } from './entities/learning-module.entity';
-import { MediaContent } from './entities/media-content.entity';
-import { Certification } from './entities/certification.entity';
-import { Progress } from './entities/progress.entity';
-import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
-import { CreateMediaContentDto } from './dto/create-media-content.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateLearningModuleDto } from './dto/create-learning-module.dto';
+import { CreateMediaContentDto } from './dto/create-media-content.dto';
+import { UploadMediaContentDto } from './dto/upload-media-content.dto';
+import { Certification } from './entities/certification.entity';
+import { LearningPathModule } from './entities/learning-module.entity';
+import { LearningPath } from './entities/learning-path.entity';
+import { MediaContent } from './entities/media-content.entity';
+import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
+import { Progress } from './entities/progress.entity';
+import { LearningService } from './learning.service';
 
 @ApiTags('Media')
 @Controller('learning')
+@UseGuards(JwtAuthGuard)
 export class LearningController {
   constructor(private readonly learningService: LearningService) {}
 
@@ -133,20 +136,19 @@ export class LearningController {
   }))
   async uploadMediaContent(
     @UploadedFile() file: Express.Multer.File,
-    @Body('module_id', ParseIntPipe) moduleId: number,
-    @Body(new ValidationPipe({ transform: true })) mediaData: CreateMediaContentDto // ← AJOUTEZ transform: true
+    @Query('module_id', ParseIntPipe) moduleId: number,
+    @Body(new ValidationPipe({ transform: true })) mediaData: UploadMediaContentDto
   ): Promise<MediaContent> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
     
-    // Ajoutez des logs pour debugger
+    // Logs pour debugger
     console.log('Received mediaData:', mediaData);
-    console.log('Type of module_id:', typeof mediaData.module_id);
+    console.log('Module ID from ParseIntPipe:', moduleId);
     console.log('Type of moduleId:', typeof moduleId);
-    console.log('Value of module_id:', mediaData.module_id);
 
-    const module = await this.learningService.getModuleById(Number(moduleId));
+    const module = await this.learningService.getModuleById(moduleId);
     if(!module) {
       throw new BadRequestException('Module not found');
     }
@@ -163,12 +165,18 @@ export class LearningController {
 
     try {
       fs.renameSync(tempPath, finalPath);
-      mediaData.chemin_stockage = `ressources/${thematique}/${nomModule}/${file.filename}`;
-      mediaData.nom_fichier = file.originalname;
-      mediaData.taille_fichier = file.size;
-      mediaData.url_fichier = ''; // À implémenter si nécessaire
+      
+      // Créer l'objet complet pour le service
+      const completeMediaData: CreateMediaContentDto = {
+        ...mediaData,
+        module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
+        chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
+        nom_fichier: file.originalname,
+        taille_fichier: file.size,
+        url_fichier: '', // À implémenter si nécessaire
+      };
 
-      return await this.learningService.createMediaContent(mediaData);
+      return await this.learningService.createMediaContent(completeMediaData);
     } catch (error) {
       if (fs.existsSync(finalPath)) {
         fs.unlinkSync(finalPath);
@@ -209,8 +217,8 @@ export class LearningController {
   async updateMediaContent(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body('module_id', ParseIntPipe) moduleId: number,
-    @Body(new ValidationPipe()) mediaData: CreateMediaContentDto
+    @Query('module_id', ParseIntPipe) moduleId: number,
+    @Body(new ValidationPipe()) mediaData: UploadMediaContentDto
   ): Promise<MediaContent> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
@@ -234,12 +242,18 @@ export class LearningController {
 
     try {
       fs.renameSync(tempPath, finalPath);
-      mediaData.chemin_stockage = `ressources/${thematique}/${nomModule}/${file.filename}`;
-      mediaData.nom_fichier = file.originalname;
-      mediaData.taille_fichier = file.size;
-      mediaData.url_fichier = ''; // À implémenter si nécessaire
+      
+      // Créer l'objet complet pour le service
+      const completeMediaData: CreateMediaContentDto = {
+        ...mediaData,
+        module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
+        chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
+        nom_fichier: file.originalname,
+        taille_fichier: file.size,
+        url_fichier: '', // À implémenter si nécessaire
+      };
 
-      return await this.learningService.updateMediaContent(+id, mediaData);
+      return await this.learningService.updateMediaContent(+id, completeMediaData);
     } catch (error) {
       if (fs.existsSync(finalPath)) {
         fs.unlinkSync(finalPath);
@@ -261,6 +275,47 @@ export class LearningController {
     return await this.learningService.getMediaContentByModule(+moduleId);
   }
 
+  @Get('media/:mediaId/stream')
+  async streamMediaContent(@Param('mediaId') mediaId: string, @Request() req, @Response() res) {
+    const media = await this.learningService.getMediaContentById(+mediaId);
+    if (!media) {
+      throw new BadRequestException('Media not found');
+    }
+
+    const filePath = path.join(process.cwd(), media.chemin_stockage);
+    
+    if (!fs.existsSync(filePath)) {
+      throw new BadRequestException('File not found');
+    }
+
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunksize = (end - start) + 1;
+      const file = fs.createReadStream(filePath, { start, end });
+      const head = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4',
+      };
+      res.writeHead(206, head);
+      file.pipe(res);
+    } else {
+      const head = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+      };
+      res.writeHead(200, head);
+      fs.createReadStream(filePath).pipe(res);
+    }
+  }
+
   // ===== PROGRESSIONS =====
 
   @Post('progress')
@@ -278,7 +333,9 @@ export class LearningController {
 
   @Get('progress/user')
   async getUserProgress(@Request() req): Promise<Progress[]> {
+    console.log('getUserProgress called - req.user:', req.user);
     const userId = req.user?.users_id;
+    console.log('Extracted userId:', userId);
     if (!userId) {
       throw new ForbiddenException('Utilisateur non authentifié');
     }
@@ -290,7 +347,9 @@ export class LearningController {
     @Request() req,
     @Param('moduleId') moduleId: string,
   ): Promise<Progress> {
+    console.log('getModuleProgress called - req.user:', req.user, 'moduleId:', moduleId);
     const userId = req.user?.users_id;
+    console.log('Extracted userId:', userId);
     if (!userId) {
       throw new ForbiddenException('Utilisateur non authentifié');
     }

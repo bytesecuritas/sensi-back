@@ -34,4 +34,13 @@ export class CreateLearningModuleDto {
   @IsString({ each: true })
   @IsOptional()
   objectifs_apprentissage?: string[];
+
+  // Champs supplémentaires du frontend
+  @IsString()
+  @IsOptional()
+  type_contenu?: string;
+
+  @IsNumber()
+  @IsOptional()
+  duree_minutes?: number;
 }

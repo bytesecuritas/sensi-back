@@ -1,0 +1,62 @@
+@baseUrl = http://localhost:3000
+@authToken = {{login.response.body.access_token}}
+
+### 1. Connexion pour obtenir le token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "morykoulibaly2023@gmail.com",
+    "password": "1234567890"
+}
+
+### 2. Créer un parcours d'abord
+POST {{baseUrl}}/api/learning/parcours
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "titre": "Test Parcours",
+    "description": "Parcours de test pour les modules",
+    "public_cible": "ENTREPRISE"
+}
+
+### 3. Créer un module (format backend attendu)
+POST {{baseUrl}}/api/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "titre": "Module Test",
+    "description": "Description du module test",
+    "code_langue": "fr",
+    "niveau_difficulte": "moyen",
+    "thematique_cyber": "phishing",
+    "parcours_id": 1
+}
+
+### 4. Créer un module (format frontend)
+POST {{baseUrl}}/api/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "titre": "Module Frontend Test",
+    "description": "Description du module frontend",
+    "type_contenu": "VIDEO",
+    "public_cible": "debutant",
+    "code_langue": "fr",
+    "duree_minutes": 30,
+    "niveau_difficulte": "MOYEN",
+    "thematique_cyber": "phishing",
+    "parcours_id": 1
+}
+
+### 5. Récupérer tous les parcours
+GET {{baseUrl}}/api/learning/parcours
+Authorization: Bearer {{authToken}}
+
+### 6. Récupérer les modules d'un parcours
+GET {{baseUrl}}/api/learning/parcours/1/modules
+Authorization: Bearer {{authToken}}

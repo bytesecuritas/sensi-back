@@ -5,7 +5,7 @@ import { Type } from '@nestjs/class-transformer';
 export class CreateMediaContentDto {
   @IsNumber()
   @Type(() => Number)
-  @IsNotEmpty()
+  @IsOptional()
   module_id?: number;
 
   @IsEnum(ContentType)

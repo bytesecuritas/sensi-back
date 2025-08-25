@@ -1,9 +1,9 @@
-import { Controller, Get, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { User } from './users.entity';
+import { Body, Controller, Delete, Get, Param, Put, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { User } from './users.entity';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -32,5 +32,20 @@ export class UsersController {
   @Roles('superadmin', 'admin')
   async remove(@Param('id') id: number): Promise<void> {
     return this.usersService.remove(id);
+  }
+
+  @Put(':id/password')
+  async changePassword(
+    @Param('id') id: number,
+    @Body() body: { currentPassword: string; newPassword: string },
+    @Request() req: any
+  ): Promise<{ message: string }> {
+    // Vérifier que l'utilisateur modifie son propre mot de passe
+    if (id !== req.user?.users_id) {
+      throw new Error('Vous ne pouvez modifier que votre propre mot de passe');
+    }
+    
+    const result = await this.usersService.changePassword(id, body.currentPassword, body.newPassword);
+    return { message: 'Mot de passe modifié avec succès' };
   }
 }

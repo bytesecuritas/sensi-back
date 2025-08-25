@@ -113,4 +113,24 @@ export class UsersService {
   get organisationsRepositoryInstance() {
     return this.organisationsRepository;
   }
+
+  // Changer le mot de passe
+  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<boolean> {
+    const user = await this.findById(userId);
+    
+    // Vérifier l'ancien mot de passe
+    const bcrypt = require('bcrypt');
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Mot de passe actuel incorrect');
+    }
+
+    // Hasher le nouveau mot de passe
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Mettre à jour le mot de passe
+    await this.usersRepository.update(userId, { password: hashedNewPassword });
+    
+    return true;
+  }
 }
