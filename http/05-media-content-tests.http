@@ -1,0 +1,296 @@
+### Tests des Contenus Médias - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000/api
+@contentType = multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
+
+
+### 1. Upload d'une vidéo de sensibilisation (utilisant le fichier GIMS)
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{superadmin_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_officiel_(480p).mp4"
+Content-Type: video/mp4
+
+< C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+Vidéo de Sensibilisation - Mots de Passe Sécurisés
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Vidéo explicative sur l'importance de créer des mots de passe sécurisés et les bonnes pratiques à suivre.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 2. Créer un contenu texte pour le module
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 1,
+  "titre": "Guide des Mots de Passe Sécurisés",
+  "type_contenu": "texte",
+  "duree_minutes": 10,
+  "nom_fichier": "guide-mots-de-passe.txt",
+  "taille_fichier": 2048,
+  "description": "Guide complet pour créer et gérer des mots de passe sécurisés",
+  "contenu": "Un mot de passe sécurisé doit contenir au moins 12 caractères, incluant des majuscules, minuscules, chiffres et caractères spéciaux. Évitez les informations personnelles comme votre nom ou date de naissance. Utilisez un gestionnaire de mots de passe pour stocker vos mots de passe de manière sécurisée. Voici quelques bonnes pratiques : 1) Utilisez des phrases de passe longues, 2) Activez l'authentification à deux facteurs, 3) Changez régulièrement vos mots de passe, 4) Ne réutilisez jamais le même mot de passe sur plusieurs comptes.",
+  "type_attaque": null
+}
+
+###
+
+### 3. Créer un contenu PDF pour le module
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 1,
+  "titre": "Checklist Sécurité Mots de Passe",
+  "type_contenu": "pdf",
+  "duree_minutes": 15,
+  "nom_fichier": "checklist-securite-mots-de-passe.pdf",
+  "url_fichier": "https://example.com/checklist-mots-de-passe.pdf",
+  "taille_fichier": 512000,
+  "description": "Checklist PDF pour vérifier la sécurité de vos mots de passe",
+  "contenu": null,
+  "type_attaque": null
+}
+
+###
+
+### 4. Créer un contenu interactif (quiz) pour le module
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 1,
+  "titre": "Quiz - Testez vos Connaissances",
+  "type_contenu": "quiz",
+  "duree_minutes": 20,
+  "nom_fichier": "quiz-mots-de-passe.json",
+  "taille_fichier": 4096,
+  "description": "Quiz interactif pour tester vos connaissances sur les mots de passe sécurisés",
+  "contenu": "{\"questions\": [{\"question\": \"Quelle est la longueur minimale recommandée pour un mot de passe sécurisé ?\", \"options\": [\"8 caractères\", \"12 caractères\", \"6 caractères\", \"10 caractères\"], \"reponse_correcte\": 1}, {\"question\": \"Quel élément NE doit PAS être inclus dans un mot de passe ?\", \"options\": [\"Des chiffres\", \"Votre nom\", \"Des caractères spéciaux\", \"Des majuscules\"], \"reponse_correcte\": 1}, {\"question\": \"Quelle est la meilleure pratique pour gérer plusieurs mots de passe ?\", \"options\": [\"Les écrire sur un post-it\", \"Utiliser un gestionnaire de mots de passe\", \"Utiliser le même mot de passe partout\", \"Les mémoriser tous\"], \"reponse_correcte\": 1}]}",
+  "type_attaque": null
+}
+
+###
+
+### 5. Créer une vidéo pour le module phishing
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{superadmin_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_officiel_(480p).mp4"
+Content-Type: video/mp4
+
+< C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="module_id"
+
+2
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+Détection du Phishing - Signes d'Alerte
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Vidéo explicative sur les signes d'alerte pour détecter les tentatives de phishing.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 6. Créer un contenu texte sur le phishing
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 2,
+  "titre": "Guide Complet sur le Phishing",
+  "type_contenu": "texte",
+  "duree_minutes": 12,
+  "nom_fichier": "guide-phishing.txt",
+  "taille_fichier": 3072,
+  "description": "Guide complet sur la détection et la prévention du phishing",
+  "contenu": "Le phishing est une technique d'ingénierie sociale utilisée par les cybercriminels pour voler des informations sensibles. Voici les signes d'alerte à surveiller : 1) Urgence excessive dans le message, 2) Erreurs grammaticales ou orthographiques, 3) Adresse email suspecte de l'expéditeur, 4) Liens vers des sites web suspects, 5) Demande d'informations personnelles ou bancaires. Pour vous protéger : ne cliquez jamais sur des liens suspects, vérifiez l'URL avant de saisir vos informations, utilisez un antivirus à jour, et signalez les tentatives de phishing.",
+  "type_attaque": "phishing_email"
+}
+
+###
+
+### 7. Créer une simulation d'attaque phishing
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 2,
+  "titre": "Simulation d'Attaque Phishing",
+  "type_contenu": "simulation",
+  "duree_minutes": 25,
+  "nom_fichier": "simulation-phishing.json",
+  "taille_fichier": 8192,
+  "description": "Simulation interactive d'une tentative de phishing pour entraîner la détection",
+  "contenu": "{\"scenario\": \"email_urgent\", \"etapes\": [{\"etape\": 1, \"action\": \"reception_email\", \"contenu\": \"Votre compte bancaire a été suspendu. Cliquez ici pour le réactiver immédiatement.\", \"signes_suspects\": [\"urgence\", \"lien_suspect\", \"demande_action\"]}, {\"etape\": 2, \"action\": \"verification_url\", \"url\": \"http://fake-bank-secure.com\", \"signes_suspects\": [\"http_au_lieu_de_https\", \"domaine_suspect\"]}, {\"etape\": 3, \"action\": \"demande_informations\", \"champs\": [\"numero_carte\", \"code_secret\", \"date_expiration\"], \"signes_suspects\": [\"demande_informations_sensibles\"]}]}",
+  "type_attaque": "phishing_email"
+}
+
+###
+
+### 8. Créer un serious game pour les enfants
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 3,
+  "titre": "CyberAventure - Jeu Sérieux",
+  "type_contenu": "jeu_serieux",
+  "duree_minutes": 30,
+  "nom_fichier": "cyber-aventure-enfants.json",
+  "taille_fichier": 16384,
+  "description": "Jeu sérieux pour sensibiliser les enfants à la cybersécurité de manière ludique",
+  "contenu": "{\"titre\": \"CyberAventure\", \"personnage\": \"CyberKid\", \"niveaux\": [{\"niveau\": 1, \"titre\": \"Protège ton mot de passe\", \"objectif\": \"Créer un mot de passe fort\", \"jeu\": \"selection_caracteres\", \"recompenses\": [\"badge_securite\", \"points_experience\"]}, {\"niveau\": 2, \"titre\": \"Détecte les pièges\", \"objectif\": \"Identifier les emails suspects\", \"jeu\": \"classification_emails\", \"recompenses\": [\"badge_detective\", \"points_experience\"]}, {\"niveau\": 3, \"titre\": \"Protège tes données\", \"objectif\": \"Choisir ce qui peut être partagé en ligne\", \"jeu\": \"tri_informations\", \"recompenses\": [\"badge_gardien\", \"points_experience\"]}]}",
+  "type_attaque": null
+}
+
+###
+
+### 9. Créer une bande dessinée pour les enfants
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 3,
+  "titre": "CyberAventures - Bande Dessinée",
+  "type_contenu": "bande_dessinee",
+  "duree_minutes": 15,
+  "nom_fichier": "cyber-aventures-bd.pdf",
+  "url_fichier": "https://example.com/cyber-aventures-bd.pdf",
+  "taille_fichier": 1024000,
+  "description": "Bande dessinée éducative sur la cybersécurité pour les enfants",
+  "contenu": null,
+  "type_attaque": null
+}
+
+###
+
+### 10. Créer une étude de cas réelle
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 4,
+  "titre": "Étude de Cas - Rançongiciel 2023",
+  "type_contenu": "etude_de_cas",
+  "duree_minutes": 45,
+  "nom_fichier": "etude-cas-ransomware-2023.txt",
+  "taille_fichier": 6144,
+  "description": "Étude de cas d'une attaque par rançongiciel sur une entreprise en 2023",
+  "contenu": "ÉTUDE DE CAS : Attaque par rançongiciel sur TechCorp Solutions (2023)\n\nCONTEXTE : TechCorp Solutions, une PME de 150 employés spécialisée dans le développement logiciel.\n\nVECTEUR D'ATTAQUE : Email de phishing avec pièce jointe malveillante.\n\nDÉROULEMENT :\n1. Un employé reçoit un email prétendant provenir d'un partenaire commercial\n2. L'email contient une facture en pièce jointe (fichier .exe déguisé en .pdf)\n3. L'employé ouvre la pièce jointe, déclenchant l'infection\n4. Le rançongiciel chiffre tous les fichiers de l'entreprise\n5. Les attaquants demandent une rançon de 500 000€\n\nIMPACT :\n- Perte de données critiques\n- Arrêt de production pendant 3 semaines\n- Coût total estimé à 2 millions d'euros\n- Atteinte à la réputation\n\nLEÇONS APPRISES :\n- Formation obligatoire des employés\n- Sauvegarde hors ligne\n- Segmentation du réseau\n- Plan de reprise d'activité\n\nMESURES DE PRÉVENTION :\n- Filtrage avancé des emails\n- Antivirus nouvelle génération\n- Authentification multi-facteurs\n- Tests de phishing réguliers",
+  "type_attaque": "malicious_attachment"
+}
+
+###
+
+### 11. Créer un contenu audio (podcast)
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 5,
+  "titre": "Podcast Sécurité Mobile",
+  "type_contenu": "audio",
+  "duree_minutes": 20,
+  "nom_fichier": "podcast-securite-mobile.mp3",
+  "url_fichier": "https://example.com/podcast-securite-mobile.mp3",
+  "taille_fichier": 15360000,
+  "description": "Podcast sur la sécurité mobile et les bonnes pratiques",
+  "contenu": null,
+  "type_attaque": null
+}
+
+###
+
+### 12. Créer un contenu interactif avancé
+POST {{baseUrl}}/learning/media
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 5,
+  "titre": "Simulation Sécurité Mobile",
+  "type_contenu": "interactif",
+  "duree_minutes": 35,
+  "nom_fichier": "simulation-securite-mobile.json",
+  "taille_fichier": 12288,
+  "description": "Simulation interactive sur la sécurité mobile avec scénarios réalistes",
+  "contenu": "{\"scenarios\": [{\"id\": 1, \"titre\": \"WiFi public\", \"situation\": \"Vous êtes dans un café et devez vous connecter à Internet\", \"options\": [{\"texte\": \"Se connecter au WiFi public gratuit\", \"consequence\": \"Risque d'interception des données\", \"score\": -10}, {\"texte\": \"Utiliser votre hotspot mobile\", \"consequence\": \"Connexion sécurisée\", \"score\": 10}, {\"texte\": \"Utiliser un VPN sur le WiFi public\", \"consequence\": \"Connexion sécurisée\", \"score\": 8}], \"explication\": \"Les réseaux WiFi publics sont souvent non sécurisés et peuvent exposer vos données.\"}, {\"id\": 2, \"titre\": \"Application suspecte\", \"situation\": \"Une application vous demande l'accès à vos contacts\", \"options\": [{\"texte\": \"Accepter pour utiliser l'app\", \"consequence\": \"Données personnelles exposées\", \"score\": -15}, {\"texte\": \"Refuser et chercher une alternative\", \"consequence\": \"Protection de la vie privée\", \"score\": 15}, {\"texte\": \"Vérifier les permissions nécessaires\", \"consequence\": \"Décision éclairée\", \"score\": 12}], \"explication\": \"Vérifiez toujours pourquoi une application demande des permissions.\"}]}",
+  "type_attaque": "fake_app"
+}
+
+###
+
+### 13. Lister tous les contenus médias
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 14. Obtenir un contenu média spécifique
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 15. Mettre à jour un contenu média
+PATCH {{baseUrl}}/learning/media/1
+Content-Type: application/json
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Guide Complet Mis à Jour - Mots de Passe Sécurisés",
+  "description": "Guide complet mis à jour pour créer et gérer des mots de passe sécurisés avec les dernières recommandations",
+  "contenu": "Un mot de passe sécurisé doit contenir au moins 12 caractères, incluant des majuscules, minuscules, chiffres et caractères spéciaux. Évitez les informations personnelles comme votre nom ou date de naissance. Utilisez un gestionnaire de mots de passe pour stocker vos mots de passe de manière sécurisée. Voici quelques bonnes pratiques : 1) Utilisez des phrases de passe longues, 2) Activez l'authentification à deux facteurs, 3) Changez régulièrement vos mots de passe, 4) Ne réutilisez jamais le même mot de passe sur plusieurs comptes, 5) Utilisez des mots de passe uniques pour chaque compte important."
+}
+
+###
+
+### 16. Supprimer un contenu média
+DELETE {{baseUrl}}/learning/media/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin

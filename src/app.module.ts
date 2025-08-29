@@ -1,19 +1,25 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { OrganisationsModule } from './organisations/organisations.module';
 import { LearningModule } from './learning/learning.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SchedulerModule } from './schedule/schedule.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute
+      limit: 10, // 10 requests per minute
+    }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
+        type: 'postgres',
         host: configService.get<string>('DB_HOST') ?? 'localhost',
         port: Number(configService.get<string>('DB_PORT')) || 3306,
         username: configService.get<string>('DB_USERNAME') ?? 'root',
@@ -30,6 +36,7 @@ import { SchedulerModule } from './schedule/schedule.module';
     AuthModule,
     OrganisationsModule,
     LearningModule,
+    AnalyticsModule,
     SchedulerModule,
   ],
 })

@@ -30,6 +30,10 @@ export class CreateLearningModuleDto {
   @IsNotEmpty()
   parcours_id: number;
 
+  @IsNumber()
+  @IsOptional()
+  ordre?: number;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

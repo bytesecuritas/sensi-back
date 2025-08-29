@@ -3,6 +3,10 @@ import { AttackType, ContentType } from '../entities/media-content.entity';
 import { Type } from '@nestjs/class-transformer';
 
 export class UploadMediaContentDto {
+  @IsString()
+  @IsNotEmpty()
+  titre: string;
+
   @IsEnum(ContentType)
   @IsNotEmpty()
   type_contenu: ContentType;
@@ -38,4 +42,8 @@ export class UploadMediaContentDto {
   @IsString()
   @IsOptional()
   thematique_cyber?: string;
+
+  // Propriété optionnelle pour éviter l'erreur de validation avec le champ file
+  @IsOptional()
+  file?: any;
 }

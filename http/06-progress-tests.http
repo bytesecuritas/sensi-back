@@ -1,0 +1,278 @@
+### Tests des Progressions - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### 1. Commencer un module (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 1,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 2. Mettre à jour la progression (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 85.5,
+  "temps_passe": 2.5
+}
+
+###
+
+### 3. Commencer le module suivant (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 2,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 4. Terminer le module phishing (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/3
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 92.0,
+  "temps_passe": 3.2
+}
+
+###
+
+### 5. Commencer le module RGPD (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 3,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 6. Terminer le module RGPD (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/5
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 78.5,
+  "temps_passe": 4.1
+}
+
+###
+
+### 7. Commencer le module sécurité mobile (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 4,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 8. Terminer le module sécurité mobile (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/7
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 88.0,
+  "temps_passe": 2.8
+}
+
+###
+
+### 9. Commencer le module navigation sécurisée (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 5,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 10. Terminer le module navigation (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/9
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 95.5,
+  "temps_passe": 2.1
+}
+
+###
+
+### 11. Progression utilisateur 2 - Module mots de passe
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "module_id": 1,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 12. Terminer module mots de passe (utilisateur 2)
+PATCH {{baseUrl}}/learning/progress/11
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "statut": "termine",
+  "score": 76.0,
+  "temps_passe": 3.5
+}
+
+###
+
+### 13. Progression utilisateur 2 - Module phishing
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "module_id": 2,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 14. Terminer module phishing (utilisateur 2)
+PATCH {{baseUrl}}/learning/progress/13
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "statut": "termine",
+  "score": 89.5,
+  "temps_passe": 2.9
+}
+
+###
+
+### 15. Progression utilisateur 2 - Module RGPD (abandonné)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "module_id": 3,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 16. Abandonner le module RGPD (utilisateur 2)
+PATCH {{baseUrl}}/learning/progress/15
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "statut": "abandonne",
+  "score": 45.0,
+  "temps_passe": 1.2
+}
+
+###
+
+### 17. Progression utilisateur 2 - Module avancé rançongiciels
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "module_id": 6,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 18. Terminer module rançongiciels (utilisateur 2)
+PATCH {{baseUrl}}/learning/progress/17
+Content-Type: {{contentType}}
+Authorization: Bearer {{user2_token}}
+
+{
+  "statut": "termine",
+  "score": 82.5,
+  "temps_passe": 5.3
+}
+
+###
+
+### 19. Obtenir les progressions d'un utilisateur
+GET {{baseUrl}}/learning/progress/user/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 20. Obtenir les progressions d'un module
+GET {{baseUrl}}/learning/progress/module/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 21. Obtenir toutes les progressions d'une organisation
+GET {{baseUrl}}/learning/progress/organisation/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 22. Obtenir les statistiques de progression
+GET {{baseUrl}}/learning/progress/stats
+Authorization: Bearer {{admin_token}}
+
+###
+
+### Variables pour les tests
+# @user1_token = token_jwt_de_l_utilisateur_1
+# @user2_token = token_jwt_de_l_utilisateur_2
+# @admin_token = token_jwt_de_l_admin

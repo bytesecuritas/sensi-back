@@ -1,0 +1,136 @@
+### ========================================
+### TESTS POUR GET MY INFOS
+### ========================================
+### Tests pour la route /auth/my-infos qui retourne des informations selon le rôle
+### Cette route utilise une logique de routage basée sur le rôle de l'utilisateur
+
+### Variables globales pour les tests
+@base_url = http://localhost:3000
+@superadmin_token = {{login_superadmin.response.body.access_token}}
+@admin_token = {{login_admin.response.body.access_token}}
+@user_token = {{login_user.response.body.access_token}}
+
+### ========================================
+### 1. TESTS POUR UTILISATEUR NORMAL (ROLE: USER)
+### ========================================
+
+### Test getMyInfos pour un utilisateur normal
+### Doit retourner les informations détaillées de l'utilisateur via getUserInfos
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+### ========================================
+### 2. TESTS POUR ADMIN (ROLE: ADMIN)
+### ========================================
+
+### Test getMyInfos pour un admin
+### Doit retourner les statistiques de son organisation via getOrganisationStats
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+### ========================================
+### 3. TESTS POUR SUPERADMIN (ROLE: SUPERADMIN)
+### ========================================
+
+### Test getMyInfos pour un superadmin
+### Doit retourner le dashboard global via getGlobalDashboard
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 4. TESTS DE SÉCURITÉ ET ERREURS
+### ========================================
+
+### Test d'accès sans token (doit échouer)
+GET {{base_url}}/auth/my-infos
+Content-Type: application/json
+
+### Test avec token invalide (doit échouer)
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+### ========================================
+### 5. WORKFLOW COMPLET DE TEST
+### ========================================
+
+### Étape 1: Login superadmin et test getMyInfos
+# @name login_superadmin
+POST {{base_url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@cybersec.com",
+  "password": "SuperAdmin123!"
+}
+
+### Étape 2: Test getMyInfos pour superadmin
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{login_superadmin.response.body.access_token}}
+Content-Type: application/json
+
+### Étape 3: Login admin et test getMyInfos
+# @name login_admin
+POST {{base_url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@techcorp.com",
+  "password": "AdminTech123!"
+}
+
+### Étape 4: Test getMyInfos pour admin
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{login_admin.response.body.access_token}}
+Content-Type: application/json
+
+### Étape 5: Login utilisateur et test getMyInfos
+# @name login_user
+POST {{base_url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user1@techcorp.com",
+  "password": "User123!"
+}
+
+### Étape 6: Test getMyInfos pour utilisateur
+GET {{base_url}}/auth/my-infos
+Authorization: Bearer {{login_user.response.body.access_token}}
+Content-Type: application/json
+
+### ========================================
+### NOTES D'UTILISATION
+### ========================================
+###
+### Cette route /auth/my-infos implémente une logique de routage basée sur les rôles :
+###
+### **Pour un utilisateur avec rôle 'user' :**
+### - Appelle usersService.getUserInfos(userId)
+### - Retourne les informations détaillées de l'utilisateur
+### - Inclut statistiques, parcours, certificats
+###
+### **Pour un utilisateur avec rôle 'admin' :**
+### - Appelle organisationsService.getOrganisationStats(organisationId)
+### - Retourne les statistiques de son organisation
+### - L'organisation_id est récupéré depuis l'utilisateur admin
+###
+### **Pour un utilisateur avec rôle 'superadmin' :**
+### - Appelle analyticsService.getGlobalDashboard()
+### - Retourne le tableau de bord global du système
+### - Inclut toutes les métriques système
+###
+### **Sécurité :**
+### - Authentification JWT obligatoire
+### - Validation du rôle utilisateur
+### - Gestion des erreurs appropriée
+###
+### **Réponses attendues :**
+### - 200: Informations récupérées selon le rôle
+### - 401: Non authentifié
+### - 403: Accès refusé
+### - 404: Utilisateur non trouvé
+### - 400: Erreur de validation

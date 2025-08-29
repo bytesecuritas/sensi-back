@@ -2,6 +2,8 @@ import { Module, forwardRef } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
+import { OrganisationsModule } from '../organisations/organisations.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
@@ -12,6 +14,8 @@ import { UserCreationGuard } from './user-creation.guard';
 @Module({
   imports: [
     forwardRef(() => UsersModule),
+    forwardRef(() => OrganisationsModule),
+    forwardRef(() => AnalyticsModule),
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

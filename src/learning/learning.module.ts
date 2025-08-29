@@ -8,6 +8,10 @@ import { MediaContent } from './entities/media-content.entity';
 import { Certification } from './entities/certification.entity';
 import { Progress } from './entities/progress.entity';
 import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
+import { Quiz } from './entities/quiz.entity';
+import { Question } from './entities/question.entity';
+import { Reponse } from './entities/reponse.entity';
+import { QuizResponse } from './entities/quiz-response.entity';
 import { LearningController } from './learning.controller';
 import { LearningService } from './learning.service';
 import { User } from '../users/users.entity';
@@ -22,6 +26,10 @@ import { Organisation} from '../organisations/organisations.entity'
       Certification,
       Progress,
       OrganisationLearningPath,
+      Quiz,
+      Question,
+      Reponse,
+      QuizResponse,
       User,
       Organisation,
     ]),

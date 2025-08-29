@@ -41,7 +41,7 @@ async function createSuperAdmin() {
     console.log('📝 Veuillez saisir les informations du SuperAdmin :\n');
 
     const email = await askQuestion('Email: ');
-    const password = await askQuestion('Mot de passe (min 8 caractères): ');
+    const password = await askQuestion('Mot de passe (min 8 caractères, majuscules, minuscules, chiffres, caractères spéciaux): ');
     const nom = await askQuestion('Nom: ');
     const prenom = await askQuestion('Prénom: ');
     const age = parseInt(await askQuestion('Âge: '));
@@ -50,6 +50,23 @@ async function createSuperAdmin() {
     // Validation
     if (password.length < 8) {
       console.log('❌ Le mot de passe doit contenir au moins 8 caractères');
+      rl.close();
+      await app.close();
+      process.exit(1);
+    }
+
+    // Validation de complexité du mot de passe
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+      console.log('❌ Le mot de passe doit contenir au moins :');
+      console.log('   - Une lettre majuscule');
+      console.log('   - Une lettre minuscule');
+      console.log('   - Un chiffre');
+      console.log('   - Un caractère spécial (!@#$%^&*(),.?":{}|<>)');
       rl.close();
       await app.close();
       process.exit(1);

@@ -1,0 +1,271 @@
+### Exemples d'Upload de Fichiers Médias - Sensibilisation Cybersécurité
+### Correction des erreurs "property module_id should not exist" et "property file should not exist"
+### Instructions spécifiques pour Thunder Client
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjMyNDA2OCwiZXhwIjoxNzU2MzI3NjY4fQ.rjbcTrUraV61dKKlaNHyvtr4dGHcZTzcVMtDpUBdEKU
+
+### ========================================
+### INSTRUCTIONS SPÉCIFIQUES POUR THUNDER CLIENT
+### ========================================
+
+### ⚠️ IMPORTANT : Configuration Thunder Client pour l'upload
+
+### 1. Méthode : POST
+### 2. URL : http://localhost:3000/api/learning/media/upload?module_id=1
+### 3. Headers :
+###    - Authorization: Bearer [votre_token]
+###    - Content-Type: multipart/form-data (automatique)
+
+### 4. Body : Sélectionner "Form"
+### 5. Champs à ajouter dans le Form :
+###    - Key: "file", Type: "File", Value: [sélectionner votre fichier]
+###    - Key: "titre", Type: "Text", Value: "Votre titre"
+###    - Key: "type_contenu", Type: "Text", Value: "pdf" (ou "image", "video")
+###    - Key: "description", Type: "Text", Value: "Votre description"
+
+### ⚠️ POINTS CRITIQUES :
+### - Le champ fichier DOIT s'appeler exactement "file"
+### - Le type DOIT être "File" pour le champ fichier
+### - Les autres champs DOIVENT être de type "Text"
+### - Vérifiez que le fichier n'a pas d'espaces dans le nom
+
+### ========================================
+### 1. UPLOAD DE FICHIERS MÉDIAS (CORRIGÉ)
+### ========================================
+
+### Test 1: Upload d'un fichier PDF
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier PDF]
+# - titre: "Guide de Sécurité PDF"
+# - type_contenu: "pdf"
+# - description: "Guide complet sur les bonnes pratiques de sécurité"
+
+###
+
+### Test 2: Upload d'une image JPEG
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier JPEG]
+# - titre: "Diagramme de Sécurité"
+# - type_contenu: "image"
+# - description: "Diagramme illustrant les concepts de sécurité"
+
+###
+
+### Test 3: Upload d'une vidéo MP4
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier MP4]
+# - titre: "Tutoriel Vidéo"
+# - type_contenu: "video"
+# - description: "Tutoriel vidéo sur la cybersécurité"
+
+###
+
+### ========================================
+### 2. TESTS DE CORRECTION DES ERREURS
+### ========================================
+
+### Test 4: Upload avec module_id dans le body (doit être ignoré)
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier]
+# - titre: "Test avec module_id dans body"
+# - type_contenu: "pdf"
+# - description: "Test pour vérifier que module_id dans body est ignoré"
+# - module_id: 999 (doit être ignoré, le module_id du query parameter sera utilisé)
+
+###
+
+### Test 5: Upload sans module_id dans le body (normal)
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier]
+# - titre: "Test sans module_id dans body"
+# - type_contenu: "pdf"
+# - description: "Test normal sans module_id dans le body"
+
+###
+
+### Test 6: Upload avec champs supplémentaires (doit être ignoré)
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier]
+# - titre: "Test avec champs supplémentaires"
+# - type_contenu: "pdf"
+# - description: "Test avec champs supplémentaires"
+# - champs_inexistant: "valeur" (doit être ignoré)
+# - autre_champ: "autre_valeur" (doit être ignoré)
+
+###
+
+### ========================================
+### 3. MISE À JOUR DE FICHIERS MÉDIAS
+### ========================================
+
+### Test 7: Mise à jour d'un fichier média existant
+### Note: Utilisez Thunder Client avec la configuration ci-dessus
+PUT {{baseUrl}}/learning/media/1/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un nouveau fichier]
+# - titre: "Fichier Mis à Jour"
+# - type_contenu: "pdf"
+# - description: "Description mise à jour"
+
+###
+
+### ========================================
+### 4. VÉRIFICATION DES UPLOADS
+### ========================================
+
+### Test 8: Lister les médias d'un module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 9: Obtenir un média spécifique
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 10: Streamer un média
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 5. TESTS D'ERREURS
+### ========================================
+
+### Test 11: Upload sans fichier (doit échouer)
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec seulement:
+# - titre: "Test sans fichier"
+# - type_contenu: "pdf"
+
+###
+
+### Test 12: Upload avec module inexistant (doit échouer)
+POST {{baseUrl}}/learning/media/upload?module_id=999
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier]
+# - titre: "Test module inexistant"
+# - type_contenu: "pdf"
+
+###
+
+### Test 13: Upload avec type de fichier non autorisé (doit échouer)
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier .txt ou .docx]
+# - titre: "Test type non autorisé"
+# - type_contenu: "document"
+
+###
+
+### ========================================
+### 6. DÉPANNAGE SPÉCIFIQUE
+### ========================================
+
+### Problème : "No file uploaded"
+### Solutions :
+### 1. Vérifiez que le champ s'appelle exactement "file"
+### 2. Vérifiez que le type est "File" pour le champ fichier
+### 3. Vérifiez que le fichier n'a pas d'espaces dans le nom
+### 4. Renommez le fichier sans espaces (ex: "cofig-conda.pdf")
+### 5. Vérifiez que le token n'est pas expiré
+
+### Problème : "Invalid file type"
+### Solutions :
+### 1. Vérifiez que le fichier est bien un PDF, JPEG, PNG ou MP4
+### 2. Les corrections appliquées permettent maintenant les PDF avec MIME type flexible
+### 3. Vérifiez les logs du serveur pour plus de détails
+
+### ========================================
+### 7. LOGS DE DIAGNOSTIC
+### ========================================
+
+### Après avoir appliqué les corrections, les logs du serveur devraient afficher :
+### File upload attempt: {
+###   originalname: 'cofig conda.pdf',
+###   mimetype: 'application/pdf',
+###   size: 123456
+### }
+### File accepted: cofig conda.pdf
+### uploadMediaContent called with: {
+###   file: { originalname: 'cofig conda.pdf', mimetype: 'application/pdf', size: 123456 },
+###   moduleId: 1,
+###   mediaData: { titre: 'Test', type_contenu: 'pdf', description: 'Test' }
+### }
+
+### ========================================
+### 8. CORRECTIONS APPLIQUÉES
+### ========================================
+
+### ✅ Correction de l'erreur "property module_id should not exist" :
+### - Le module_id dans le body est maintenant ignoré
+### - Seul le module_id du paramètre de requête est utilisé
+
+### ✅ Correction de l'erreur "property file should not exist" :
+### - Ajout d'une propriété file optionnelle dans UploadMediaContentDto
+### - Configuration du ValidationPipe avec whitelist: true et forbidNonWhitelisted: false
+### - Les champs supplémentaires dans le form-data sont maintenant ignorés
+
+### ✅ Validation améliorée des PDF :
+### - Vérification plus souple des types MIME pour les PDF
+### - Support des fichiers PDF avec différents types MIME
+### - Logs de diagnostic pour identifier les problèmes
+
+### ✅ Validation améliorée :
+### - Seules les propriétés définies dans le DTO sont validées
+### - Les champs supplémentaires sont ignorés sans erreur
+### - Le fichier est correctement géré par le FileInterceptor
+
+### Types de fichiers autorisés :
+### - Images: JPEG, PNG
+### - Vidéos: MP4
+### - Documents: PDF (avec validation flexible)

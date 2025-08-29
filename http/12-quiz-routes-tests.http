@@ -1,0 +1,244 @@
+### Tests des Routes de Quiz - Sensibilisation Cybersécurité
+### Nouvelles routes pour la gestion des quiz
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjMyNDA2OCwiZXhwIjoxNzU2MzI3NjY4fQ.rjbcTrUraV61dKKlaNHyvtr4dGHcZTzcVMtDpUBdEKU
+
+### ========================================
+### 1. CRÉATION DE QUIZ
+### ========================================
+
+### Test 1: Créer un quiz pour un module
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz sur les Mots de Passe Sécurisés",
+  "description": "Testez vos connaissances sur la création de mots de passe sécurisés",
+  "questions": [
+    {
+      "question": "Quelle est la longueur minimale recommandée pour un mot de passe ?",
+      "type": "multiple_choice",
+      "options": ["4 caractères", "8 caractères", "12 caractères", "16 caractères"],
+      "reponse_correcte": 2,
+      "explication": "Un mot de passe de 12 caractères offre une sécurité suffisante"
+    },
+    {
+      "question": "Quel élément NE devrait PAS être inclus dans un mot de passe ?",
+      "type": "multiple_choice",
+      "options": ["Lettres majuscules", "Chiffres", "Symboles", "Nom de votre chien"],
+      "reponse_correcte": 3,
+      "explication": "Les informations personnelles sont facilement devinables"
+    }
+  ]
+}
+
+###
+
+### Test 2: Créer un quiz avec questions à réponse libre
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz sur la Sécurité Générale",
+  "description": "Questions ouvertes sur la cybersécurité",
+  "questions": [
+    {
+      "question": "Expliquez pourquoi il est important de ne pas réutiliser les mêmes mots de passe.",
+      "type": "text",
+      "reponse_correcte": "Si un compte est compromis, les autres comptes restent sécurisés",
+      "explication": "La réutilisation de mots de passe multiplie les risques"
+    }
+  ]
+}
+
+###
+
+### ========================================
+### 2. RÉCUPÉRATION DE QUIZ
+### ========================================
+
+### Test 3: Obtenir tous les quiz d'un module
+GET {{baseUrl}}/learning/modules/1/quiz
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 4: Obtenir un quiz spécifique avec ses questions
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 3. SOUMISSION DE RÉPONSES
+### ========================================
+
+### Test 5: Soumettre les réponses d'un utilisateur à un quiz
+POST {{baseUrl}}/learning/quiz/1/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse": 2
+    },
+    {
+      "question_id": 2,
+      "reponse": 3
+    }
+  ]
+}
+
+###
+
+### Test 6: Soumettre des réponses pour un quiz avec questions textuelles
+POST {{baseUrl}}/learning/quiz/2/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse": "Si un compte est compromis, les autres comptes restent sécurisés car ils utilisent des mots de passe différents."
+    }
+  ]
+}
+
+###
+
+### ========================================
+### 4. RÉSULTATS DE QUIZ
+### ========================================
+
+### Test 7: Obtenir les résultats d'un quiz pour l'utilisateur courant
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 8: Obtenir les résultats d'un autre quiz
+GET {{baseUrl}}/learning/quiz/2/results
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 5. SUPPRESSION DE QUIZ
+### ========================================
+
+### Test 9: Supprimer un quiz
+DELETE {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 6. TESTS D'ERREURS
+### ========================================
+
+### Test 10: Créer un quiz pour un module inexistant
+POST {{baseUrl}}/learning/modules/999/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz Test",
+  "description": "Test avec module inexistant"
+}
+
+###
+
+### Test 11: Obtenir un quiz inexistant
+GET {{baseUrl}}/learning/quiz/999
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 12: Soumettre des réponses sans authentification
+POST {{baseUrl}}/learning/quiz/1/submit
+Content-Type: {{contentType}}
+
+{
+  "reponses": []
+}
+
+###
+
+### ========================================
+### 7. STRUCTURE DES DONNÉES
+### ========================================
+
+### Structure d'un quiz :
+### {
+###   "quiz_id": 1,
+###   "titre": "Titre du quiz",
+###   "description": "Description du quiz",
+###   "module_id": 1,
+###   "questions": [
+###     {
+###       "question_id": 1,
+###       "question": "Texte de la question",
+###       "type": "multiple_choice" | "text" | "true_false",
+###       "options": ["Option 1", "Option 2", ...], // Pour multiple_choice
+###       "reponse_correcte": 2, // Index de la bonne réponse
+###       "explication": "Explication de la réponse"
+###     }
+###   ]
+### }
+
+### Structure d'une soumission :
+### {
+###   "reponses": [
+###     {
+###       "question_id": 1,
+###       "reponse": 2 // Index pour multiple_choice, texte pour text
+###     }
+###   ]
+### }
+
+### Structure des résultats :
+### {
+###   "quiz_id": 1,
+###   "score": 80,
+###   "total_questions": 5,
+###   "bonnes_reponses": 4,
+###   "details": [
+###     {
+###       "question_id": 1,
+###       "correcte": true,
+###       "reponse_utilisateur": 2,
+###       "reponse_correcte": 2
+###     }
+###   ]
+### }
+
+### ========================================
+### 8. ROUTES DISPONIBLES
+### ========================================
+
+### ✅ POST /learning/modules/:moduleId/quiz
+### - Créer un quiz pour un module spécifique
+
+### ✅ GET /learning/modules/:moduleId/quiz
+### - Obtenir tous les quiz d'un module
+
+### ✅ GET /learning/quiz/:quizId
+### - Obtenir un quiz spécifique avec ses questions
+
+### ✅ POST /learning/quiz/:quizId/submit
+### - Soumettre les réponses d'un utilisateur à un quiz
+
+### ✅ GET /learning/quiz/:quizId/results
+### - Obtenir les résultats d'un quiz pour l'utilisateur courant
+
+### ✅ DELETE /learning/quiz/:quizId
+### - Supprimer un quiz

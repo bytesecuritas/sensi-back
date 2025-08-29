@@ -1,0 +1,162 @@
+### Tests des Parcours d'Apprentissage - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTYzMjQ4OTMsImV4cCI6MTc1NjMyODQ5M30.iQEyHxyCMNQPa4XqgZ_jmTyb_0f0adPwCbITWWYOaRo
+
+### 1. Créer un parcours de sensibilisation basique
+POST {{baseUrl}}/learning/parcours
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Sensibilisation Cybersécurité - Niveau Débutant",
+  "description": "Parcours complet pour comprendre les bases de la cybersécurité et protéger vos données personnelles et professionnelles.",
+  "public_cible": "grand_public",
+  "duree_estimee_heures": 8.5
+}
+
+###
+
+### 2. Créer un parcours pour entreprises
+POST {{baseUrl}}/learning/parcours
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Cybersécurité en Entreprise - Niveau Intermédiaire",
+  "description": "Formation spécialisée pour les employés d'entreprise sur la protection des données, la détection de menaces et les bonnes pratiques.",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 12.0
+}
+
+###
+
+### 3. Créer un parcours pour enfants
+POST {{baseUrl}}/learning/parcours
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Sécurité Numérique pour Enfants",
+  "description": "Parcours ludique et éducatif pour apprendre aux enfants à naviguer en sécurité sur internet et protéger leurs informations.",
+  "public_cible": "enfants",
+  "duree_estimee_heures": 4.0
+}
+
+###
+
+### 4. Créer un parcours anti-phishing
+POST {{baseUrl}}/learning/parcours
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Détection et Prévention du Phishing",
+  "description": "Formation spécialisée pour identifier et éviter les tentatives de phishing, protéger vos comptes et vos données.",
+  "public_cible": "grand_public",
+  "duree_estimee_heures": 6.0
+}
+
+###
+
+### 5. Créer un parcours RGPD
+POST {{baseUrl}}/learning/parcours
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Protection des Données Personnelles (RGPD)",
+  "description": "Comprendre le RGPD, vos droits et obligations en matière de protection des données personnelles.",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 10.0
+}
+
+###
+
+### 6. Lister tous les parcours
+GET {{baseUrl}}/learning/parcours
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 7. Obtenir un parcours spécifique
+GET {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 8. Mettre à jour un parcours
+PATCH {{baseUrl}}/learning/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Sensibilisation Cybersécurité - Niveau Débutant (Mise à jour)",
+  "description": "Parcours complet et mis à jour pour comprendre les bases de la cybersécurité et protéger vos données personnelles et professionnelles.",
+  "duree_estimee_heures": 9.0
+}
+
+###
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzI1MTAwLCJleHAiOjE3NTYzMjg3MDB9.CrNdOJLIfohUMw8ZiyKOdP8w4Q74I4jBpQIHFyt-OEs
+
+### 9. Associer un parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "actif": true
+}
+
+###
+
+### 10. Associer plusieurs parcours à l'organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "actif": true
+}
+
+###
+
+POST {{baseUrl}}/learning/organisations/1/parcours/4
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "actif": true
+}
+
+###
+
+### 11. Obtenir les parcours d'une organisation
+GET {{baseUrl}}/learning/organisations/1/parcours
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 12. Désactiver un parcours pour une organisation
+PATCH {{baseUrl}}/learning/organisations/1/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "actif": false
+}
+
+###
+
+### 13. Supprimer un parcours (si non utilisé)
+DELETE {{baseUrl}}/learning/parcours/5
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin

@@ -1,0 +1,259 @@
+### ========================================
+### ANALYTICS & REPORTING SYSTEM TESTS
+### ========================================
+### Tests pour le système d'analytics et reporting du superadmin
+### Tous les endpoints nécessitent un token superadmin
+
+### Variables globales pour les tests
+@superadmin_token = {{login_superadmin.response.body.access_token}}
+@organisation_id = 1
+@learning_path_id = 1
+
+### ========================================
+### 1. TABLEAU DE BORD GLOBAL
+### ========================================
+
+### Obtenir le tableau de bord global du système
+GET {{base_url}}/analytics/dashboard
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Obtenir le tableau de bord avec filtres de temps
+GET {{base_url}}/analytics/dashboard?timeRange=month&limit=20
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Obtenir le tableau de bord avec période personnalisée
+GET {{base_url}}/analytics/dashboard?startDate=2024-01-01&endDate=2024-12-31
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 2. RAPPORTS D'ORGANISATION
+### ========================================
+
+### Obtenir un rapport détaillé pour une organisation spécifique
+GET {{base_url}}/analytics/organisations/{{organisation_id}}/report
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Rapport d'organisation avec filtres de temps
+GET {{base_url}}/analytics/organisations/{{organisation_id}}/report?timeRange=quarter&limit=50
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 3. SANTÉ DU SYSTÈME
+### ========================================
+
+### Obtenir le rapport de santé du système
+GET {{base_url}}/analytics/system/health
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 4. TENDANCES ET ÉVOLUTIONS
+### ========================================
+
+### Tendances de croissance des utilisateurs
+GET {{base_url}}/analytics/trends/users?timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Statistiques des organisations
+GET {{base_url}}/analytics/trends/organisations?timeRange=quarter
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Statistiques des parcours d'apprentissage
+GET {{base_url}}/analytics/trends/learning-paths?timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Statistiques des certifications
+GET {{base_url}}/analytics/trends/certifications?timeRange=year
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 5. TOP PERFORMERS
+### ========================================
+
+### Organisations les plus performantes
+GET {{base_url}}/analytics/top-performers/organisations?limit=10
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Parcours d'apprentissage les plus populaires
+GET {{base_url}}/analytics/top-performers/learning-paths?limit=15
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 6. EXPORT DE RAPPORTS
+### ========================================
+
+### Exporter un rapport en JSON
+POST {{base_url}}/analytics/export?format=json&timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Exporter un rapport en CSV
+POST {{base_url}}/analytics/export?format=csv&timeRange=quarter
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Exporter un rapport en Excel
+POST {{base_url}}/analytics/export?format=excel&timeRange=year
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Exporter un rapport en PDF
+POST {{base_url}}/analytics/export?format=pdf&timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 7. ACTIVITÉ TEMPS RÉEL
+### ========================================
+
+### Obtenir l'activité en temps réel du système
+GET {{base_url}}/analytics/realtime/activity
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 8. PRÉDICTIONS ET FORECASTING
+### ========================================
+
+### Obtenir les prédictions d'engagement
+GET {{base_url}}/analytics/predictions/engagement
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 9. COMPARAISONS DE PÉRIODES
+### ========================================
+
+### Comparer les performances entre deux périodes
+GET {{base_url}}/analytics/comparative/periods?period1=2024-01-01/2024-03-31&period2=2024-04-01/2024-06-30
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Comparaison trimestrielle
+GET {{base_url}}/analytics/comparative/periods?period1=2024-Q1&period2=2024-Q2
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 10. TESTS DE SÉCURITÉ ET ERREURS
+### ========================================
+
+### Test d'accès sans token (doit échouer)
+GET {{base_url}}/analytics/dashboard
+Content-Type: application/json
+
+### Test d'accès avec token utilisateur normal (doit échouer)
+GET {{base_url}}/analytics/dashboard
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+### Test d'accès avec token admin (doit échouer)
+GET {{base_url}}/analytics/dashboard
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+### Test avec organisation inexistante
+GET {{base_url}}/analytics/organisations/99999/report
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Test avec paramètres invalides
+GET {{base_url}}/analytics/dashboard?timeRange=invalid&limit=-1
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### 11. WORKFLOW COMPLET D'ANALYTICS
+### ========================================
+
+### Étape 1: Vérifier la santé du système
+GET {{base_url}}/analytics/system/health
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 2: Obtenir le tableau de bord global
+GET {{base_url}}/analytics/dashboard?timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 3: Identifier les organisations performantes
+GET {{base_url}}/analytics/top-performers/organisations?limit=5
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 4: Analyser les tendances utilisateurs
+GET {{base_url}}/analytics/trends/users?timeRange=quarter
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 5: Obtenir un rapport détaillé pour la première organisation
+GET {{base_url}}/analytics/organisations/1/report?timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 6: Vérifier l'activité en temps réel
+GET {{base_url}}/analytics/realtime/activity
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 7: Obtenir les prédictions
+GET {{base_url}}/analytics/predictions/engagement
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### Étape 8: Exporter un rapport complet
+POST {{base_url}}/analytics/export?format=json&timeRange=month
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
+### ========================================
+### NOTES D'UTILISATION
+### ========================================
+###
+### Ce fichier de test couvre l'ensemble du système d'analytics :
+###
+### 1. **Tableau de bord global** : Vue d'ensemble du système
+### 2. **Rapports d'organisation** : Analyses détaillées par organisation
+### 3. **Santé du système** : Monitoring et métriques système
+### 4. **Tendances** : Évolutions temporelles des métriques
+### 5. **Top performers** : Classements et performances
+### 6. **Export** : Génération de rapports dans différents formats
+### 7. **Temps réel** : Activité en direct du système
+### 8. **Prédictions** : Forecasting et anticipations
+### 9. **Comparaisons** : Analyses comparatives entre périodes
+### 10. **Sécurité** : Tests de contrôle d'accès
+### 11. **Workflow complet** : Processus d'analyse end-to-end
+###
+### **Métriques clés surveillées :**
+### - Croissance des utilisateurs
+### - Taux de completion des modules
+### - Performance des organisations
+### - Popularité des parcours
+### - Activité système
+### - Tendances d'engagement
+### - Prédictions de croissance
+###
+### **Formats d'export supportés :**
+### - JSON (pour intégration API)
+### - CSV (pour analyse Excel)
+### - Excel (rapports structurés)
+### - PDF (rapports formels)
+###
+### **Périodes temporelles :**
+### - day : 24 dernières heures
+### - week : 7 derniers jours
+### - month : 30 derniers jours
+### - quarter : 3 derniers mois
+### - year : 12 derniers mois
+### - Périodes personnalisées (startDate/endDate)

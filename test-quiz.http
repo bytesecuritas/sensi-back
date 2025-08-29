@@ -1,0 +1,230 @@
+### Test des fonctionnalités de Quiz
+
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0ODY3NTMsImV4cCI6MTc1NjQ5MDM1M30.GYALUZxJ7MruIJOUGt6QAN9yG-oPKov3jNQ6Hx2I90U
+### 1. Créer un quiz pour un module
+POST http://localhost:3000/api/learning/modules/1/quiz
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz sur la cybersécurité",
+  "description": "Testez vos connaissances en cybersécurité",
+  "ordre": 1,
+  "actif": true,
+  "temps_limite_minutes": 15,
+  "score_minimum_pour_reussite": 70.0,
+  "questions": [
+    {
+      "enonce": "Qu'est-ce que le phishing ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 10.0,
+      "explication": "Le phishing est une technique d'ingénierie sociale",
+      "reponses": [
+        {
+          "texte": "Une technique d'ingénierie sociale pour voler des informations",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Un type de virus informatique",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "Un protocole de sécurité",
+          "est_correcte": false,
+          "ordre": 3
+        },
+        {
+          "texte": "Un logiciel antivirus",
+          "est_correcte": false,
+          "ordre": 4
+        }
+      ]
+    },
+    {
+      "enonce": "Quelles sont les bonnes pratiques pour un mot de passe sécurisé ?",
+      "type_question": "choix_multiple",
+      "ordre": 2,
+      "points": 15.0,
+      "explication": "Un mot de passe sécurisé doit respecter plusieurs critères",
+      "reponses": [
+        {
+          "texte": "Utiliser au moins 12 caractères",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Inclure des majuscules et minuscules",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "Inclure des chiffres et symboles",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "Utiliser des informations personnelles",
+          "est_correcte": false,
+          "ordre": 4
+        },
+        {
+          "texte": "Réutiliser le même mot de passe partout",
+          "est_correcte": false,
+          "ordre": 5
+        }
+      ]
+    },
+    {
+      "enonce": "Il est sécurisé de cliquer sur tous les liens reçus par email.",
+      "type_question": "vrai_faux",
+      "ordre": 3,
+      "points": 5.0,
+      "explication": "Il faut toujours vérifier la source avant de cliquer",
+      "reponses": [
+        {
+          "texte": "Vrai",
+          "est_correcte": false,
+          "ordre": 1
+        },
+        {
+          "texte": "Faux",
+          "est_correcte": true,
+          "ordre": 2
+        }
+      ]
+    },
+    {
+      "enonce": "Décrivez comment vous protégeriez vos données personnelles en ligne.",
+      "type_question": "texte_libre",
+      "ordre": 4,
+      "points": 10.0,
+      "explication": "La protection des données personnelles est essentielle"
+    }
+  ]
+}
+
+### 2. Obtenir tous les quiz d'un module
+GET http://localhost:3000/api/learning/modules/1/quiz
+Authorization: Bearer {{authToken}}
+
+### 3. Obtenir un quiz spécifique
+GET http://localhost:3000/api/learning/quiz/1
+Authorization: Bearer {{authToken}}
+
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIyQHRlY2hjb3JwLmNvbSIsInN1YiI6NCwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTY0ODg4OTMsImV4cCI6MTc1NjQ5MjQ5M30.yTIYXokMCjq4JNBQiuplprtCLDjxCwSm2E6TOQauCuc
+### 4. Soumettre les réponses d'un utilisateur à un quiz
+POST http://localhost:3000/api/learning/quiz/1/submit
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "quiz_id": 1,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    },
+    {
+      "question_id": 2,
+      "reponses_multiple": [1, 2, 3]
+    },
+    {
+      "question_id": 3,
+      "reponse_vrai_faux": false
+    },
+    {
+      "question_id": 4,
+      "reponse_texte": "Je protégerais mes données en utilisant des mots de passe forts, en activant l'authentification à deux facteurs, en évitant de partager des informations personnelles sur les réseaux sociaux et en utilisant un VPN."
+    }
+  ],
+  "temps_total_secondes": 450
+}
+
+### 5. Obtenir les résultats d'un quiz
+GET http://localhost:3000/api/learning/quiz/1/results
+Authorization: Bearer {{user_token}}
+
+### 6. Supprimer un quiz
+DELETE http://localhost:3000/api/learning/quiz/1
+Authorization: Bearer {{authToken}}
+
+### 7. Créer un deuxième quiz pour le même module
+POST http://localhost:3000/api/learning/modules/1/quiz
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz avancé sur la cybersécurité",
+  "description": "Quiz pour tester les connaissances avancées",
+  "ordre": 2,
+  "actif": true,
+  "temps_limite_minutes": 20,
+  "score_minimum_pour_reussite": 80.0,
+  "questions": [
+    {
+      "enonce": "Qu'est-ce qu'un ransomware ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 20.0,
+      "explication": "Un ransomware chiffre les fichiers et demande une rançon",
+      "reponses": [
+        {
+          "texte": "Un logiciel qui chiffre les fichiers et demande une rançon",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Un antivirus",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "Un pare-feu",
+          "est_correcte": false,
+          "ordre": 3
+        }
+      ]
+    },
+    {
+      "enonce": "Quelles mesures de sécurité sont essentielles pour une entreprise ?",
+      "type_question": "choix_multiple",
+      "ordre": 2,
+      "points": 25.0,
+      "explication": "Plusieurs mesures sont nécessaires pour sécuriser une entreprise",
+      "reponses": [
+        {
+          "texte": "Formation des employés",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Pare-feu et antivirus",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "Sauvegardes régulières",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "Mots de passe faibles",
+          "est_correcte": false,
+          "ordre": 4
+        },
+        {
+          "texte": "Partage de tous les accès",
+          "est_correcte": false,
+          "ordre": 5
+        }
+      ]
+    }
+  ]
+}
+
+### 8. Vérifier la progression du module après avoir répondu aux quiz
+GET http://localhost:3000/api/learning/progress/user/1
+Authorization: Bearer {{user_token}}

@@ -15,10 +15,11 @@ import {
     UploadedFile,
     UseGuards,
     UseInterceptors,
-    ValidationPipe
+    ValidationPipe,
+    Patch
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as fs from 'fs';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -27,6 +28,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateLearningModuleDto } from './dto/create-learning-module.dto';
 import { CreateMediaContentDto } from './dto/create-media-content.dto';
 import { UploadMediaContentDto } from './dto/upload-media-content.dto';
+import { CreateQuizDto } from './dto/create-quiz.dto';
+import { SubmitQuizResponseDto } from './dto/submit-quiz-response.dto';
 import { Certification } from './entities/certification.entity';
 import { LearningPathModule } from './entities/learning-module.entity';
 import { LearningPath } from './entities/learning-path.entity';
@@ -34,8 +37,10 @@ import { MediaContent } from './entities/media-content.entity';
 import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
 import { Progress } from './entities/progress.entity';
 import { LearningService } from './learning.service';
+import { UpdateOrganisationLearningPathDto } from './dto/update-organisation-learning-path.dto';
 
-@ApiTags('Media')
+@ApiTags('Learning')
+@ApiBearerAuth('bearer')
 @Controller('learning')
 @UseGuards(JwtAuthGuard)
 export class LearningController {
@@ -44,21 +49,28 @@ export class LearningController {
   // ===== PARCOURS D'APPRENTISSAGE =====
 
   @Post('parcours')
+  @ApiOperation({ summary: 'Créer un parcours', description: 'Crée un nouveau parcours d’apprentissage.' })
+  @ApiResponse({ status: 201, description: 'Parcours créé', type: LearningPath })
   async createLearningPath(@Body() learningPathData: Partial<LearningPath>): Promise<LearningPath> {
     return await this.learningService.createLearningPath(learningPathData);
   }
 
   @Get('parcours')
+  @ApiOperation({ summary: 'Lister les parcours' })
+  @ApiResponse({ status: 200, description: 'Liste des parcours', type: [LearningPath] })
   async getAllLearningPaths(): Promise<LearningPath[]> {
     return await this.learningService.getAllLearningPaths();
   }
 
   @Get('parcours/:id')
+  @ApiOperation({ summary: 'Détail d’un parcours' })
+  @ApiParam({ name: 'id', type: String })
   async getLearningPathById(@Param('id') id: string): Promise<LearningPath> {
     return await this.learningService.getLearningPathById(+id);
   }
 
   @Get('parcours/user/available')
+  @ApiOperation({ summary: 'Parcours disponibles pour l’utilisateur courant' })
   async getUserAvailableLearningPaths(@Request() req): Promise<LearningPath[]> {
     const userId = req.user?.users_id;
     if (!userId) {
@@ -70,6 +82,8 @@ export class LearningController {
     // ===== SUPPRESSION ET MISE À JOUR PARCOURS =====
 
   @Delete('parcours/:id')
+  @ApiOperation({ summary: 'Supprimer un parcours (cascade modules et médias)' })
+  @ApiParam({ name: 'id', type: String })
   async deleteLearningPath(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningPath(+id);
     return { message: 'Parcours supprimé avec succès (modules et médias associés également supprimés)' };
@@ -78,11 +92,30 @@ export class LearningController {
   // ===== MODULES D'APPRENTISSAGE =====
 
   @Post('modules')
+  @ApiOperation({ summary: 'Créer un module' })
+  @ApiResponse({ status: 201, description: 'Module créé', type: LearningPathModule })
   async createLearningModule(@Body() moduleData: CreateLearningModuleDto): Promise<LearningPathModule> {
     return await this.learningService.createLearningModule(moduleData);
   }
 
+  @Get('modules')
+  @ApiOperation({ summary: 'Lister tous les modules' })
+  @ApiResponse({ status: 200, description: 'Liste des modules', type: [LearningPathModule] })
+  async getAllLearningModules(): Promise<LearningPathModule[]> {
+    return await this.learningService.getAllLearningModules();
+  }
+
+  @Get('modules/:id')
+  @ApiOperation({ summary: 'Obtenir un module spécifique' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'Module trouvé', type: LearningPathModule })
+  async getLearningModuleById(@Param('id') id: string): Promise<LearningPathModule> {
+    return await this.learningService.getLearningModuleById(+id);
+  }
+
   @Get('parcours/:parcoursId/modules')
+  @ApiOperation({ summary: 'Lister les modules d’un parcours' })
+  @ApiParam({ name: 'parcoursId', type: String })
   async getModulesByLearningPath(@Param('parcoursId') parcoursId: string): Promise<LearningPathModule[]> {
     return await this.learningService.getModulesByLearningPath(+parcoursId);
   }
@@ -90,6 +123,8 @@ export class LearningController {
   // ===== MISE À JOUR MODULE =====
 
   @Put('modules/:id')
+  @ApiOperation({ summary: 'Mettre à jour un module' })
+  @ApiParam({ name: 'id', type: String })
   async updateLearningModule(
     @Param('id') id: string,
     @Body() moduleData: Partial<LearningPathModule>
@@ -100,6 +135,8 @@ export class LearningController {
   // ===== SUPPRESSION MODULE =====
 
   @Delete('modules/:id')
+  @ApiOperation({ summary: 'Supprimer un module' })
+  @ApiParam({ name: 'id', type: String })
   async deleteLearningModule(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningModule(+id, true);
     return { message: 'Module supprimé avec succès (médias associés également supprimés)' };
@@ -107,9 +144,12 @@ export class LearningController {
 
   // Les méthodes pour les contenus médias
   @Post('media/upload')
-  @ApiOperation({ summary: 'Upload a media file' })
+  @ApiOperation({ summary: 'Uploader un média', description: 'Charge un fichier média et le rattache à un module.' })
   @ApiResponse({ status: 201, description: 'Media uploaded successfully', type: MediaContent })
   @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiConsumes('multipart/form-data')
+  @ApiQuery({ name: 'module_id', type: Number, required: true })
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
@@ -126,20 +166,48 @@ export class LearningController {
       },
     }),
     fileFilter: (req, file, cb) => {
+      console.log('File upload attempt:', {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size
+      });
+      
       const allowedMimes = ['image/jpeg', 'image/png', 'video/mp4', 'application/pdf'];
-      if (allowedMimes.includes(file.mimetype)) {
+      
+      // Vérification plus souple pour les PDF
+      const isPdf = file.mimetype === 'application/pdf' || 
+                   file.originalname.toLowerCase().endsWith('.pdf') ||
+                   file.mimetype.includes('pdf');
+      
+      const isAllowed = allowedMimes.includes(file.mimetype) || isPdf;
+      
+      if (isAllowed) {
+        console.log('File accepted:', file.originalname);
         cb(null, true);
       } else {
-        cb(new BadRequestException('Invalid file type'), false);
+        console.log('File rejected:', file.originalname, 'MIME type:', file.mimetype);
+        cb(new BadRequestException(`Invalid file type: ${file.mimetype}. Allowed: ${allowedMimes.join(', ')}`), false);
       }
     },
   }))
   async uploadMediaContent(
     @UploadedFile() file: Express.Multer.File,
     @Query('module_id', ParseIntPipe) moduleId: number,
-    @Body(new ValidationPipe({ transform: true })) mediaData: UploadMediaContentDto
+    @Body(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: false })) mediaData: UploadMediaContentDto
   ): Promise<MediaContent> {
+    console.log('uploadMediaContent called with:', {
+      file: file ? {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        filename: file.filename
+      } : null,
+      moduleId,
+      mediaData
+    });
+    
     if (!file) {
+      console.log('No file received in uploadMediaContent');
       throw new BadRequestException('No file uploaded');
     }
     
@@ -167,8 +235,9 @@ export class LearningController {
       fs.renameSync(tempPath, finalPath);
       
       // Créer l'objet complet pour le service
+      const { module_id, ...mediaDataWithoutModuleId } = mediaData as any;
       const completeMediaData: CreateMediaContentDto = {
-        ...mediaData,
+        ...mediaDataWithoutModuleId,
         module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
         chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
         nom_fichier: file.originalname,
@@ -186,10 +255,14 @@ export class LearningController {
   }
 
   @Put('media/:id/upload')
-  @ApiOperation({ summary: 'Update a media file' })
+  @ApiOperation({ summary: 'Mettre à jour un fichier média' })
   @ApiResponse({ status: 200, description: 'Media updated successfully', type: MediaContent })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 404, description: 'Media not found' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', type: String })
+  @ApiQuery({ name: 'module_id', type: Number, required: true })
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
@@ -206,11 +279,27 @@ export class LearningController {
       },
     }),
     fileFilter: (req, file, cb) => {
+      console.log('File upload attempt (update):', {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size
+      });
+      
       const allowedMimes = ['image/jpeg', 'image/png', 'video/mp4', 'application/pdf'];
-      if (allowedMimes.includes(file.mimetype)) {
+      
+      // Vérification plus souple pour les PDF
+      const isPdf = file.mimetype === 'application/pdf' || 
+                   file.originalname.toLowerCase().endsWith('.pdf') ||
+                   file.mimetype.includes('pdf');
+      
+      const isAllowed = allowedMimes.includes(file.mimetype) || isPdf;
+      
+      if (isAllowed) {
+        console.log('File accepted (update):', file.originalname);
         cb(null, true);
       } else {
-        cb(new BadRequestException('Invalid file type'), false);
+        console.log('File rejected (update):', file.originalname, 'MIME type:', file.mimetype);
+        cb(new BadRequestException(`Invalid file type: ${file.mimetype}. Allowed: ${allowedMimes.join(', ')}`), false);
       }
     },
   }))
@@ -218,7 +307,7 @@ export class LearningController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
     @Query('module_id', ParseIntPipe) moduleId: number,
-    @Body(new ValidationPipe()) mediaData: UploadMediaContentDto
+    @Body(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: false })) mediaData: UploadMediaContentDto
   ): Promise<MediaContent> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
@@ -244,8 +333,9 @@ export class LearningController {
       fs.renameSync(tempPath, finalPath);
       
       // Créer l'objet complet pour le service
+      const { module_id, ...mediaDataWithoutModuleId } = mediaData as any;
       const completeMediaData: CreateMediaContentDto = {
-        ...mediaData,
+        ...mediaDataWithoutModuleId,
         module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
         chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
         nom_fichier: file.originalname,
@@ -265,17 +355,23 @@ export class LearningController {
   // ===== SUPPRESSION MEDIA =====
 
   @Delete('media/:id')
+  @ApiOperation({ summary: 'Supprimer un média' })
+  @ApiParam({ name: 'id', type: String })
   async deleteMediaContent(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteMediaContent(+id);
     return { message: 'Media supprimé avec succès (fichier associé également supprimé)' };
   }
 
   @Get('modules/:moduleId/media')
+  @ApiOperation({ summary: 'Lister les médias d’un module' })
+  @ApiParam({ name: 'moduleId', type: String })
   async getMediaContentByModule(@Param('moduleId') moduleId: string): Promise<MediaContent[]> {
     return await this.learningService.getMediaContentByModule(+moduleId);
   }
 
   @Get('media/:mediaId/stream')
+  @ApiOperation({ summary: 'Streamer un média (supporte HTTP Range)' })
+  @ApiParam({ name: 'mediaId', type: String })
   async streamMediaContent(@Param('mediaId') mediaId: string, @Request() req, @Response() res) {
     const media = await this.learningService.getMediaContentById(+mediaId);
     if (!media) {
@@ -319,11 +415,14 @@ export class LearningController {
   // ===== PROGRESSIONS =====
 
   @Post('progress')
+  @ApiOperation({ summary: 'Créer une progression' })
   async createProgress(@Body() progressData: Partial<Progress>): Promise<Progress> {
     return await this.learningService.createProgress(progressData);
   }
 
   @Put('progress/:id')
+  @ApiOperation({ summary: 'Mettre à jour une progression' })
+  @ApiParam({ name: 'id', type: String })
   async updateProgress(
     @Param('id') id: string,
     @Body() progressData: Partial<Progress>,
@@ -332,6 +431,7 @@ export class LearningController {
   }
 
   @Get('progress/user')
+  @ApiOperation({ summary: 'Progressions de l’utilisateur courant' })
   async getUserProgress(@Request() req): Promise<Progress[]> {
     console.log('getUserProgress called - req.user:', req.user);
     const userId = req.user?.users_id;
@@ -343,6 +443,8 @@ export class LearningController {
   }
 
   @Get('progress/user/:moduleId')
+  @ApiOperation({ summary: 'Progression de l’utilisateur pour un module' })
+  @ApiParam({ name: 'moduleId', type: String })
   async getModuleProgress(
     @Request() req,
     @Param('moduleId') moduleId: string,
@@ -359,11 +461,13 @@ export class LearningController {
   // ===== CERTIFICATIONS =====
 
   @Post('certifications')
+  @ApiOperation({ summary: 'Créer une certification' })
   async createCertification(@Body() certificationData: Partial<Certification>): Promise<Certification> {
     return await this.learningService.createCertification(certificationData);
   }
 
   @Get('certifications/user')
+  @ApiOperation({ summary: 'Certifications de l’utilisateur courant' })
   async getUserCertifications(@Request() req): Promise<Certification[]> {
     const userId = req.user?.users_id;
     if (!userId) {
@@ -375,6 +479,9 @@ export class LearningController {
   // ===== GESTION DES PARCOURS PAR ORGANISATION =====
 
   @Post('organisations/:organisationId/parcours/:parcoursId')
+  @ApiOperation({ summary: 'Associer un parcours à une organisation' })
+  @ApiParam({ name: 'organisationId', type: String })
+  @ApiParam({ name: 'parcoursId', type: String })
   async addLearningPathToOrganisation(
     @Param('organisationId') organisationId: string,
     @Param('parcoursId') parcoursId: string,
@@ -383,6 +490,9 @@ export class LearningController {
   }
 
   @Delete('organisations/:organisationId/parcours/:parcoursId')
+  @ApiOperation({ summary: 'Retirer un parcours d’une organisation' })
+  @ApiParam({ name: 'organisationId', type: String })
+  @ApiParam({ name: 'parcoursId', type: String })
   async removeLearningPathFromOrganisation(
     @Param('organisationId') organisationId: string,
     @Param('parcoursId') parcoursId: string,
@@ -391,7 +501,22 @@ export class LearningController {
     return { message: 'Parcours retiré de l\'organisation avec succès' };
   }
 
+  @Patch('organisations/:organisationId/parcours/:parcoursId')
+  @ApiOperation({ summary: 'Désactiver/activer un parcours pour une organisation' })
+  @ApiParam({ name: 'organisationId', type: String })
+  @ApiParam({ name: 'parcoursId', type: String })
+  @ApiResponse({ status: 200, description: 'Parcours mis à jour', type: OrganisationLearningPath })
+  async updateOrganisationLearningPath(
+    @Param('organisationId') organisationId: string,
+    @Param('parcoursId') parcoursId: string,
+    @Body() updateData: UpdateOrganisationLearningPathDto
+  ): Promise<OrganisationLearningPath> {
+    return await this.learningService.updateOrganisationLearningPath(+organisationId, +parcoursId, updateData);
+  }
+
   @Get('organisations/:organisationId/parcours')
+  @ApiOperation({ summary: 'Lister les parcours d’une organisation' })
+  @ApiParam({ name: 'organisationId', type: String })
   async getOrganisationLearningPaths(@Param('organisationId') organisationId: string): Promise<LearningPath[]> {
     return await this.learningService.getOrganisationLearningPaths(+organisationId);
   }
@@ -399,6 +524,8 @@ export class LearningController {
   // ===== VÉRIFICATION D'ACCÈS =====
 
   @Get('access/check/:parcoursId')
+  @ApiOperation({ summary: 'Vérifier l’accès de l’utilisateur à un parcours' })
+  @ApiParam({ name: 'parcoursId', type: String })
   async checkUserAccessToLearningPath(
     @Request() req,
     @Param('parcoursId') parcoursId: string,
@@ -409,6 +536,70 @@ export class LearningController {
     }
     const hasAccess = await this.learningService.checkUserAccessToLearningPath(userId, +parcoursId);
     return { hasAccess };
+  }
+
+  // ==================== ROUTES POUR LES QUIZ ====================
+
+  @Post('modules/:moduleId/quiz')
+  @ApiOperation({ summary: 'Créer un quiz pour un module' })
+  @ApiParam({ name: 'moduleId', type: String })
+  @ApiResponse({ status: 201, description: 'Quiz créé' })
+  async createQuiz(
+    @Param('moduleId') moduleId: string,
+    @Body() quizData: CreateQuizDto
+  ): Promise<any> {
+    return await this.learningService.createQuiz(+moduleId, quizData);
+  }
+
+  @Get('modules/:moduleId/quiz')
+  @ApiOperation({ summary: 'Obtenir tous les quiz d\'un module' })
+  @ApiParam({ name: 'moduleId', type: String })
+  async getModuleQuizzes(@Param('moduleId') moduleId: string): Promise<any[]> {
+    return await this.learningService.getModuleQuizzes(+moduleId);
+  }
+
+  @Get('quiz/:quizId')
+  @ApiOperation({ summary: 'Obtenir un quiz spécifique avec ses questions' })
+  @ApiParam({ name: 'quizId', type: String })
+  async getQuizById(@Param('quizId') quizId: string): Promise<any> {
+    return await this.learningService.getQuizById(+quizId);
+  }
+
+  @Post('quiz/:quizId/submit')
+  @ApiOperation({ summary: 'Soumettre les réponses d\'un utilisateur à un quiz' })
+  @ApiParam({ name: 'quizId', type: String })
+  async submitQuizResponse(
+    @Request() req,
+    @Param('quizId') quizId: string,
+    @Body() responseData: SubmitQuizResponseDto
+  ): Promise<any> {
+    const userId = req.user?.users_id;
+    if (!userId) {
+      throw new ForbiddenException('Utilisateur non authentifié');
+    }
+    return await this.learningService.submitQuizResponse(userId, +quizId, responseData);
+  }
+
+  @Get('quiz/:quizId/results')
+  @ApiOperation({ summary: 'Obtenir les résultats d\'un quiz pour l\'utilisateur courant' })
+  @ApiParam({ name: 'quizId', type: String })
+  async getQuizResults(
+    @Request() req,
+    @Param('quizId') quizId: string
+  ): Promise<any> {
+    const userId = req.user?.users_id;
+    if (!userId) {
+      throw new ForbiddenException('Utilisateur non authentifié');
+    }
+    return await this.learningService.getQuizResults(userId, +quizId);
+  }
+
+  @Delete('quiz/:quizId')
+  @ApiOperation({ summary: 'Supprimer un quiz' })
+  @ApiParam({ name: 'quizId', type: String })
+  async deleteQuiz(@Param('quizId') quizId: string): Promise<{ message: string }> {
+    await this.learningService.deleteQuiz(+quizId);
+    return { message: 'Quiz supprimé avec succès' };
   }
 
 }

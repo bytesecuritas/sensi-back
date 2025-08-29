@@ -1,0 +1,232 @@
+### Test des Corrections des Quiz - Sensibilisation Cybersécurité
+### Vérification des corrections pour les résultats et la suppression
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjQ4Njg1MywiZXhwIjoxNzU2NDkwNDUzfQ.GYALUZxJ7MruIJOUGt6QAN9yG-oPKov3jNQ6Hx2I90U
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIyQHRlY2hjb3JwLmNvbSIsInN1YiI6NCwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTY0ODg4OTMsImV4cCI6MTc1NjQ5MjQ5M30.yTIYXokMCjq4JNBQiuplprtCLDjxCwSm2E6TOQauCuc
+
+### ========================================
+### 1. VÉRIFICATION DES QUIZ EXISTANTS
+### ========================================
+
+### Test 1: Lister tous les quiz du module 1
+GET {{baseUrl}}/learning/modules/1/quiz
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 2: Obtenir un quiz spécifique (si il existe)
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 2. CRÉATION D'UN NOUVEAU QUIZ POUR TEST
+### ========================================
+
+### Test 3: Créer un nouveau quiz simple pour test
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz Test Corrections",
+  "description": "Quiz pour tester les corrections",
+  "ordre": 10,
+  "actif": true,
+  "questions": [
+    {
+      "enonce": "Quelle est la couleur du ciel ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 10.0,
+      "reponses": [
+        {
+          "texte": "Bleu",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Rouge",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "Vert",
+          "est_correcte": false,
+          "ordre": 3
+        }
+      ]
+    },
+    {
+      "enonce": "Décrivez votre journée.",
+      "type_question": "texte_libre",
+      "ordre": 2,
+      "points": 10.0
+    }
+  ]
+}
+
+###
+
+### ========================================
+### 3. SOUMISSION DE RÉPONSES
+### ========================================
+
+### Test 4: Soumettre des réponses au quiz de test
+POST {{baseUrl}}/learning/quiz/1/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{user_token}}
+
+{
+  "quiz_id": 1,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    },
+    {
+      "question_id": 2,
+      "reponse_texte": "Ma journée se passe bien, je teste les corrections des quiz."
+    }
+  ],
+  "temps_total_secondes": 120
+}
+
+###
+
+### ========================================
+### 4. VÉRIFICATION DES RÉSULTATS (CORRECTION)
+### ========================================
+
+### Test 5: Obtenir les résultats du quiz (doit fonctionner maintenant)
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{user_token}}
+
+###
+
+### Test 6: Vérifier la progression du module
+GET {{baseUrl}}/learning/progress/user/1
+Authorization: Bearer {{user_token}}
+
+###
+
+### ========================================
+### 5. TEST DE SUPPRESSION (CORRECTION)
+### ========================================
+
+### Test 7: Supprimer le quiz de test (doit fonctionner maintenant)
+DELETE {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 8: Vérifier que le quiz a été supprimé
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 6. CRÉATION ET TEST COMPLET
+### ========================================
+
+### Test 9: Créer un autre quiz pour test complet
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz Test Complet",
+  "description": "Quiz pour test complet des fonctionnalités",
+  "ordre": 11,
+  "actif": true,
+  "questions": [
+    {
+      "enonce": "Quel est le meilleur langage de programmation ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 20.0,
+      "reponses": [
+        {
+          "texte": "JavaScript",
+          "est_correcte": false,
+          "ordre": 1
+        },
+        {
+          "texte": "Python",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "Java",
+          "est_correcte": false,
+          "ordre": 3
+        }
+      ]
+    }
+  ]
+}
+
+###
+
+### Test 10: Soumettre une réponse
+POST {{baseUrl}}/learning/quiz/2/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{user_token}}
+
+{
+  "quiz_id": 2,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 2
+    }
+  ],
+  "temps_total_secondes": 60
+}
+
+###
+
+### Test 11: Obtenir les résultats
+GET {{baseUrl}}/learning/quiz/2/results
+Authorization: Bearer {{user_token}}
+
+###
+
+### ========================================
+### 7. CORRECTIONS APPLIQUÉES
+### ========================================
+
+### ✅ Correction de l'erreur "Cannot read properties of undefined (reading 'reduce')" :
+### - Ajout de la relation 'quiz.questions' dans getQuizResults
+### - Vérification que quiz et questions existent avant d'utiliser reduce
+### - Gestion des valeurs null/undefined
+
+### ✅ Correction de l'erreur de suppression (contrainte de clé étrangère) :
+### - Ajout de onDelete: 'CASCADE' dans les entités
+### - Simplification de la méthode deleteQuiz pour utiliser la suppression en cascade
+### - Les questions, réponses et réponses utilisateurs sont supprimées automatiquement
+
+### ✅ Correction du problème de port déjà utilisé :
+### - Arrêt forcé des processus Node.js existants
+ - Redémarrage propre du serveur
+
+### ✅ Amélioration de la gestion des erreurs :
+### - Vérifications de sécurité dans getQuizResults
+### - Messages d'erreur plus clairs
+### - Gestion des cas où les données sont manquantes
+
+### ========================================
+### 8. RÉSULTATS ATTENDUS
+### ========================================
+
+### Après les corrections :
+### - getQuizResults doit retourner les résultats correctement
+### - deleteQuiz doit supprimer le quiz sans erreur de contrainte
+### - La progression du module doit être mise à jour
+### - Les erreurs de port doivent être résolues

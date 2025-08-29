@@ -1,0 +1,355 @@
+### Test Workflow Complet - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### PHASE 1: SETUP INITIAL
+### 1. Login superadmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "superadmin@cybersec.com",
+  "password": "SuperAdmin123!"
+}
+
+###
+
+### 2. Créer une organisation
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "CyberSec Enterprise",
+  "type": "entreprise",
+  "code_pays": "FR"
+}
+
+###
+
+### 3. Créer un admin pour l'organisation
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "email": "admin@cybersec-enterprise.com",
+  "password": "AdminCyber123!",
+  "nom": "Dubois",
+  "prenom": "Anne",
+  "age": 30,
+  "role": "admin",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+###
+
+### 4. Login admin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@cybersec-enterprise.com",
+  "password": "AdminCyber123!"
+}
+
+###
+
+### 5. Créer des utilisateurs
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "email": "employee1@cybersec-enterprise.com",
+  "password": "Employee123!",
+  "nom": "Martin",
+  "prenom": "Thomas",
+  "age": 28,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+###
+
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "email": "employee2@cybersec-enterprise.com",
+  "password": "Employee456!",
+  "nom": "Leroy",
+  "prenom": "Julie",
+  "age": 32,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+###
+
+### PHASE 2: CRÉATION DES PARCOURS
+### 6. Créer un parcours de sensibilisation
+POST {{baseUrl}}/learning/paths
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Sensibilisation Cybersécurité - Formation Complète",
+  "description": "Parcours complet de sensibilisation à la cybersécurité pour les employés d'entreprise.",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 15.0
+}
+
+###
+
+### 7. Créer des modules pour le parcours
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Les Fondamentaux de la Cybersécurité",
+  "description": "Introduction aux concepts de base de la cybersécurité.",
+  "public_cible": "entreprise",
+  "code_langue": "FR",
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "secure_browsing",
+  "objectifs_apprentissage": [
+    "Comprendre les menaces cyber",
+    "Identifier les risques",
+    "Adopter les bonnes pratiques"
+  ],
+  "parcours_id": 1,
+  "ordre": 1
+}
+
+###
+
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Protection contre le Phishing",
+  "description": "Apprendre à détecter et éviter les tentatives de phishing.",
+  "public_cible": "entreprise",
+  "code_langue": "FR",
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "phishing",
+  "objectifs_apprentissage": [
+    "Reconnaître les emails de phishing",
+    "Protéger les informations sensibles",
+    "Signaler les tentatives"
+  ],
+  "parcours_id": 1,
+  "ordre": 2
+}
+
+###
+
+### PHASE 3: ASSOCIATION PARCOURS-ORGANISATION
+### 8. Associer le parcours à l'organisation
+POST {{baseUrl}}/learning/organisations/1/paths/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "actif": true
+}
+
+###
+
+### PHASE 4: CRÉATION DE CONTENUS
+### 9. Upload d'une vidéo de formation
+POST {{baseUrl}}/learning/media/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{superadmin_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_officiel_(480p).mp4"
+Content-Type: video/mp4
+
+< C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="module_id"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+Vidéo de Formation - Fondamentaux Cybersécurité
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Vidéo explicative sur les fondamentaux de la cybersécurité en entreprise.
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 10. Créer un contenu texte
+POST {{baseUrl}}/learning/media
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "module_id": 1,
+  "type_contenu": "texte",
+  "titre": "Guide des Bonnes Pratiques",
+  "description": "Guide complet des bonnes pratiques de cybersécurité",
+  "contenu": "La cybersécurité en entreprise repose sur plusieurs piliers : 1) La formation des employés, 2) La protection des données, 3) La détection des menaces, 4) La réponse aux incidents. Chaque employé a un rôle à jouer dans la protection de l'entreprise.",
+  "ordre": 1
+}
+
+###
+
+### PHASE 5: FORMATION DES UTILISATEURS
+### 11. Login utilisateur 1
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "employee1@cybersec-enterprise.com",
+  "password": "Employee123!"
+}
+
+###
+
+### 12. Commencer la formation (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 1,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 13. Terminer le premier module (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 88.5,
+  "temps_passe": 3.2
+}
+
+###
+
+### 14. Commencer le deuxième module (utilisateur 1)
+POST {{baseUrl}}/learning/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "module_id": 2,
+  "statut": "en_cours",
+  "score": 0,
+  "temps_passe": 0
+}
+
+###
+
+### 15. Terminer le deuxième module (utilisateur 1)
+PATCH {{baseUrl}}/learning/progress/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "statut": "termine",
+  "score": 92.0,
+  "temps_passe": 4.1
+}
+
+###
+
+### PHASE 6: CERTIFICATION
+### 16. Créer une certification pour l'utilisateur 1
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "type_certification": "sensibilisation_basique",
+  "url_certification": "https://example.com/certifications/cybersec-enterprise-employee1.pdf"
+}
+
+###
+
+### PHASE 7: SUIVI ET STATISTIQUES
+### 17. Login admin pour consulter les statistiques
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@cybersec-enterprise.com",
+  "password": "AdminCyber123!"
+}
+
+###
+
+### 18. Consulter les statistiques de l'organisation
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 19. Consulter les statistiques détaillées du parcours
+GET {{baseUrl}}/organisations/1/stats/parcours/1?periode=30
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 20. Consulter les statistiques de l'utilisateur
+GET {{baseUrl}}/organisations/1/stats/utilisateur/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 21. Comparatif des performances
+GET {{baseUrl}}/organisations/1/stats/comparatif?periode=30
+Authorization: Bearer {{admin_token}}
+
+###
+
+### PHASE 8: VALIDATION ET RAPPORT
+### 22. Obtenir le profil de l'utilisateur avec ses statistiques
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 23. Obtenir les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 24. Logout utilisateur
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{user1_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin
+# @user1_token = token_jwt_de_l_utilisateur_1

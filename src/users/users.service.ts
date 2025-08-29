@@ -133,4 +133,96 @@ export class UsersService {
     
     return true;
   }
+
+  // Obtenir les informations détaillées d'un utilisateur
+  async getUserInfos(userId: number) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Récupérer les progressions de l'utilisateur
+    const progressions = await this.usersRepository.manager
+      .getRepository('Progress')
+      .find({
+        where: { utilisateur: { users_id: userId } },
+        relations: ['module', 'module.parcours'],
+      });
+
+    // Calculer les statistiques
+    const totalModules = progressions.length;
+    const modulesTermines = progressions.filter(p => p.statut === 'termine').length;
+    const tempsTotal = progressions.reduce((total, p) => total + (p.temps_passe || 0), 0);
+    const scoreMoyen = progressions.length > 0 
+      ? progressions.reduce((total, p) => total + (p.score || 0), 0) / progressions.length 
+      : 0;
+
+    // Récupérer les certificats
+    const certificats = await this.usersRepository.manager
+      .getRepository('Certification')
+      .find({
+        where: { utilisateur: { users_id: userId } },
+        relations: ['parcours'],
+      });
+
+    // Statistiques par parcours
+    const statsParcours = {};
+    for (const prog of progressions) {
+      if (prog.module?.parcours) {
+        const parcoursId = prog.module.parcours.parcours_id;
+        if (!statsParcours[parcoursId]) {
+          statsParcours[parcoursId] = {
+            titre: prog.module.parcours.titre,
+            modules_completes: 0,
+            temps_total: 0,
+            score_moyen: 0,
+            progression: 0
+          };
+        }
+        
+        if (prog.statut === 'termine') {
+          statsParcours[parcoursId].modules_completes++;
+        }
+        statsParcours[parcoursId].temps_total += prog.temps_passe || 0;
+        statsParcours[parcoursId].score_moyen += prog.score || 0;
+      }
+    }
+
+    // Calculer les moyennes par parcours
+    Object.values(statsParcours).forEach((parcours: any) => {
+      if (parcours.modules_completes > 0) {
+        parcours.score_moyen = parcours.score_moyen / parcours.modules_completes;
+      }
+    });
+
+    return {
+      user: {
+        users_id: user.users_id,
+        email: user.email,
+        nom: user.nom,
+        prenom: user.prenom,
+        role: user.role,
+        age: user.age,
+        code_langue: user.code_langue,
+        organisation: user.organisation,
+      },
+      statistiques: {
+        total_modules: totalModules,
+        modules_termines: modulesTermines,
+        taux_completion: totalModules > 0 ? (modulesTermines / totalModules * 100).toFixed(2) : 0,
+        temps_total: tempsTotal,
+        score_moyen: scoreMoyen.toFixed(2),
+        nombre_certificats: certificats.length,
+      },
+      parcours: statsParcours,
+      certificats: certificats.map(cert => ({
+        certification_id: cert.certification_id,
+        titre: cert.titre,
+        type: cert.type,
+        date_obtention: cert.date_obtention,
+        parcours: cert.parcours?.titre
+      }))
+    };
+  }
+
 }

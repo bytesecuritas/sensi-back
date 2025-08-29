@@ -7,8 +7,8 @@
 Créez un fichier `.env` à la racine du projet avec les variables suivantes :
 
 ```env
-# Configuration JWT
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+# Configuration JWT - CHANGEZ EN PRODUCTION
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-must-be-at-least-32-characters-long
 
 # Configuration de la base de données
 DB_HOST=localhost
@@ -16,7 +16,23 @@ DB_PORT=3306
 DB_USERNAME=root
 DB_PASSWORD=
 DB_DATABASE=sensibilisation
+
+# Configuration du serveur
+PORT=3000
+
+# Configuration de sécurité
+NODE_ENV=development
 ```
+
+### Sécurité renforcée
+
+Le système inclut maintenant :
+- ✅ Validation de complexité des mots de passe (majuscules, minuscules, chiffres, caractères spéciaux)
+- ✅ Rate limiting (10 requêtes/minute global, 5 tentatives de connexion/minute)
+- ✅ Validation des variables d'environnement au démarrage
+- ✅ Hachage bcrypt avec 12 rounds de salt
+- ✅ Protection contre l'exposition des mots de passe
+- ✅ Validation JWT renforcée
 
 ## Création du SuperAdmin
 

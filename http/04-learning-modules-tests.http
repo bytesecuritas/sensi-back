@@ -1,0 +1,241 @@
+### Tests des Modules d'Apprentissage - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
+
+### 1. Créer un module sur les mots de passe sécurisés
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Créer des Mots de Passe Sécurisés",
+  "description": "Apprenez à créer des mots de passe forts et à les gérer en toute sécurité.",
+  "public_cible": "tous",
+  "code_langue": "FR",
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "password_management",
+  "objectifs_apprentissage": [
+    "Comprendre l'importance des mots de passe sécurisés",
+    "Créer des mots de passe forts et uniques",
+    "Utiliser un gestionnaire de mots de passe",
+    "Éviter les erreurs courantes"
+  ],
+  "parcours_id": 1,
+  "ordre": 1
+}
+
+###
+
+### 2. Créer un module sur la détection du phishing
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Détecter les Tentatives de Phishing",
+  "description": "Identifiez les signes d'une tentative de phishing et protégez-vous contre ces attaques.",
+  "public_cible": "tous",
+  "code_langue": "FR",
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "phishing",
+  "objectifs_apprentissage": [
+    "Reconnaître les signes d'un email de phishing",
+    "Vérifier l'authenticité des liens",
+    "Protéger ses informations personnelles",
+    "Signaler les tentatives de phishing"
+  ],
+  "parcours_id": 1,
+  "ordre": 2
+}
+
+###
+
+### 3. Créer un module sur la protection des données
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Protéger ses Données Personnelles",
+  "description": "Découvrez comment protéger vos données personnelles en ligne et respecter le RGPD.",
+  "public_cible": "tous",
+  "code_langue": "FR",
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "data_protection",
+  "objectifs_apprentissage": [
+    "Comprendre le RGPD et ses principes",
+    "Protéger ses données personnelles",
+    "Gérer ses paramètres de confidentialité",
+    "Exercer ses droits RGPD"
+  ],
+  "parcours_id": 1,
+  "ordre": 3
+}
+
+###
+
+### 4. Créer un module sur la sécurité mobile
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Sécuriser son Smartphone",
+  "description": "Apprenez à sécuriser votre smartphone et protéger vos données mobiles.",
+  "public_cible": "tous",
+  "code_langue": "FR",
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "mobile_security",
+  "objectifs_apprentissage": [
+    "Configurer le verrouillage de l'écran",
+    "Installer des applications de confiance",
+    "Protéger ses données mobiles",
+    "Utiliser le chiffrement"
+  ],
+  "parcours_id": 1,
+  "ordre": 4
+}
+
+###
+
+### 5. Créer un module sur la navigation sécurisée
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Naviguer en Sécurité sur Internet",
+  "description": "Découvrez les bonnes pratiques pour naviguer en sécurité sur internet.",
+  "public_cible": "tous",
+  "code_langue": "FR",
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "secure_browsing",
+  "objectifs_apprentissage": [
+    "Reconnaître les sites web sécurisés",
+    "Utiliser HTTPS",
+    "Éviter les sites malveillants",
+    "Protéger sa navigation"
+  ],
+  "parcours_id": 1,
+  "ordre": 5
+}
+
+###
+
+### 6. Créer un module avancé sur les rançongiciels
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Comprendre et Prévenir les Rançongiciels",
+  "description": "Formation avancée sur les rançongiciels, leur fonctionnement et les mesures de prévention.",
+  "public_cible": "avance",
+  "code_langue": "FR",
+  "niveau_difficulte": "difficile",
+  "thematique_cyber": "ransomware",
+  "objectifs_apprentissage": [
+    "Comprendre le fonctionnement des rançongiciels",
+    "Identifier les vecteurs d'attaque",
+    "Mettre en place des mesures de prévention",
+    "Planifier la récupération après incident"
+  ],
+  "parcours_id": 2,
+  "ordre": 1
+}
+
+###
+
+### 7. Créer un module sur l'ingénierie sociale
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "L'Ingénierie Sociale : Manipulation et Défense",
+  "description": "Comprenez les techniques d'ingénierie sociale et apprenez à vous en protéger.",
+  "public_cible": "avance",
+  "code_langue": "FR",
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "social_engineering",
+  "objectifs_apprentissage": [
+    "Reconnaître les techniques d'ingénierie sociale",
+    "Protéger les informations sensibles",
+    "Former les équipes à la vigilance",
+    "Mettre en place des procédures de sécurité"
+  ],
+  "parcours_id": 2,
+  "ordre": 2
+}
+
+###
+
+### 8. Créer un module pour enfants sur la sécurité en ligne
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Être Prudent sur Internet",
+  "description": "Module ludique pour apprendre aux enfants à être prudents sur internet.",
+  "public_cible": "debutant",
+  "code_langue": "FR",
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "secure_browsing",
+  "objectifs_apprentissage": [
+    "Ne pas partager d'informations personnelles",
+    "Demander l'aide d'un adulte en cas de doute",
+    "Être gentil en ligne",
+    "Protéger ses informations"
+  ],
+  "parcours_id": 3,
+  "ordre": 1
+}
+
+###
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzMxNjQ4LCJleHAiOjE3NTYzMzUyNDh9.b_q-V0Jj2WIEpOPlLsHz2zdV0dLPK6zSwD6Yd_7xs_o
+
+### 9. Lister tous les modules
+GET {{baseUrl}}/learning/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 10. Obtenir un module spécifique
+GET {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 11. Obtenir les modules d'un parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 12. Mettre à jour un module
+PUT {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Créer des Mots de Passe Sécurisés (Mise à jour)",
+  "description": "Module mis à jour pour apprendre à créer des mots de passe forts et à les gérer en toute sécurité.",
+  "niveau_difficulte": "moyen"
+}
+
+###
+
+### 13. Supprimer un module
+DELETE {{baseUrl}}/learning/modules/8
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin

@@ -1,0 +1,176 @@
+### Tests des Nouvelles Routes de Modules - Sensibilisation Cybersécurité
+### Routes GET pour les modules et correction de l'upload
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjMyNDA2OCwiZXhwIjoxNzU2MzI3NjY4fQ.rjbcTrUraV61dKKlaNHyvtr4dGHcZTzcVMtDpUBdEKU
+
+### ========================================
+### 1. TESTS DES NOUVELLES ROUTES DE MODULES
+### ========================================
+
+### Test 1: Lister tous les modules
+GET {{baseUrl}}/learning/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 2: Obtenir un module spécifique
+GET {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 3: Lister les modules d'un parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 2. TESTS DE CRÉATION DE MODULES AVEC ORDRE
+### ========================================
+
+### Test 4: Créer un module avec propriété ordre
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Module Test avec Ordre",
+  "description": "Module de test avec propriété ordre",
+  "code_langue": "FR",
+  "parcours_id": 1,
+  "ordre": 5,
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "password_management"
+}
+
+###
+
+### Test 5: Créer un module sans propriété ordre (doit utiliser la valeur par défaut)
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Module Test sans Ordre",
+  "description": "Module de test sans propriété ordre",
+  "code_langue": "FR",
+  "parcours_id": 1,
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "data_protection"
+}
+
+###
+
+### ========================================
+### 3. TESTS DE MISE À JOUR DE MODULES
+### ========================================
+
+### Test 6: Mettre à jour un module avec l'ordre (PUT)
+PUT {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "ordre": 3,
+  "titre": "Module Mis à Jour"
+}
+
+###
+
+### Test 7: Mettre à jour un module avec la thématique (PUT)
+PUT {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "thematique_cyber": "phishing"
+}
+
+###
+
+### ========================================
+### 4. TESTS DE CORRECTION DE L'UPLOAD
+### ========================================
+
+### Test 8: Upload d'un contenu média (corrigé)
+### Note: Utilisez un client HTTP comme Postman ou Insomnia avec un fichier réel
+### Le module_id dans le body sera ignoré, seul celui du query parameter sera utilisé
+
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier PDF, image ou vidéo]
+# - titre: "Contenu Test Corrigé"
+# - type_contenu: "pdf"
+# - description: "Description du contenu test corrigé"
+# - module_id: 999 (sera ignoré, le module_id du query parameter sera utilisé)
+
+###
+
+### Test 9: Upload d'un contenu média sans module_id dans le body
+### Note: Utilisez un client HTTP comme Postman ou Insomnia
+
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Content-Type: multipart/form-data
+Authorization: Bearer {{superadmin_token}}
+
+# Body: form-data avec:
+# - file: [sélectionner un fichier]
+# - titre: "Contenu Test Normal"
+# - type_contenu: "pdf"
+# - description: "Description du contenu test normal"
+
+###
+
+### ========================================
+### 5. TESTS DE VÉRIFICATION
+### ========================================
+
+### Test 10: Vérifier que le module a été mis à jour
+GET {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 11: Vérifier les médias du module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 12: Vérifier tous les modules après les modifications
+GET {{baseUrl}}/learning/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 6. RÉSUMÉ DES CORRECTIONS APPLIQUÉES
+### ========================================
+
+### ✅ Correction de l'upload de fichiers :
+### - Le module_id dans le body est maintenant ignoré
+### - Seul le module_id du paramètre de requête est utilisé
+### - Cela évite l'erreur "property module_id should not exist"
+
+### ✅ Nouvelles routes ajoutées :
+### - GET /learning/modules (lister tous les modules)
+### - GET /learning/modules/:id (obtenir un module spécifique)
+
+### ✅ Propriété ordre ajoutée :
+### - Ajoutée à l'entité LearningPathModule
+### - Ajoutée au DTO CreateLearningModuleDto
+### - Valeur par défaut : 1
+
+### ✅ Instructions pour les tests d'upload :
+### - Utilisez un client HTTP comme Postman ou Insomnia
+### - Le module_id doit être dans l'URL, pas dans le body
+### - Types de fichiers autorisés : JPEG, PNG, MP4, PDF
+

@@ -1,0 +1,188 @@
+### Tests des Organisations - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTYzMjQ4OTMsImV4cCI6MTc1NjMyODQ5M30.iQEyHxyCMNQPa4XqgZ_jmTyb_0f0adPwCbITWWYOaRo
+
+### 1. Lister toutes les organisations (superadmin)
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 2. Créer une deuxième organisation
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "SecureBank Finance",
+  "type": "entreprise_privee",
+  "code_pays": "FR",
+  "date_creation": "2020-03-15",
+  "email": "contact@securebank.fr",
+  "telephone": "+33 1 42 86 12 34",
+  "adresse": "123 Avenue des Champs-Élysées, 75008 Paris, France",
+  "site_web": "https://www.securebank.fr",
+  "code_postal": "75008",
+  "ville": "Paris",
+  "pays": "France"
+}
+
+###
+
+### 3. Créer une troisième organisation
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "CyberEdu Academy",
+  "type": "enseignement_superieur",
+  "code_pays": "FR",
+  "date_creation": "2018-09-01",
+  "email": "info@cyberedu-academy.fr",
+  "telephone": "+33 1 45 67 89 01",
+  "adresse": "456 Rue de la Sorbonne, 75005 Paris, France",
+  "site_web": "https://www.cyberedu-academy.fr",
+  "code_postal": "75005",
+  "ville": "Paris",
+  "pays": "France"
+}
+
+###
+
+### 4. Créer une quatrième organisation (établissement scolaire)
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "Lycée Victor Hugo",
+  "type": "etablissement_scolaire",
+  "code_pays": "FR",
+  "date_creation": "1900-01-01",
+  "email": "secretariat@lycee-victor-hugo.fr",
+  "telephone": "+33 1 23 45 67 89",
+  "adresse": "789 Boulevard Saint-Germain, 75006 Paris, France",
+  "site_web": "https://www.lycee-victor-hugo.fr",
+  "code_postal": "75006",
+  "ville": "Paris",
+  "pays": "France"
+}
+
+###
+
+### 5. Créer une cinquième organisation (association)
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "Association Cybersécurité Citoyenne",
+  "type": "association",
+  "code_pays": "FR",
+  "date_creation": "2021-06-20",
+  "email": "contact@cybersec-citoyenne.org",
+  "telephone": "+33 1 98 76 54 32",
+  "adresse": "321 Rue de la Paix, 75002 Paris, France",
+  "site_web": "https://www.cybersec-citoyenne.org",
+  "code_postal": "75002",
+  "ville": "Paris",
+  "pays": "France"
+}
+
+###
+
+### 6. Créer une organisation sans date_creation (doit fonctionner)
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "Organisation Test Sans Date",
+  "type": "entreprise_privee",
+  "code_pays": "FR",
+  "email": "test@sans-date.fr",
+  "telephone": "+33 1 11 11 11 11",
+  "adresse": "Test sans date de création",
+  "ville": "Paris",
+  "pays": "France"
+}
+
+###
+
+### 7. Obtenir les détails d'une organisation
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0ODY3NTMsImV4cCI6MTc1NjQ5MDM1M30.GYALUZxJ7MruIJOUGt6QAN9yG-oPKov3jNQ6Hx2I90U
+
+GET {{baseUrl}}/organisations/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 8. Obtenir les utilisateurs d'une organisation
+GET {{baseUrl}}/organisations/1/users
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 9. Statistiques complètes d'une organisation
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 10. Statistiques détaillées d'un parcours spécifique
+GET {{baseUrl}}/organisations/1/stats/parcours/1?periode=30
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 11. Statistiques détaillées d'un utilisateur spécifique
+GET {{baseUrl}}/organisations/1/stats/utilisateur/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 12. Comparatif des performances entre parcours
+GET {{baseUrl}}/organisations/1/stats/comparatif?periode=60
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 13. Mettre à jour une organisation
+PATCH {{baseUrl}}/organisations/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "TechCorp Solutions - Sécurité Renforcée",
+  "code_pays": "FR",
+  "email": "securite@techcorp-solutions.fr",
+  "telephone": "+33 1 55 44 33 22",
+  "adresse": "999 Avenue de la Défense, 92000 Nanterre, France",
+  "site_web": "https://www.techcorp-solutions.fr",
+  "code_postal": "92000",
+  "ville": "Nanterre",
+  "pays": "France"
+}
+
+###
+
+### 14. Retirer un utilisateur d'une organisation
+DELETE {{baseUrl}}/organisations/1/users/4
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 15. Supprimer une organisation (si vide)
+DELETE {{baseUrl}}/organisations/3
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin

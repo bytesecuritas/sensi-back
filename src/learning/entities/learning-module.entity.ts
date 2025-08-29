@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { LearningPath } from './learning-path.entity';
 import { MediaContent } from './media-content.entity';
 import { Progress } from './progress.entity';
+import { Quiz } from './quiz.entity';
 
 export enum DifficultyLevel {
   FACILE = 'facile',
@@ -59,6 +60,9 @@ export class LearningPathModule {
   })
   thematique_cyber: ThematiqueCyber;
 
+  @Column({ type: 'int', default: 1 })
+  ordre: number;
+
   @Column('simple-array', { nullable: true })
   objectifs_apprentissage: string[];
 
@@ -80,4 +84,8 @@ export class LearningPathModule {
   // Relation avec les progressions
   @OneToMany(() => Progress, progression => progression.module)
   progressions: Progress[];
+
+  // Relation avec les quiz
+  @OneToMany(() => Quiz, quiz => quiz.module)
+  quiz: Quiz[];
 }

@@ -11,6 +11,10 @@ import { MediaContent } from 'src/learning/entities/media-content.entity';
 import { User } from 'src/users/users.entity';
 import { Organisation } from 'src/organisations/organisations.entity';
 import { OrganisationLearningPath } from 'src/learning/entities/organisation-learning-path.entity';
+import { Quiz } from 'src/learning/entities/quiz.entity';
+import { Reponse } from 'src/learning/entities/reponse.entity';
+import { Question } from 'src/learning/entities/question.entity';
+import { QuizResponse } from 'src/learning/entities/quiz-response.entity';
 
 @Module({
   imports: [ScheduleModule.forRoot(),
@@ -22,7 +26,11 @@ import { OrganisationLearningPath } from 'src/learning/entities/organisation-lea
       Progress,
       User,
       Organisation,
-      OrganisationLearningPath
+      OrganisationLearningPath,
+      Quiz,
+      Reponse,
+      Question,
+      QuizResponse
     ])
   ],
   providers: [LearningService],

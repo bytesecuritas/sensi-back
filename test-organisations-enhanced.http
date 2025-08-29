@@ -1,0 +1,109 @@
+### Test des nouvelles fonctionnalités de gestion de session et statistiques améliorées
+
+### 1. Tests de gestion de session
+
+# Login pour obtenir un token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin123!"
+}
+
+###
+
+# Changer le mot de passe (nécessite un token valide)
+POST http://localhost:3000/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "currentPassword": "Admin123!",
+  "newPassword": "NewAdmin123!"
+}
+
+###
+
+# Demande de réinitialisation de mot de passe
+POST http://localhost:3000/auth/reset-password-request
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+###
+
+# Réinitialisation de mot de passe avec token
+POST http://localhost:3000/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "{{reset_token}}",
+  "newPassword": "NewPassword123!"
+}
+
+###
+
+# Logout
+POST http://localhost:3000/auth/logout
+Authorization: Bearer {{auth_token}}
+
+###
+
+### 2. Tests des statistiques améliorées des organisations
+
+# Statistiques complètes d'une organisation
+GET http://localhost:3000/organisations/1/stats
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Statistiques détaillées d'un parcours spécifique
+GET http://localhost:3000/organisations/1/stats/parcours/1?periode=30
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Statistiques détaillées d'un utilisateur spécifique
+GET http://localhost:3000/organisations/1/stats/utilisateur/1
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Comparatif des performances entre parcours
+GET http://localhost:3000/organisations/1/stats/comparatif?periode=60
+Authorization: Bearer {{auth_token}}
+
+###
+
+### 3. Tests des routes existantes avec les nouvelles fonctionnalités
+
+# Obtenir le profil utilisateur avec statistiques
+GET http://localhost:3000/auth/profile
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Lister les organisations
+GET http://localhost:3000/organisations
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Détail d'une organisation
+GET http://localhost:3000/organisations/1
+Authorization: Bearer {{auth_token}}
+
+###
+
+# Utilisateurs d'une organisation
+GET http://localhost:3000/organisations/1/users
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Variables pour les tests
+# @auth_token = votre_token_jwt_ici
+# @reset_token = token_de_reinitialisation_retourne_par_reset-password-request

@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Organisation } from '../organisations/organisations.entity';
 import { Certification } from '../learning/entities/certification.entity';
 import { Progress } from '../learning/entities/progress.entity';
+import { QuizResponse } from '../learning/entities/quiz-response.entity';
 
 @Entity('users')
 export class User {
@@ -45,4 +46,7 @@ export class User {
 
   @OneToMany(() => Progress, progression => progression.utilisateur)
   progressions: Progress[];
+
+  @OneToMany(() => QuizResponse, reponse => reponse.utilisateur)
+  reponses_quiz: QuizResponse[];
 }

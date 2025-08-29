@@ -22,6 +22,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new Error('User not found');
     }
-    return user;
+    
+    // Additional security check: verify token was issued for this user
+    if (payload.email !== user.email) {
+      throw new Error('Token mismatch');
+    }
+    
+    // Return user without sensitive data
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 }

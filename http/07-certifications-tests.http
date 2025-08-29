@@ -1,0 +1,196 @@
+### Tests des Certifications - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### 1. Créer une certification de sensibilisation basique
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "type_certification": "sensibilisation_basique",
+  "url_certification": "https://example.com/certifications/sensibilisation-basique-user1.pdf"
+}
+
+###
+
+### 2. Créer une certification anti-phishing
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 4,
+  "type_certification": "specialiste_anti_phishing",
+  "url_certification": "https://example.com/certifications/anti-phishing-user1.pdf"
+}
+
+###
+
+### 3. Créer une certification protection des données
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 5,
+  "type_certification": "protection_donnees",
+  "url_certification": "https://example.com/certifications/rgpd-user1.pdf"
+}
+
+###
+
+### 4. Créer une certification sécurité mobile
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "type_certification": "securite_mobile",
+  "url_certification": "https://example.com/certifications/mobile-security-user1.pdf"
+}
+
+###
+
+### 5. Créer une certification pour utilisateur 2
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 2,
+  "parcours_id": 1,
+  "type_certification": "sensibilisation_basique",
+  "url_certification": "https://example.com/certifications/sensibilisation-basique-user2.pdf"
+}
+
+###
+
+### 6. Créer une certification anti-phishing pour utilisateur 2
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 2,
+  "parcours_id": 4,
+  "type_certification": "specialiste_anti_phishing",
+  "url_certification": "https://example.com/certifications/anti-phishing-user2.pdf"
+}
+
+###
+
+### 7. Créer une certification expert cybersécurité pour utilisateur 2
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 2,
+  "parcours_id": 2,
+  "type_certification": "expert_cybersecurite",
+  "url_certification": "https://example.com/certifications/expert-cyber-user2.pdf"
+}
+
+###
+
+### 8. Créer une certification vigilance numérique
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "type_certification": "vigilance_numerique",
+  "url_certification": "https://example.com/certifications/vigilance-numerique-user1.pdf"
+}
+
+###
+
+### 9. Créer une certification sécurité enfants
+POST {{baseUrl}}/learning/certifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "utilisateur_id": 3,
+  "parcours_id": 3,
+  "type_certification": "securite_enfants",
+  "url_certification": "https://example.com/certifications/securite-enfants-user3.pdf"
+}
+
+###
+
+### 10. Lister toutes les certifications
+GET {{baseUrl}}/learning/certifications
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 11. Obtenir une certification spécifique
+GET {{baseUrl}}/learning/certifications/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 12. Obtenir les certifications d'un utilisateur
+GET {{baseUrl}}/learning/certifications/user/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 13. Obtenir les certifications d'un parcours
+GET {{baseUrl}}/learning/certifications/parcours/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 14. Obtenir les certifications d'une organisation
+GET {{baseUrl}}/learning/certifications/organisation/1
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 15. Mettre à jour une certification
+PATCH {{baseUrl}}/learning/certifications/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "url_certification": "https://example.com/certifications/sensibilisation-basique-user1-v2.pdf"
+}
+
+###
+
+### 16. Supprimer une certification
+DELETE {{baseUrl}}/learning/certifications/9
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 17. Obtenir les statistiques des certifications
+GET {{baseUrl}}/learning/certifications/stats
+Authorization: Bearer {{admin_token}}
+
+###
+
+### 18. Obtenir les certifications par type
+GET {{baseUrl}}/learning/certifications/type/sensibilisation_basique
+Authorization: Bearer {{admin_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin
+# @user1_token = token_jwt_de_l_utilisateur_1

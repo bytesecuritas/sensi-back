@@ -10,7 +10,8 @@ export enum ContentType {
   SIMULATION = 'simulation',    // Simulation d'attaques
   JEU_SERIEUX = 'jeu_serieux',  // Serious games
   BANDE_DESSINEE = 'bande_dessinee', // Pour les enfants
-  ETUDE_DE_CAS = 'etude_de_cas' // Cas réels d'attaques
+  ETUDE_DE_CAS = 'etude_de_cas', // Cas réels d'attaques
+  TEXTE = 'texte'               // Contenu texte simple
 }
 
 export enum AttackType {
@@ -33,6 +34,9 @@ export class MediaContent {
   @ManyToOne(() => LearningPathModule, module => module.contenus_media)
   @JoinColumn({ name: 'module_id' })
   module: LearningPathModule;
+
+  @Column({ type: 'varchar', length: 255 })
+  titre: string;
 
   @Column({ 
     type: 'enum', 
@@ -58,6 +62,9 @@ export class MediaContent {
 
   @Column({ type: 'text' })
   description: string;
+
+  @Column({ type: 'text', nullable: true })
+  contenu: string; // Contenu texte pour les médias qui n'ont pas besoin de fichier (quiz, texte, etc.)
 
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;

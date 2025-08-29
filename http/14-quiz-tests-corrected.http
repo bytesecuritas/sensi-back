@@ -1,0 +1,389 @@
+### Tests des Quiz - Sensibilisation Cybersécurité
+### Fichier corrigé pour les questions à réponse libre
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjQ4MjQ4NywiZXhwIjoxNzU2NDg2MDg3fQ.gb-FilE5249x_GJ6-UMKmMkp0RmNy9kjD4wmMmLvUTA
+
+### ========================================
+### 1. CRÉATION DE QUIZ AVEC QUESTIONS CORRIGÉES
+### ========================================
+
+### Test 1: Créer un quiz avec tous les types de questions
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz sur la cybersécurité",
+  "description": "Testez vos connaissances en cybersécurité",
+  "ordre": 1,
+  "actif": true,
+  "temps_limite_minutes": 15,
+  "score_minimum_pour_reussite": 70.0,
+  "questions": [
+    {
+      "enonce": "Qu'est-ce que le phishing ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 10.0,
+      "explication": "Le phishing est une technique d'ingénierie sociale",
+      "reponses": [
+        {
+          "texte": "Une technique d'ingénierie sociale pour voler des informations",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Un type de virus informatique",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "Un protocole de sécurité",
+          "est_correcte": false,
+          "ordre": 3
+        },
+        {
+          "texte": "Un logiciel antivirus",
+          "est_correcte": false,
+          "ordre": 4
+        }
+      ]
+    },
+    {
+      "enonce": "Quelles sont les bonnes pratiques pour un mot de passe sécurisé ?",
+      "type_question": "choix_multiple",
+      "ordre": 2,
+      "points": 15.0,
+      "explication": "Un mot de passe sécurisé doit respecter plusieurs critères",
+      "reponses": [
+        {
+          "texte": "Utiliser au moins 12 caractères",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Inclure des majuscules et minuscules",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "Inclure des chiffres et symboles",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "Utiliser des informations personnelles",
+          "est_correcte": false,
+          "ordre": 4
+        },
+        {
+          "texte": "Réutiliser le même mot de passe partout",
+          "est_correcte": false,
+          "ordre": 5
+        }
+      ]
+    },
+    {
+      "enonce": "Il est sécurisé de cliquer sur tous les liens reçus par email.",
+      "type_question": "vrai_faux",
+      "ordre": 3,
+      "points": 5.0,
+      "explication": "Il faut toujours vérifier la source avant de cliquer",
+      "reponses": [
+        {
+          "texte": "Vrai",
+          "est_correcte": false,
+          "ordre": 1
+        },
+        {
+          "texte": "Faux",
+          "est_correcte": true,
+          "ordre": 2
+        }
+      ]
+    },
+    {
+      "enonce": "Décrivez comment vous protégeriez vos données personnelles en ligne.",
+      "type_question": "texte_libre",
+      "ordre": 4,
+      "points": 10.0,
+      "explication": "La protection des données personnelles est essentielle"
+    }
+  ]
+}
+
+###
+
+### Test 2: Créer un quiz simple avec seulement des questions à choix unique
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz simple sur les mots de passe",
+  "description": "Quiz basique sur la sécurité des mots de passe",
+  "ordre": 2,
+  "actif": true,
+  "questions": [
+    {
+      "enonce": "Quelle est la longueur minimale recommandée pour un mot de passe ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "points": 10.0,
+      "reponses": [
+        {
+          "texte": "4 caractères",
+          "est_correcte": false,
+          "ordre": 1
+        },
+        {
+          "texte": "8 caractères",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "12 caractères",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "16 caractères",
+          "est_correcte": false,
+          "ordre": 4
+        }
+      ]
+    },
+    {
+      "enonce": "Quel élément NE devrait PAS être inclus dans un mot de passe ?",
+      "type_question": "choix_unique",
+      "ordre": 2,
+      "points": 10.0,
+      "reponses": [
+        {
+          "texte": "Lettres majuscules",
+          "est_correcte": false,
+          "ordre": 1
+        },
+        {
+          "texte": "Chiffres",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte": "Symboles",
+          "est_correcte": false,
+          "ordre": 3
+        },
+        {
+          "texte": "Nom de votre chien",
+          "est_correcte": true,
+          "ordre": 4
+        }
+      ]
+    }
+  ]
+}
+
+###
+
+### Test 3: Créer un quiz avec seulement des questions à réponse libre
+POST {{baseUrl}}/learning/modules/1/quiz
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Quiz réflexion sur la cybersécurité",
+  "description": "Questions ouvertes pour tester la compréhension",
+  "ordre": 3,
+  "actif": true,
+  "questions": [
+    {
+      "enonce": "Expliquez pourquoi il est important de ne pas réutiliser les mêmes mots de passe.",
+      "type_question": "texte_libre",
+      "ordre": 1,
+      "points": 20.0,
+      "explication": "La réutilisation de mots de passe multiplie les risques"
+    },
+    {
+      "enonce": "Décrivez les étapes que vous suivriez si vous receviez un email suspect.",
+      "type_question": "texte_libre",
+      "ordre": 2,
+      "points": 20.0,
+      "explication": "Il faut toujours être prudent avec les emails suspects"
+    },
+    {
+      "enonce": "Quelles mesures de sécurité mettriez-vous en place pour protéger votre ordinateur personnel ?",
+      "type_question": "texte_libre",
+      "ordre": 3,
+      "points": 20.0,
+      "explication": "Plusieurs mesures sont nécessaires pour une protection complète"
+    }
+  ]
+}
+
+###
+
+### ========================================
+### 2. RÉCUPÉRATION DE QUIZ
+### ========================================
+
+### Test 4: Obtenir tous les quiz d'un module
+GET {{baseUrl}}/learning/modules/1/quiz
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 5: Obtenir un quiz spécifique
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 3. SOUMISSION DE RÉPONSES
+### ========================================
+
+### Test 6: Soumettre les réponses au premier quiz
+POST {{baseUrl}}/learning/quiz/1/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "quiz_id": 1,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    },
+    {
+      "question_id": 2,
+      "reponses_multiple": [1, 2, 3]
+    },
+    {
+      "question_id": 3,
+      "reponse_vrai_faux": false
+    },
+    {
+      "question_id": 4,
+      "reponse_texte": "Je protégerais mes données en utilisant des mots de passe forts, en activant l'authentification à deux facteurs, en évitant de partager des informations personnelles sur les réseaux sociaux et en utilisant un VPN."
+    }
+  ],
+  "temps_total_secondes": 450
+}
+
+###
+
+### Test 7: Soumettre les réponses au quiz simple
+POST {{baseUrl}}/learning/quiz/2/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "quiz_id": 2,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 3
+    },
+    {
+      "question_id": 2,
+      "reponse_id": 4
+    }
+  ],
+  "temps_total_secondes": 120
+}
+
+###
+
+### Test 8: Soumettre les réponses au quiz à réponse libre
+POST {{baseUrl}}/learning/quiz/3/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "quiz_id": 3,
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_texte": "Si un compte est compromis, les autres comptes restent sécurisés car ils utilisent des mots de passe différents. Cela limite les dégâts en cas de fuite de données."
+    },
+    {
+      "question_id": 2,
+      "reponse_texte": "Je ne cliquerais pas sur les liens, vérifierais l'expéditeur, ne téléchargerais pas de pièces jointes suspectes et signalerais l'email comme spam."
+    },
+    {
+      "question_id": 3,
+      "reponse_texte": "J'installerais un antivirus, activerais le pare-feu, ferais des mises à jour régulières, utiliserais des mots de passe forts et ferais des sauvegardes."
+    }
+  ],
+  "temps_total_secondes": 600
+}
+
+###
+
+### ========================================
+### 4. RÉSULTATS DE QUIZ
+### ========================================
+
+### Test 9: Obtenir les résultats du premier quiz
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 10: Obtenir les résultats du quiz simple
+GET {{baseUrl}}/learning/quiz/2/results
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 11: Obtenir les résultats du quiz à réponse libre
+GET {{baseUrl}}/learning/quiz/3/results
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 5. SUPPRESSION DE QUIZ
+### ========================================
+
+### Test 12: Supprimer un quiz
+DELETE {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 6. VÉRIFICATION DE LA PROGRESSION
+### ========================================
+
+### Test 13: Vérifier la progression du module après avoir répondu aux quiz
+GET {{baseUrl}}/learning/progress/user/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### ========================================
+### 7. CORRECTIONS APPLIQUÉES
+### ========================================
+
+### ✅ Correction de l'erreur "questions.3.reponses must be an array" :
+### - Ajout de @ValidateIf(o => o.type_question !== 'texte_libre') dans CreateQuestionDto
+### - Le champ reponses est maintenant optionnel pour les questions de type texte_libre
+### - Les questions à réponse libre n'ont plus besoin d'un tableau reponses
+
+### ✅ Types de questions supportés :
+### - choix_unique : Une seule réponse correcte
+### - choix_multiple : Plusieurs réponses correctes possibles
+### - vrai_faux : Question vrai/faux
+### - texte_libre : Réponse libre en texte
+
+### ✅ Structure des réponses :
+### - reponse_id : Pour les questions à choix unique
+### - reponses_multiple : Pour les questions à choix multiple
+### - reponse_vrai_faux : Pour les questions vrai/faux
+### - reponse_texte : Pour les questions à réponse libre

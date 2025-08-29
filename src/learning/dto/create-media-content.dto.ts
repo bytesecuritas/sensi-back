@@ -8,6 +8,10 @@ export class CreateMediaContentDto {
   @IsOptional()
   module_id?: number;
 
+  @IsString()
+  @IsNotEmpty()
+  titre: string;
+
   @IsEnum(ContentType)
   @IsNotEmpty()
   type_contenu: ContentType;
@@ -36,6 +40,10 @@ export class CreateMediaContentDto {
   @IsOptional()
   description: string;
 
+  @IsString()
+  @IsOptional()
+  contenu?: string;
+
   @IsEnum(AttackType)
   @IsOptional()
   type_attaque?: AttackType;
@@ -43,5 +51,4 @@ export class CreateMediaContentDto {
   @IsString()
   @IsOptional()
   thematique_cyber?: string;
-
 }

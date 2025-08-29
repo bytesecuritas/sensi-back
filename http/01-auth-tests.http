@@ -1,0 +1,237 @@
+### Tests d'Authentification - Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000
+
+### Variables globales
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
+@superadmin_refresh = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTYzMzExMjMsImV4cCI6MTc1NjkzNTkyM30.tVJkcSGvPVu69Po0iyHoEwUVwQUiZpQK3CEatvB7l1M
+
+### 0. Login du superadmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "superadmin2@cybersec.com",
+  "password": "SuperAdmin123!"
+}
+
+### 1. Créer le superadmin (doit être unique)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "email": "superadmin@cybersec.com",
+  "password": "SuperAdmin123!",
+  "nom": "Admin",
+  "prenom": "Super",
+  "age": 35,
+  "role": "superadmin",
+  "code_langue": "FR"
+}
+
+###
+
+### 2. Tentative de créer un deuxième superadmin (doit échouer)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "email": "superadmin2@cybersec.com",
+  "password": "SuperAdmin456!",
+  "nom": "Admin",
+  "prenom": "Super2",
+  "age": 40,
+  "role": "superadmin",
+  "code_langue": "FR"
+}
+
+###
+
+### Créer l'organisation TechCorp Solutions
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "nom": "TechCorp Solutions",
+  "type": "entreprise_privee",
+  "code_pays": "GN",
+  "date_creation": "2020-04-10",
+  "email": "contact@techcop.gn",
+  "telephone": "+224 622 86 12 34",
+  "adresse": "Mossoko, Dialakoro, Dinguiraye, Kankan, Guinée"
+}
+
+### 3. Créer un admin pour TechCorp Solutions
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "email": "admin@techcorp.com",
+  "password": "AdminTech123!",
+  "nom": "Martin",
+  "prenom": "Sophie",
+  "age": 32,
+  "role": "admin",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+### login admin:
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@techcorp.com",
+  "password": "AdminTech123!"
+}
+
+###
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzMxNjQ4LCJleHAiOjE3NTYzMzUyNDh9.b_q-V0Jj2WIEpOPlLsHz2zdV0dLPK6zSwD6Yd_7xs_o
+@admin_refresh = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzMxNjQ4LCJleHAiOjE3NTY5MzY0NDh9.MGPUPqqgWeVRa7T3shtf_bE5nImfQuehdYRQyZ-aaaQ
+### 4. Créer un utilisateur normal pour TechCorp Solutions
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "email": "user1@techcorp.com",
+  "password": "User123!",
+  "nom": "Dupont",
+  "prenom": "Jean",
+  "age": 28,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+###
+
+### 5. Créer un deuxième utilisateur pour TechCorp Solutions
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{admin_token}}
+
+{
+  "email": "user2@techcorp.com",
+  "password": "User456!",
+  "nom": "Bernard",
+  "prenom": "Marie",
+  "age": 31,
+  "role": "user",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+###
+
+### 6. Login du superadmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "superadmin@cybersec.com",
+  "password": "SuperAdmin123!"
+}
+
+###
+
+### 7. Login de l'admin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@techcorp.com",
+  "password": "AdminTech123!"
+}
+
+###
+
+### 8. Login d'un utilisateur normal
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "user1@techcorp.com",
+  "password": "User123!"
+}
+
+###
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIyQHRlY2hjb3JwLmNvbSIsInN1YiI6NCwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTY0ODg4OTMsImV4cCI6MTc1NjQ5MjQ5M30.yTIYXokMCjq4JNBQiuplprtCLDjxCwSm2E6TOQauCuc
+
+### 9. Test de login avec mauvais mot de passe
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "user1@techcorp.com",
+  "password": "WrongPassword123!"
+}
+
+###
+
+### 10. Test de login avec email inexistant
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "nonexistent@example.com",
+  "password": "Password123!"
+}
+
+###
+
+### 11. Obtenir le profil utilisateur
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{user_token}}
+
+###
+
+### 12. Changer le mot de passe
+POST {{baseUrl}}/auth/change-password
+Content-Type: {{contentType}}
+Authorization: Bearer {{user_token}}
+
+{
+  "currentPassword": "User123!",
+  "newPassword": "NewUser123!"
+}
+
+###
+
+### 13. Demande de réinitialisation de mot de passe
+POST {{baseUrl}}/auth/reset-password-request
+Content-Type: {{contentType}}
+
+{
+  "email": "user1@techcorp.com"
+}
+
+###
+@reset_token = 22035e1be9451805ee5fcf79d1087d3a58818d9b61c9efef25cc2ef2f78aafa9
+### 14. Réinitialisation de mot de passe (avec token)
+POST {{baseUrl}}/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "{{reset_token}}",
+  "newPassword": "ResetUser123!"
+}
+
+###
+
+### 15. Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{user_token}}
+
+###
+
+### Variables pour les tests
+# @superadmin_token = token_jwt_du_superadmin
+# @admin_token = token_jwt_de_l_admin
+# @user_token = token_jwt_de_l_utilisateur
+# @reset_token = token_de_reinitialisation_retourne_par_reset-password-request

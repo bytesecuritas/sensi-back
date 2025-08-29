@@ -20,19 +20,40 @@ export class Organisation {
   @Column({ type: 'varchar', length: 255, unique:true })
   nom: string;
 
-  @Column({ 
+  @Column({  
     type: 'enum', 
     enum: OrganisationType,
     default: OrganisationType.AUTRE
   })
   type: OrganisationType;
 
-  @Column({ type: 'varchar', length: 3 })
+  @Column({ type: 'varchar', length: 10 })
   code_pays: string;
 
   // La date de création de l'organisation 
-  @Column({type: 'date'})
+  @Column({ type: 'date', nullable: true })
   date_creation: Date;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  email: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  telephone: string;
+
+  @Column({ type: 'text', nullable: true })
+  adresse: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  site_web: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  code_postal: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  ville: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  pays: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   date_ins: Date;

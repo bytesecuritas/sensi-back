@@ -1,0 +1,173 @@
+### Tests des Nouvelles Routes - Sensibilisation Cybersécurité
+### Routes PATCH pour la gestion des parcours et modules
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### Variables d'environnement
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NjMyNDA2OCwiZXhwIjoxNzU2MzI3NjY4fQ.rjbcTrUraV61dKKlaNHyvtr4dGHcZTzcVMtDpUBdEKU
+
+### ========================================
+### 1. TESTS DE MISE À JOUR DE PARCOURS
+### ========================================
+
+### Test 1: Mettre à jour un parcours existant
+PATCH {{baseUrl}}/learning/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Parcours Cybersécurité Mise à Jour",
+  "description": "Description mise à jour du parcours de cybersécurité",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 15.5
+}
+
+###
+
+### Test 2: Mettre à jour un parcours avec seulement le titre
+PATCH {{baseUrl}}/learning/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Nouveau Titre du Parcours"
+}
+
+###
+
+### Test 3: Mettre à jour un parcours avec seulement la durée
+PATCH {{baseUrl}}/learning/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "duree_estimee_heures": 20.0
+}
+
+###
+
+### ========================================
+### 2. TESTS DE MISE À JOUR DE MODULES
+### ========================================
+
+### Test 4: Mettre à jour un module existant
+PATCH {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Module Sécurité Mise à Jour",
+  "description": "Description mise à jour du module",
+  "niveau_difficulte": "moyen",
+  "ordre": 2
+}
+
+###
+
+### Test 5: Mettre à jour un module avec seulement l'ordre
+PATCH {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "ordre": 1
+}
+
+###
+
+### Test 6: Mettre à jour un module avec la thématique
+PATCH {{baseUrl}}/learning/modules/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "thematique_cyber": "phishing"
+}
+
+###
+
+### ========================================
+### 3. TESTS DE DÉSACTIVATION DE PARCOURS
+### ========================================
+
+### Test 7: Désactiver un parcours pour une organisation
+PATCH {{baseUrl}}/learning/organisations/1/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "actif": false
+}
+
+###
+
+### Test 8: Réactiver un parcours pour une organisation
+PATCH {{baseUrl}}/learning/organisations/1/parcours/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "actif": true
+}
+
+###
+
+### ========================================
+### 4. TESTS DE VALIDATION
+### ========================================
+
+### Test 9: Test avec propriété ordre dans la création de module (doit fonctionner maintenant)
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Module Test avec Ordre",
+  "description": "Module de test avec propriété ordre",
+  "code_langue": "FR",
+  "parcours_id": 1,
+  "ordre": 5,
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "password_management"
+}
+
+###
+
+### Test 10: Test avec propriété ordre manquante (doit fonctionner avec valeur par défaut)
+POST {{baseUrl}}/learning/modules
+Content-Type: {{contentType}}
+Authorization: Bearer {{superadmin_token}}
+
+{
+  "titre": "Module Test sans Ordre",
+  "description": "Module de test sans propriété ordre",
+  "code_langue": "FR",
+  "parcours_id": 1,
+  "niveau_difficulte": "facile",
+  "thematique_cyber": "data_protection"
+}
+
+###
+
+### ========================================
+### 5. TESTS DE VÉRIFICATION
+### ========================================
+
+### Test 11: Vérifier que le parcours a été mis à jour
+GET {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 12: Vérifier que le module a été mis à jour
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### Test 13: Vérifier les parcours de l'organisation
+GET {{baseUrl}}/learning/organisations/1/parcours
+Authorization: Bearer {{superadmin_token}}
+
+###
