@@ -2,7 +2,7 @@
 ### Base URL: http://localhost:3000
 
 ### Variables globales
-@baseUrl = http://localhost:3000/api
+@baseUrl = http://localhost:3000
 @contentType = application/json
 @superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
 

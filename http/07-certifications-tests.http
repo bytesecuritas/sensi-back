@@ -11,8 +11,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 1,
+  "utilisateur": 1,
+  "parcours": 1,
   "type_certification": "sensibilisation_basique",
   "url_certification": "https://example.com/certifications/sensibilisation-basique-user1.pdf"
 }
@@ -25,8 +25,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 4,
+  "utilisateur": 1,
+  "parcours": 4,
   "type_certification": "specialiste_anti_phishing",
   "url_certification": "https://example.com/certifications/anti-phishing-user1.pdf"
 }
@@ -39,8 +39,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 5,
+  "utilisateur": 1,
+  "parcours": 5,
   "type_certification": "protection_donnees",
   "url_certification": "https://example.com/certifications/rgpd-user1.pdf"
 }
@@ -53,8 +53,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 1,
+  "utilisateur": 1,
+  "parcours": 1,
   "type_certification": "securite_mobile",
   "url_certification": "https://example.com/certifications/mobile-security-user1.pdf"
 }
@@ -67,8 +67,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 2,
-  "parcours_id": 1,
+  "utilisateur": 2,
+  "parcours": 1,
   "type_certification": "sensibilisation_basique",
   "url_certification": "https://example.com/certifications/sensibilisation-basique-user2.pdf"
 }
@@ -81,8 +81,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 2,
-  "parcours_id": 4,
+  "utilisateur": 2,
+  "parcours": 4,
   "type_certification": "specialiste_anti_phishing",
   "url_certification": "https://example.com/certifications/anti-phishing-user2.pdf"
 }
@@ -95,8 +95,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 2,
-  "parcours_id": 2,
+  "utilisateur": 2,
+  "parcours": 2,
   "type_certification": "expert_cybersecurite",
   "url_certification": "https://example.com/certifications/expert-cyber-user2.pdf"
 }
@@ -109,8 +109,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 1,
+  "utilisateur": 1,
+  "parcours": 1,
   "type_certification": "vigilance_numerique",
   "url_certification": "https://example.com/certifications/vigilance-numerique-user1.pdf"
 }
@@ -123,8 +123,8 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 3,
-  "parcours_id": 3,
+  "utilisateur": 3,
+  "parcours": 3,
   "type_certification": "securite_enfants",
   "url_certification": "https://example.com/certifications/securite-enfants-user3.pdf"
 }

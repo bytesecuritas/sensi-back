@@ -36,6 +36,10 @@ export class Question {
   @Column({ type: 'boolean', default: true })
   actif: boolean;
 
+  // Termes acceptés pour les questions de type texte_libre (mise en correspondance souple)
+  @Column('simple-array', { nullable: true })
+  termes_acceptes: string[];
+
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;
 

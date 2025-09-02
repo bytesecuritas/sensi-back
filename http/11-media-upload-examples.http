@@ -2,7 +2,7 @@
 ### Correction des erreurs "property module_id should not exist" et "property file should not exist"
 ### Instructions spécifiques pour Thunder Client
 
-@baseUrl = http://localhost:3000/api
+@baseUrl = http://localhost:3000
 @contentType = application/json
 
 ### Variables d'environnement
@@ -15,7 +15,7 @@
 ### ⚠️ IMPORTANT : Configuration Thunder Client pour l'upload
 
 ### 1. Méthode : POST
-### 2. URL : http://localhost:3000/api/learning/media/upload?module_id=1
+### 2. URL : http://localhost:3000/learning/media/upload?module_id=1
 ### 3. Headers :
 ###    - Authorization: Bearer [votre_token]
 ###    - Content-Type: multipart/form-data (automatique)

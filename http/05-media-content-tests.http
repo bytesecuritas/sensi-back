@@ -2,13 +2,13 @@
 ### Base URL: http://localhost:3000
 
 ### Variables globales
-@baseUrl = http://localhost:3000/api
+@baseUrl = http://localhost:3000
 @contentType = multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 @superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
 
 
 ### 1. Upload d'une vidéo de sensibilisation (utilisant le fichier GIMS)
-POST {{baseUrl}}/learning/media/upload
+POST {{baseUrl}}/learning/media/upload?module_id=1
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 Authorization: Bearer {{superadmin_token}}
 
@@ -17,10 +17,6 @@ Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_offici
 Content-Type: video/mp4
 
 < C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="module_id"
-
-1
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="type_contenu"
 
@@ -96,7 +92,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### 5. Créer une vidéo pour le module phishing
-POST {{baseUrl}}/learning/media/upload
+POST {{baseUrl}}/learning/media/upload?module_id=2
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 Authorization: Bearer {{superadmin_token}}
 
@@ -105,10 +101,6 @@ Content-Disposition: form-data; name="file"; filename="GIMS__-_BABY__Clip_offici
 Content-Type: video/mp4
 
 < C:\Users\Mossoko\Videos\GIMS__-_BABY__Clip_officiel_(480p).mp4
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="module_id"
-
-2
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="type_contenu"
 
@@ -288,8 +280,6 @@ Authorization: Bearer {{superadmin_token}}
 ### 16. Supprimer un contenu média
 DELETE {{baseUrl}}/learning/media/1
 Authorization: Bearer {{superadmin_token}}
-
-###
 
 ### Variables pour les tests
 # @superadmin_token = token_jwt_du_superadmin

@@ -18,6 +18,10 @@ GET {{base_url}}/analytics/dashboard
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
+### Attentes clés (manuel):
+# - Body.overview.gamification.totalPoints existe
+# - Body.overview.gamification.avgPointsPerUser existe
+# - Body.overview.gamification.totalBadgesAwarded existe
 ### Obtenir le tableau de bord avec filtres de temps
 GET {{base_url}}/analytics/dashboard?timeRange=month&limit=20
 Authorization: Bearer {{superadmin_token}}

@@ -60,12 +60,94 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
 - Comparaisons de périodes
 - Monitoring de la santé système
 
-### 10. `10-my-infos-tests.http` - Tests de la Route GetMyInfos
+### 10. `10-my-infos-tests.http` - Tests de la Route Profile
 - Tests pour utilisateurs normaux (rôle: user)
 - Tests pour administrateurs (rôle: admin)
 - Tests pour superadmins (rôle: superadmin)
 - Tests de sécurité et gestion d'erreurs
 - Workflow complet de test avec authentification
+
+### 11. `11-media-upload-examples.http` - Exemples d'Upload de Médias
+- Exemples d'upload de différents types de fichiers
+- Tests de validation des formats
+- Gestion des erreurs d'upload
+
+### 12. `12-quiz-routes-tests.http` - Tests des Routes Quiz
+- Tests des fonctionnalités de quiz
+- Validation des réponses
+- Statistiques de quiz
+
+### 13. `13-upload-troubleshooting-guide.md` - Guide de Dépannage Upload
+- Guide de résolution des problèmes d'upload
+- Solutions aux erreurs courantes
+
+### 14. `14-quiz-tests-corrected.http` - Tests Quiz Corrigés
+- Tests complets du système de quiz
+- Validation des corrections
+- Statistiques avancées
+
+### 15. `15-quiz-fixes-test.http` - Tests des Corrections Quiz
+- Tests des fonctionnalités de correction
+- Validation des améliorations
+
+### 16. `16-gamification-enhanced-tests.http` - Tests Gamification Avancée
+- **Système de Gamification Complet:**
+  - Points et niveaux utilisateur (Débutant à Maître)
+  - Badges (7 types: Premier Pas, Vigilant, Quiz Parfait, Assidu, Expert Phishing, Défenseur Cyber, Maître de la Sécurité)
+  - Tableau de bord personnalisé avec progression
+  - Classement d'équipe et recommandations
+  - Connexion quotidienne et statistiques
+
+- **Simulations d'Attaques Cyber:**
+  - Phishing Email, Vishing, Smishing, Ransomware, Social Engineering
+  - Analyse intelligente des réponses utilisateur
+  - Feedback personnalisé et points de récompense
+  - Statistiques de performance et comparaison d'équipe
+  - Gestion des tentatives et progression
+
+- **Chatbot IA:**
+  - Assistant conversationnel avec base de connaissances
+  - Détection d'intention et réponses contextuelles
+  - Suggestions de ressources et modules
+  - Historique des conversations et feedback utilisateur
+  - Statistiques d'utilisation et satisfaction
+
+- **Défis et Challenges:**
+  - Défis quotidiens, hebdomadaires et mensuels
+  - Objectifs personnalisés et récompenses
+  - Suivi de progression et classements
+  - Badges spéciaux pour les accomplissements
+
+- **Alertes Cybersécurité:**
+  - Système d'alertes de menaces en temps réel
+  - Partage d'alertes entre utilisateurs
+  - Conseils de prévention personnalisés
+  - Historique des alertes et statistiques
+
+### 17. `17-certificate-tests.http` - Tests des Certificats PDF
+- **Génération Automatique de Certificats:**
+  - Vérification d'éligibilité basée sur la completion des modules
+  - Génération automatique lors de la completion d'un parcours
+  - Certificats PDF au format A4 avec design professionnel
+  - Numérotation unique et sécurisée des certificats
+
+- **Intégration avec la Gamification:**
+  - Métriques de gamification incluses dans les certificats
+  - Badges obtenus et niveau de gamification affichés
+  - Points totaux gagnés et statistiques de performance
+  - Historique des accomplissements et progression
+
+- **Fonctionnalités Avancées:**
+  - Téléchargement de certificats PDF
+  - Statistiques des certifications par utilisateur
+  - Gestion des dates d'expiration (2 ans par défaut)
+  - Validation et sécurité des accès aux certificats
+
+- **Métriques Détaillées:**
+  - Score final du parcours et modules complétés
+  - Quiz réussis et simulations réussies
+  - Temps total de formation et progression
+  - Commentaires personnalisés selon la performance
 
 ## 🚀 Utilisation
 
@@ -106,7 +188,28 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
     - Valider le système d'analytics du superadmin
 
 10. **Tester `10-my-infos-tests.http`**
-    - Valider la route getMyInfos avec routage basé sur les rôles
+    - Valider la route /auth/profile avec routage basé sur les rôles
+
+11. **Tester `11-media-upload-examples.http`**
+    - Valider les fonctionnalités d'upload de médias
+
+12. **Tester `12-quiz-routes-tests.http`**
+    - Valider le système de quiz
+
+13. **Consulter `13-upload-troubleshooting-guide.md`**
+    - Guide de dépannage pour les uploads
+
+14. **Tester `14-quiz-tests-corrected.http`**
+    - Valider les corrections du système de quiz
+
+15. **Tester `15-quiz-fixes-test.http`**
+    - Valider les améliorations du quiz
+
+16. **Tester `16-gamification-enhanced-tests.http`**
+    - Valider le système complet de gamification, simulations, chatbot et alertes
+
+17. **Tester `17-certificate-tests.http`**
+    - Valider la génération de certificats PDF et l'intégration avec la gamification
 
 ## 🔧 Configuration des Variables
 
@@ -174,6 +277,26 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
 - **Audio:** Podcasts et formations audio
 - **Interactif:** Quiz, jeux, simulations
 
+### Système de Gamification
+- **Niveaux:** Débutant, Intermédiaire, Avancé, Expert, Maître
+- **Badges:** 7 types (Premier Pas, Vigilant, Quiz Parfait, Assidu, Expert Phishing, Défenseur Cyber, Maître de la Sécurité)
+- **Points:** Système de récompense basé sur les actions
+- **Défis:** Quotidiens, hebdomadaires, mensuels
+- **Classements:** Individuels et d'équipe
+
+### Simulations d'Attaques
+- **Phishing Email:** Détection d'emails frauduleux
+- **Vishing:** Appels téléphoniques frauduleux
+- **Smishing:** SMS frauduleux
+- **Ransomware:** Attaques par rançongiciels
+- **Social Engineering:** Ingénierie sociale
+
+### Chatbot IA
+- **Assistant conversationnel** avec base de connaissances cybersécurité
+- **Détection d'intention** pour réponses contextuelles
+- **Suggestions personnalisées** de modules et ressources
+- **Historique des conversations** et feedback utilisateur
+
 ## 🔒 Sécurité
 
 ### Validation des Mots de Passe
@@ -214,6 +337,15 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
 - Comparaisons de périodes
 - Santé et performance du système
 
+### Métriques de Gamification
+- **Engagement utilisateur:** Points gagnés, niveaux atteints, badges obtenus
+- **Performance des simulations:** Taux de réussite, temps de réponse, progression
+- **Utilisation du chatbot:** Nombre de conversations, satisfaction, types de questions
+- **Participation aux défis:** Taux de participation, réussite, engagement
+- **Alertes cybersécurité:** Partage d'alertes, réactivité, sensibilisation
+- **Classements et compétition:** Top performers, progression d'équipe
+- **Rétention et progression:** Connexions quotidiennes, modules complétés
+
 ## 🛠️ Dépannage
 
 ### Erreurs Courantes
@@ -234,3 +366,5 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
 - Le fichier vidéo GIMS est utilisé comme contenu média de test
 - Tous les scénarios couvrent les cas d'usage réels
 - Les métriques permettent un suivi complet des formations
+- **Gamification:** Exécuter `npm run init-gamification` pour initialiser les données de base (badges, simulations, défis, alertes)
+- **Nouveautés:** Le système inclut maintenant un chatbot IA, des simulations d'attaques cyber, et un système complet de gamification

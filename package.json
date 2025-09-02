@@ -25,7 +25,9 @@
     "test:user-creation": "node test-user-creation.js",
     "test:superadmin-unique": "node scripts/test-superadmin-unique.js",
     "create-superadmin": "npm run build && node scripts/create-superadmin.js",
-    "check-superadmin": "npm run build && node scripts/check-superadmin.js"
+    "check-superadmin": "npm run build && node scripts/check-superadmin.js",
+    "init-gamification": "npm run build && node scripts/init-gamification-data.js",
+    "test-gamification": "node test-gamification-integration.js"
   },
   "dependencies": {
     "@nestjs/class-transformer": "^0.4.0",

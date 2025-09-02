@@ -20,12 +20,13 @@ import * as path from 'path';
 import { User } from '../users/users.entity';
 import { Organisation } from '../organisations/organisations.entity';
 import { ProgressStatus } from './entities/progress.entity';
+import { GamificationService } from './gamification.service';
 
 
 @Injectable()
 export class LearningService {
   private readonly logger = new Logger(LearningService.name);
-  private readonly tempDir = path.join(process.cwd(), 'ressource/temp');
+  private readonly tempDir = path.join(process.cwd(), 'ressources/temp');
   
   constructor(
     @InjectRepository(LearningPath)
@@ -52,6 +53,7 @@ export class LearningService {
     private userRepository: Repository<User>,
     @InjectRepository(Organisation)
     private organisationRepository: Repository<Organisation>,
+    private gamificationService: GamificationService,
   ) {}
 
   // Méthodes pour les parcours d'apprentissage
@@ -282,7 +284,7 @@ export class LearningService {
   async createProgress(progressData: Partial<Progress>): Promise<Progress> {
     // Si les IDs sont fournis, récupérer les entités correspondantes
     let user;
-    let module;
+    let parcours;
     if (progressData.utilisateur && typeof progressData.utilisateur === 'number') {
       const userId = progressData.utilisateur;
       user = await this.userRepository.findOne({ where: { users_id: userId }, relations: ['organisation'] });
@@ -292,20 +294,21 @@ export class LearningService {
       progressData.utilisateur = user;
     }
     
-    if (progressData.module && typeof progressData.module === 'number') {
-      const moduleId = progressData.module;
-      module = await this.learningModuleRepository.findOne({ where: { module_id: moduleId }, relations: ['parcours'] });
-      if (!module) {
-        throw new NotFoundException(`Module with ID ${moduleId} not found`);
+    if (progressData.parcours && typeof progressData.parcours === 'number') {
+      const parcoursId = progressData.parcours;
+      parcours = await this.learningPathRepository.findOne({ where: { parcours_id: parcoursId } });
+      if (!parcours) {
+        throw new NotFoundException(`Parcours with ID ${parcoursId} not found`);
       }
-      progressData.module = module;
+      progressData.parcours = parcours;
     }
-    // Vérification d'accès : le module doit appartenir à un parcours accessible par l'organisation de l'utilisateur
-    if (user && module) {
+    
+    // Vérification d'accès : le parcours doit être accessible par l'organisation de l'utilisateur
+    if (user && parcours) {
       const organisationId = user.organisation?.organisation_id;
-      const parcoursId = module.parcours?.parcours_id;
+      const parcoursId = parcours.parcours_id;
       if (!organisationId || !parcoursId) {
-        throw new ForbiddenException('Utilisateur ou module non lié à une organisation ou un parcours.');
+        throw new ForbiddenException('Utilisateur ou parcours non lié à une organisation.');
       }
       const association = await this.organisationLearningPathRepository.findOne({
         where: {
@@ -315,7 +318,7 @@ export class LearningService {
         },
       });
       if (!association) {
-        throw new ForbiddenException('Ce module n\'est pas accessible pour l\'organisation de l\'utilisateur.');
+        throw new ForbiddenException('Ce parcours n\'est pas accessible pour l\'organisation de l\'utilisateur.');
       }
     }
     const progress = this.progressRepository.create(progressData);
@@ -325,7 +328,7 @@ export class LearningService {
   async updateProgress(id: number, progressData: Partial<Progress>): Promise<Progress> {
     const progress = await this.progressRepository.findOne({ 
       where: { progression_id: id },
-      relations: ['utilisateur', 'module', 'module.parcours', 'utilisateur.organisation']
+      relations: ['utilisateur', 'parcours', 'utilisateur.organisation']
     });
 
     if (!progress) {
@@ -339,21 +342,21 @@ export class LearningService {
   async getUserProgress(userId: number): Promise<Progress[]> {
     return await this.progressRepository.find({
       where: { utilisateur: { users_id: userId } },
-      relations: ['utilisateur', 'module', 'module.parcours'],
+      relations: ['utilisateur', 'parcours'],
     });
   }
 
-  async getModuleProgress(userId: number, moduleId: number): Promise<Progress> {
+  async getParcoursProgress(userId: number, parcoursId: number): Promise<Progress> {
     const progress = await this.progressRepository.findOne({
       where: { 
         utilisateur: { users_id: userId }, 
-        module: { module_id: moduleId } 
+        parcours: { parcours_id: parcoursId } 
       },
-      relations: ['utilisateur', 'module'],
+      relations: ['utilisateur', 'parcours'],
     })
 
     if(!progress){
-      throw new NotFoundException(`La progression de l'utilisateur ${userId} pour le module ${moduleId} n'existe pas!`)
+      throw new NotFoundException(`La progression de l'utilisateur ${userId} pour le parcours ${parcoursId} n'existe pas!`)
     }
     return progress;
   }
@@ -523,7 +526,8 @@ export class LearningService {
   // Créer un quiz pour un module
   async createQuiz(moduleId: number, quizData: CreateQuizDto): Promise<Quiz> {
     const module = await this.learningModuleRepository.findOne({
-      where: { module_id: moduleId }
+      where: { module_id: moduleId },
+      relations: ['parcours']
     });
 
     if (!module) {
@@ -534,20 +538,27 @@ export class LearningService {
     const { questions, ...quizDataWithoutQuestions } = quizData;
     const quiz = this.quizRepository.create({
       ...quizDataWithoutQuestions,
-      module: module
+      module: module,
+      type_quiz: 'module' as any, // Par défaut, un quiz créé pour un module est de type module
+      validation_100_pourcent: true // Les quiz de module nécessitent 100% de réussite
     });
 
     const savedQuiz = await this.quizRepository.save(quiz);
 
-    // Créer les questions et réponses
+    // Créer les questions et réponses avec calcul automatique des points
     if (questions && questions.length > 0) {
+      // Calculer les points par question (100 points répartis équitablement)
+      const pointsParQuestion = 100 / questions.length;
+      
       for (const questionData of questions) {
         const { reponses, ...questionDataWithoutReponses } = questionData;
         
         const question = this.questionRepository.create({
           ...questionDataWithoutReponses,
+          points: pointsParQuestion, // Points calculés automatiquement
           quiz: savedQuiz,
-          type_question: questionDataWithoutReponses.type_question as any
+          type_question: questionDataWithoutReponses.type_question as any,
+          termes_acceptes: (questionData as any).termes || null,
         });
 
         const savedQuestion = await this.questionRepository.save(question);
@@ -555,10 +566,67 @@ export class LearningService {
         // Créer les réponses pour cette question
         if (reponses && reponses.length > 0) {
           for (const reponseData of reponses) {
-                    const reponse = this.reponseRepository.create({
-          ...reponseData,
-          question: savedQuestion
-        } as any);
+            const reponse = this.reponseRepository.create({
+              ...reponseData,
+              question: savedQuestion
+            } as any);
+            await this.reponseRepository.save(reponse);
+          }
+        }
+      }
+    }
+
+    // Retourner le quiz avec toutes ses relations
+    return await this.getQuizById(savedQuiz.quiz_id);
+  }
+
+  // Créer un quiz final pour un parcours
+  async createParcoursFinalQuiz(parcoursId: number, quizData: CreateQuizDto): Promise<Quiz> {
+    const parcours = await this.learningPathRepository.findOne({
+      where: { parcours_id: parcoursId }
+    });
+
+    if (!parcours) {
+      throw new NotFoundException(`Parcours avec l'ID ${parcoursId} non trouvé`);
+    }
+
+    // Créer le quiz sans les questions d'abord
+    const { questions, ...quizDataWithoutQuestions } = quizData;
+    const quiz = this.quizRepository.create({
+      ...quizDataWithoutQuestions,
+      parcours: parcours,
+      type_quiz: 'parcours_final' as any,
+      validation_100_pourcent: false, // Les quiz finaux de parcours nécessitent 80% de réussite
+      score_minimum_pour_reussite: 80.0 // Score minimum de 80% pour les quiz finaux
+    });
+
+    const savedQuiz = await this.quizRepository.save(quiz);
+
+    // Créer les questions et réponses avec calcul automatique des points
+    if (questions && questions.length > 0) {
+      // Calculer les points par question (100 points répartis équitablement)
+      const pointsParQuestion = 100 / questions.length;
+      
+      for (const questionData of questions) {
+        const { reponses, ...questionDataWithoutReponses } = questionData;
+        
+        const question = this.questionRepository.create({
+          ...questionDataWithoutReponses,
+          points: pointsParQuestion, // Points calculés automatiquement
+          quiz: savedQuiz,
+          type_question: questionDataWithoutReponses.type_question as any,
+          termes_acceptes: (questionData as any).termes || null,
+        });
+
+        const savedQuestion = await this.questionRepository.save(question);
+
+        // Créer les réponses pour cette question
+        if (reponses && reponses.length > 0) {
+          for (const reponseData of reponses) {
+            const reponse = this.reponseRepository.create({
+              ...reponseData,
+              question: savedQuestion
+            } as any);
             await this.reponseRepository.save(reponse);
           }
         }
@@ -573,6 +641,15 @@ export class LearningService {
   async getModuleQuizzes(moduleId: number): Promise<Quiz[]> {
     return await this.quizRepository.find({
       where: { module: { module_id: moduleId }, actif: true },
+      relations: ['questions', 'questions.reponses'],
+      order: { ordre: 'ASC' }
+    });
+  }
+
+  // Obtenir tous les quiz finaux d'un parcours
+  async getParcoursFinalQuizzes(parcoursId: number): Promise<Quiz[]> {
+    return await this.quizRepository.find({
+      where: { parcours: { parcours_id: parcoursId }, type_quiz: 'parcours_final' as any, actif: true },
       relations: ['questions', 'questions.reponses'],
       order: { ordre: 'ASC' }
     });
@@ -685,9 +762,20 @@ export class LearningService {
           break;
 
         case 'texte_libre':
-          // Pour les questions texte libre, on peut implémenter une logique de validation
-          // Pour l'instant, on considère comme correct si une réponse est fournie
-          isCorrect = !!reponse.reponse_texte && reponse.reponse_texte.trim().length > 0;
+          // Validation par correspondance de termes acceptés (si définis)
+          if (reponse.reponse_texte && reponse.reponse_texte.trim().length > 0) {
+            const answer = reponse.reponse_texte.toLowerCase();
+            const accepted: string[] = (question as any).termes_acceptes || [];
+            if (accepted.length > 0) {
+              const matched = accepted.some(t => answer.includes(String(t).toLowerCase()));
+              isCorrect = matched;
+            } else {
+              // fallback: toute réponse non vide est acceptée
+              isCorrect = true;
+            }
+          } else {
+            isCorrect = false;
+          }
           pointsObtenus = isCorrect ? question.points : 0;
           break;
       }
@@ -713,10 +801,66 @@ export class LearningService {
 
     // Calculer le score final en pourcentage
     const scoreFinal = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0;
-    const isReussi = scoreFinal >= quiz.score_minimum_pour_reussite;
+    
+    // Logique de validation selon le type de quiz
+    let isReussi = false;
+    
+    if (quiz.type_quiz === 'module') {
+      // Pour les quiz de module : validation 100% obligatoire
+      isReussi = scoreFinal >= 100;
+    } else if (quiz.type_quiz === 'parcours_final') {
+      // Pour les quiz finaux de parcours : validation à 80%
+      isReussi = scoreFinal >= 80;
+    } else {
+      // Fallback sur l'ancienne logique
+      isReussi = scoreFinal >= quiz.score_minimum_pour_reussite;
+    }
 
-    // Mettre à jour la progression du module
-    await this.updateModuleProgress(userId, quiz.module.module_id, scoreFinal);
+    // Mettre à jour la progression selon le type de quiz
+    if (quiz.type_quiz === 'module' && quiz.module) {
+      await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, scoreFinal, isReussi);
+    } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
+      await this.updateCertification(userId, quiz.parcours.parcours_id, scoreFinal, isReussi);
+    }
+
+    // Gamification automatique
+    try {
+      // Si le quiz de module est réussi, attribuer des points liés au quiz proportionnels au score
+      if (isReussi && quiz.type_quiz === 'module' && quiz.module) {
+        await this.gamificationService.addQuizSuccessPoints(userId, quiz.module.module_id, Math.round(scoreFinal));
+      }
+
+      // Si c'est un quiz de module, vérifier si tous les quiz du module sont réussis (100%) pour attribuer les points de fin de module
+      if (quiz.type_quiz === 'module' && quiz.module) {
+        const moduleId = quiz.module.module_id;
+        const quizzes = await this.getModuleQuizzes(moduleId);
+        const responsesForModule = await this.quizResponseRepository.find({
+          where: {
+            utilisateur: { users_id: userId },
+            quiz: { module: { module_id: moduleId }, type_quiz: 'module' as any },
+          },
+          relations: ['quiz', 'quiz.questions'],
+        });
+
+        // Calculer le pourcentage obtenu par l'utilisateur par quiz (somme des points de réponses / total des points du quiz)
+        const scoreByQuiz = new Map<number, number>();
+        for (const q of quizzes) {
+          const reps = responsesForModule.filter(r => r.quiz.quiz_id === q.quiz_id);
+          const totalObtained = reps.reduce((sum, r) => sum + (r.points_obtenus || 0), 0);
+          const totalPointsQuiz = (q.questions || []).reduce((sum, quest) => sum + (quest.points || 0), 0);
+          const pct = totalPointsQuiz > 0 ? (totalObtained / totalPointsQuiz) * 100 : 0;
+          scoreByQuiz.set(q.quiz_id, pct);
+        }
+
+        // Tous les quiz du module doivent être à 100%
+        const allQuizzesCompleted = quizzes.length > 0 && quizzes.every(q => (scoreByQuiz.get(q.quiz_id) || 0) >= 100);
+        if (allQuizzesCompleted) {
+          await this.gamificationService.addModuleCompletionPoints(userId, moduleId, Math.round(scoreFinal));
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`Gamification non appliquée pour user ${userId}, quiz ${quizId}: ${e.message}`);
+    }
 
     return {
       quiz_id: quizId,
@@ -733,60 +877,120 @@ export class LearningService {
     };
   }
 
-  // Mettre à jour la progression d'un module basée sur les quiz
-  private async updateModuleProgress(userId: number, moduleId: number, scoreQuiz: number): Promise<void> {
-    // Obtenir tous les quiz du module
-    const quizDuModule = await this.getModuleQuizzes(moduleId);
-    
-    if (quizDuModule.length === 0) {
-      return; // Pas de quiz, pas de progression à calculer
+  // Mettre à jour la progression d'un parcours basée sur les quiz de module
+  private async updateParcoursProgressFromModule(userId: number, parcoursId: number, scoreQuiz: number, isReussi: boolean): Promise<void> {
+    // Obtenir le parcours avec tous ses modules
+    const parcours = await this.learningPathRepository.findOne({
+      where: { parcours_id: parcoursId },
+      relations: ['modules', 'modules.quiz']
+    });
+
+    if (!parcours) {
+      return;
     }
 
-    // Obtenir toutes les réponses de l'utilisateur pour ce module
+    // Obtenir toutes les réponses de l'utilisateur pour ce parcours (quiz de module uniquement)
     const reponsesUtilisateur = await this.quizResponseRepository.find({
       where: { 
         utilisateur: { users_id: userId },
-        quiz: { module: { module_id: moduleId } }
+        quiz: { module: { parcours: { parcours_id: parcoursId } }, type_quiz: 'module' as any }
       },
-      relations: ['quiz']
+      relations: ['quiz', 'quiz.module']
     });
 
-    // Calculer le score global du module
-    let scoreTotalModule = 0;
-    let quizCompletes = 0;
+    // Calculer la progression basée sur les quiz de module réussis
+    let modulesCompletes = 0;
+    let totalModules = 0;
 
-    for (const quiz of quizDuModule) {
-      const reponsesQuiz = reponsesUtilisateur.filter(r => r.quiz.quiz_id === quiz.quiz_id);
-      
-      if (reponsesQuiz.length > 0) {
-        const scoreQuiz = reponsesQuiz.reduce((sum, r) => sum + r.points_obtenus, 0);
-        const pointsTotauxQuiz = quiz.questions.reduce((sum, q) => sum + q.points, 0);
-        scoreTotalModule += pointsTotauxQuiz > 0 ? (scoreQuiz / pointsTotauxQuiz) * 100 : 0;
-        quizCompletes++;
+    for (const module of parcours.modules) {
+      if (module.quiz && module.quiz.length > 0) {
+        totalModules++;
+        
+        // Vérifier si tous les quiz du module sont réussis
+        const quizDuModule = module.quiz;
+        let moduleReussi = true;
+
+        for (const quiz of quizDuModule) {
+          const reponsesQuiz = reponsesUtilisateur.filter(r => r.quiz.quiz_id === quiz.quiz_id);
+          
+          if (reponsesQuiz.length === 0) {
+            moduleReussi = false;
+            break;
+          }
+
+          // Vérifier si le quiz est réussi (100% pour les quiz de module)
+          const scoreQuiz = reponsesQuiz.reduce((sum, r) => sum + r.points_obtenus, 0);
+          const pointsTotauxQuiz = quiz.questions.reduce((sum, q) => sum + q.points, 0);
+          const pourcentageQuiz = pointsTotauxQuiz > 0 ? (scoreQuiz / pointsTotauxQuiz) * 100 : 0;
+          
+          if (pourcentageQuiz < 100) {
+            moduleReussi = false;
+            break;
+          }
+        }
+
+        if (moduleReussi) {
+          modulesCompletes++;
+        }
       }
     }
 
-    // Calculer la progression finale
-    const progressionFinale = quizCompletes > 0 ? scoreTotalModule / quizCompletes : 0;
+    // Calculer la progression finale (pourcentage de modules complétés)
+    const progressionFinale = totalModules > 0 ? (modulesCompletes / totalModules) * 100 : 0;
 
-    // Mettre à jour ou créer la progression
+    // Mettre à jour ou créer la progression du parcours
     let progression = await this.progressRepository.findOne({
       where: { 
         utilisateur: { users_id: userId },
-        module: { module_id: moduleId }
+        parcours: { parcours_id: parcoursId }
       }
     });
 
     if (!progression) {
       progression = this.progressRepository.create({
         utilisateur: { users_id: userId } as User,
-        module: { module_id: moduleId } as LearningPathModule,
+        parcours: { parcours_id: parcoursId } as LearningPath,
         score: progressionFinale,
-        statut: progressionFinale >= 70 ? ProgressStatus.TERMINE : ProgressStatus.EN_COURS
+        statut: progressionFinale >= 100 ? ProgressStatus.TERMINE : ProgressStatus.EN_COURS,
+        quiz_reussi: progressionFinale >= 100
       });
     } else {
       progression.score = progressionFinale;
-      progression.statut = progressionFinale >= 70 ? ProgressStatus.TERMINE : ProgressStatus.EN_COURS;
+      progression.statut = progressionFinale >= 100 ? ProgressStatus.TERMINE : ProgressStatus.EN_COURS;
+      progression.quiz_reussi = progressionFinale >= 100;
+    }
+
+    await this.progressRepository.save(progression);
+  }
+
+  // Mettre à jour la certification basée sur le quiz final
+  private async updateCertification(userId: number, parcoursId: number, scoreQuiz: number, isReussi: boolean): Promise<void> {
+    // Obtenir la progression du parcours
+    let progression = await this.progressRepository.findOne({
+      where: { 
+        utilisateur: { users_id: userId },
+        parcours: { parcours_id: parcoursId }
+      }
+    });
+
+    if (!progression) {
+      // Si pas de progression, créer une progression vide
+      progression = this.progressRepository.create({
+        utilisateur: { users_id: userId } as User,
+        parcours: { parcours_id: parcoursId } as LearningPath,
+        score: 0,
+        statut: ProgressStatus.NON_COMMENCE
+      });
+    }
+
+    // Mettre à jour le statut de certification
+    if (isReussi) {
+      progression.certificat_obtenu = true;
+      
+      // Si le parcours est terminé (100%) et le quiz final réussi, le parcours est complètement terminé
+      if (progression.score >= 100) {
+        progression.statut = ProgressStatus.TERMINE;
+      }
     }
 
     await this.progressRepository.save(progression);

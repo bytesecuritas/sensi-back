@@ -1,8 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Organisation } from '../organisations/organisations.entity';
 import { Certification } from '../learning/entities/certification.entity';
 import { Progress } from '../learning/entities/progress.entity';
 import { QuizResponse } from '../learning/entities/quiz-response.entity';
+import { UserBadge } from '../learning/entities/user-badge.entity';
+import { UserLevel } from '../learning/entities/user-level.entity';
+import { SimulationResponse } from '../learning/entities/simulation-response.entity';
+import { ChallengeParticipation } from '../learning/entities/challenge-participation.entity';
+import { AlertShare } from '../learning/entities/alert-share.entity';
+import { ChatbotConversation } from '../learning/entities/chatbot-conversation.entity';
 
 @Entity('users')
 export class User {
@@ -49,4 +55,23 @@ export class User {
 
   @OneToMany(() => QuizResponse, reponse => reponse.utilisateur)
   reponses_quiz: QuizResponse[];
+
+  // Relations avec les nouvelles entités de gamification
+  @OneToMany(() => UserBadge, userBadge => userBadge.utilisateur)
+  userBadges: UserBadge[];
+
+  @OneToOne(() => UserLevel, userLevel => userLevel.utilisateur)
+  userLevel: UserLevel | null;
+
+  @OneToMany(() => SimulationResponse, response => response.utilisateur)
+  simulationResponses: SimulationResponse[];
+
+  @OneToMany(() => ChallengeParticipation, participation => participation.utilisateur)
+  challengeParticipations: ChallengeParticipation[];
+
+  @OneToMany(() => AlertShare, share => share.utilisateur)
+  alertShares: AlertShare[];
+
+  @OneToMany(() => ChatbotConversation, conversation => conversation.utilisateur)
+  chatbotConversations: ChatbotConversation[];
 }

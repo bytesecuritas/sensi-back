@@ -1,0 +1,223 @@
+### Test des nouvelles fonctionnalités de gamification
+### Sensibilisation Cybersécurité - API Tests
+
+### 1. Connexion utilisateur
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "marie.dupont@droit-associes.fr",
+  "password": "password123"
+}
+
+### 2. Obtenir le tableau de bord personnalisé
+GET http://localhost:3000/learning/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### 3. Enregistrer une connexion quotidienne
+POST http://localhost:3000/learning/gamification/daily-login
+Authorization: Bearer {{authToken}}
+
+### 4. Obtenir les simulations actives
+GET http://localhost:3000/learning/gamification/simulations
+Authorization: Bearer {{authToken}}
+
+### 5. Envoyer une simulation à l'utilisateur
+POST http://localhost:3000/learning/gamification/simulations/1/send
+Authorization: Bearer {{authToken}}
+
+### 6. Répondre à une simulation (réponse correcte)
+POST http://localhost:3000/learning/gamification/simulations/respond
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 1,
+  "reponse_utilisateur": "marquer comme spam",
+  "details_reponse": {
+    "temps_reflexion": 30,
+    "confiance": 0.8
+  }
+}
+
+### 7. Répondre à une simulation (réponse incorrecte)
+POST http://localhost:3000/gamification/simulations/respond
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 1,
+  "reponse_utilisateur": "cliquer sur le lien",
+  "details_reponse": {
+    "temps_reflexion": 10,
+    "confiance": 0.3
+  }
+}
+
+### 8. Obtenir l'historique des simulations
+GET http://localhost:3000/learning/gamification/simulations/history
+Authorization: Bearer {{authToken}}
+
+### 9. Créer une nouvelle conversation avec le chatbot
+POST http://localhost:3000/learning/gamification/chatbot/conversations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "sujet": "Question sur le phishing"
+}
+
+### 10. Envoyer un message au chatbot
+POST http://localhost:3000/learning/gamification/chatbot/conversations/1/messages
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Comment reconnaître un email de phishing ?",
+  "contexte": "formation cybersécurité"
+}
+
+### 11. Envoyer un autre message au chatbot
+POST http://localhost:3000/learning/gamification/chatbot/conversations/1/messages
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Quels sont les meilleurs mots de passe ?",
+  "contexte": "sécurité des comptes"
+}
+
+### 12. Obtenir l'historique d'une conversation
+GET http://localhost:3000/learning/gamification/chatbot/conversations/1/history
+Authorization: Bearer {{authToken}}
+
+### 13. Obtenir les conversations de l'utilisateur
+GET http://localhost:3000/learning/gamification/chatbot/conversations
+Authorization: Bearer {{authToken}}
+
+### 14. Évaluer la satisfaction d'une conversation
+POST http://localhost:3000/learning/gamification/chatbot/conversations/1/rate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "satisfaction": 4,
+  "feedback": "Réponses très utiles et claires"
+}
+
+### 15. Terminer une conversation
+PUT http://localhost:3000/learning/gamification/chatbot/conversations/1/end
+Authorization: Bearer {{authToken}}
+
+### 16. Obtenir les statistiques des simulations
+GET http://localhost:3000/learning/gamification/stats/simulations
+Authorization: Bearer {{authToken}}
+
+### 17. Obtenir les statistiques du chatbot
+GET http://localhost:3000/learning/gamification/stats/chatbot
+Authorization: Bearer {{authToken}}
+
+### 18. Obtenir les intentions les plus fréquentes
+GET http://localhost:3000/learning/gamification/stats/chatbot/intents
+Authorization: Bearer {{authToken}}
+
+### 19. Test du tableau de bord après activités
+GET http://localhost:3000/learning/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### 20. Test avec un autre utilisateur (pour tester le classement)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "jean.martin@droit-associes.fr",
+  "password": "password123"
+}
+
+### 21. Tableau de bord du deuxième utilisateur
+GET http://localhost:3000/learning/gamification/dashboard
+Authorization: Bearer {{authToken2}}
+
+### 22. Répondre à une simulation avec le deuxième utilisateur
+POST http://localhost:3000/learning/gamification/simulations/respond
+Authorization: Bearer {{authToken2}}
+Content-Type: application/json
+
+{
+  "simulation_id": 1,
+  "reponse_utilisateur": "supprimer l'email",
+  "details_reponse": {
+    "temps_reflexion": 45,
+    "confiance": 0.9
+  }
+}
+
+### 23. Vérifier le classement mis à jour
+GET http://localhost:3000/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### 24. Test de conversation avec le chatbot (deuxième utilisateur)
+POST http://localhost:3000/gamification/chatbot/conversations
+Authorization: Bearer {{authToken2}}
+Content-Type: application/json
+
+{
+  "sujet": "Protection contre les rançongiciels"
+}
+
+### 25. Message sur les rançongiciels
+POST http://localhost:3000/gamification/chatbot/conversations/2/messages
+Authorization: Bearer {{authToken2}}
+Content-Type: application/json
+
+{
+  "contenu": "Que faire en cas de ransomware ?",
+  "contexte": "urgence cybersécurité"
+}
+
+### 26. Test de simulation de vishing
+POST http://localhost:3000/gamification/simulations/2/send
+Authorization: Bearer {{authToken}}
+
+### 27. Réponse à la simulation de vishing
+POST http://localhost:3000/gamification/simulations/respond
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 2,
+  "reponse_utilisateur": "raccrocher immédiatement",
+  "details_reponse": {
+    "temps_reflexion": 15,
+    "confiance": 0.95
+  }
+}
+
+### 28. Test de simulation de smishing
+POST http://localhost:3000/gamification/simulations/3/send
+Authorization: Bearer {{authToken}}
+
+### 29. Réponse à la simulation de smishing
+POST http://localhost:3000/gamification/simulations/respond
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 3,
+  "reponse_utilisateur": "ignorer le SMS",
+  "details_reponse": {
+    "temps_reflexion": 20,
+    "confiance": 0.85
+  }
+}
+
+### 30. Vérification finale du tableau de bord
+GET http://localhost:3000/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### Variables pour les tests
+@authToken = {{login.response.body.access_token}}
+@authToken2 = {{login2.response.body.access_token}}
+
+### Note: Les variables authToken et authToken2 seront automatiquement remplies
+### par les réponses des requêtes de connexion (étapes 1 et 20)

@@ -1,7 +1,7 @@
 ### Tests des Quiz - Sensibilisation Cybersécurité
 ### Fichier corrigé pour les questions à réponse libre
 
-@baseUrl = http://localhost:3000/api
+@baseUrl = http://localhost:3000
 @contentType = application/json
 
 ### Variables d'environnement
@@ -12,7 +12,7 @@
 ### ========================================
 
 ### Test 1: Créer un quiz avec tous les types de questions
-POST {{baseUrl}}/learning/modules/1/quiz
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -111,6 +111,7 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 4,
       "points": 10.0,
+      "termes": ["ne pas partager", "mfa", "2fa", "vpn", "mots de passe forts"],
       "explication": "La protection des données personnelles est essentielle"
     }
   ]
@@ -119,7 +120,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### Test 2: Créer un quiz simple avec seulement des questions à choix unique
-POST {{baseUrl}}/learning/modules/1/quiz
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -191,7 +192,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### Test 3: Créer un quiz avec seulement des questions à réponse libre
-POST {{baseUrl}}/learning/modules/1/quiz
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -206,6 +207,7 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 1,
       "points": 20.0,
+      "termes": ["gestionnaire", "unique", "ne pas reutiliser"],
       "explication": "La réutilisation de mots de passe multiplie les risques"
     },
     {
@@ -213,6 +215,7 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 2,
       "points": 20.0,
+      "termes": ["ne pas cliquer", "signaler", "vérifier l'url", "contacter it"],
       "explication": "Il faut toujours être prudent avec les emails suspects"
     },
     {
@@ -220,6 +223,7 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 3,
       "points": 20.0,
+      "termes": ["antivirus", "pare-feu", "mises à jour", "mots de passe forts"],
       "explication": "Plusieurs mesures sont nécessaires pour une protection complète"
     }
   ]
@@ -232,13 +236,13 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 4: Obtenir tous les quiz d'un module
-GET {{baseUrl}}/learning/modules/1/quiz
+GET {{baseUrl}}/learning/modules/1/quizzes
 Authorization: Bearer {{superadmin_token}}
 
 ###
 
 ### Test 5: Obtenir un quiz spécifique
-GET {{baseUrl}}/learning/quiz/1
+GET {{baseUrl}}/learning/quizzes/1
 Authorization: Bearer {{superadmin_token}}
 
 ###
@@ -248,7 +252,7 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 6: Soumettre les réponses au premier quiz
-POST {{baseUrl}}/learning/quiz/1/submit
+POST {{baseUrl}}/learning/quizzes/1/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -278,7 +282,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### Test 7: Soumettre les réponses au quiz simple
-POST {{baseUrl}}/learning/quiz/2/submit
+POST {{baseUrl}}/learning/quizzes/2/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -300,7 +304,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### Test 8: Soumettre les réponses au quiz à réponse libre
-POST {{baseUrl}}/learning/quiz/3/submit
+POST {{baseUrl}}/learning/quizzes/3/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -330,19 +334,19 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 9: Obtenir les résultats du premier quiz
-GET {{baseUrl}}/learning/quiz/1/results
+GET {{baseUrl}}/learning/quizzes/1/results
 Authorization: Bearer {{superadmin_token}}
 
 ###
 
 ### Test 10: Obtenir les résultats du quiz simple
-GET {{baseUrl}}/learning/quiz/2/results
+GET {{baseUrl}}/learning/quizzes/2/results
 Authorization: Bearer {{superadmin_token}}
 
 ###
 
 ### Test 11: Obtenir les résultats du quiz à réponse libre
-GET {{baseUrl}}/learning/quiz/3/results
+GET {{baseUrl}}/learning/quizzes/3/results
 Authorization: Bearer {{superadmin_token}}
 
 ###
@@ -352,7 +356,7 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 12: Supprimer un quiz
-DELETE {{baseUrl}}/learning/quiz/1
+DELETE {{baseUrl}}/learning/quizzes/1
 Authorization: Bearer {{superadmin_token}}
 
 ###
@@ -361,8 +365,8 @@ Authorization: Bearer {{superadmin_token}}
 ### 6. VÉRIFICATION DE LA PROGRESSION
 ### ========================================
 
-### Test 13: Vérifier la progression du module après avoir répondu aux quiz
-GET {{baseUrl}}/learning/progress/user/1
+### Test 13: Vérifier la progression du parcours après avoir répondu aux quiz
+GET {{baseUrl}}/learning/progress/parcours/1
 Authorization: Bearer {{superadmin_token}}
 
 ###

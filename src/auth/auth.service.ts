@@ -185,71 +185,8 @@ export class AuthService {
     return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
   }
 
+
   async getProfile(userId: number) {
-    // Récupérer l'utilisateur avec organisation
-    const user = await this.usersService.findById(userId);
-    if (!user) throw new NotFoundException('Utilisateur non trouvé');
-
-    // Récupérer les parcours de l'organisation
-    const organisationId = user.organisation?.organisation_id;
-    let totalParcours = 0;
-    let organisationParcours = [];
-    if (organisationId) {
-      const organisationParcours = await this.usersService.usersRepositoryInstance.manager
-        .getRepository('OrganisationLearningPath')
-        .find({
-          where: { organisation: { organisation_id: organisationId }, actif: true },
-          relations: ['parcours'],
-        });
-      totalParcours = organisationParcours.length;
-    }
-
-    // Récupérer les progressions de l'utilisateur
-    const progressions = await this.usersService.usersRepositoryInstance.manager
-      .getRepository('Progress')
-      .find({
-        where: { utilisateur: { users_id: userId } },
-        relations: ['module', 'module.parcours'],
-      });
-
-    // Calculer les parcours terminés
-    const parcoursTerminés = new Set<number>();
-    let tempsParcours: { [key: number]: number } = {};
-    for (const prog of progressions) {
-      if (prog.statut === 'completed' && prog.module?.parcours?.parcours_id) {
-        parcoursTerminés.add(prog.module.parcours.parcours_id);
-      }
-      if (prog.module?.parcours?.parcours_id) {
-        tempsParcours[prog.module.parcours.parcours_id] = (tempsParcours[prog.module.parcours.parcours_id] || 0) + (prog.temps_passe || 0);
-      }
-    }
-
-    // Nombre de certificats
-    const certificats = await this.usersService.usersRepositoryInstance.manager
-      .getRepository('Certification')
-      .count({ where: { utilisateur: { users_id: userId } }});
-
-    return {
-      user: {
-        users_id: user.users_id,
-        email: user.email,
-        nom: user.nom,
-        prenom: user.prenom,
-        role: user.role,
-        age: user.age,
-        code_langue: user.code_langue,
-        organisation: user.organisation,
-      },
-      stats: {
-        total_parcours: totalParcours,
-        parcours_termines: parcoursTerminés.size,
-        temps_parcours: tempsParcours,
-        certificats,
-      }
-    };
-  }
-
-  async getMyInfos(userId: number) {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new NotFoundException('Utilisateur non trouvé');

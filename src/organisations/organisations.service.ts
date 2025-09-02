@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual } from 'typeorm';
+import { Repository, MoreThanOrEqual, In } from 'typeorm';
 import { Organisation, OrganisationType } from './organisations.entity';
 import { CreateOrganisationDto, UpdateOrganisationDto } from './dto';
 import { User } from '../users/users.entity';
@@ -161,7 +161,7 @@ export class OrganisationsService {
       where: { 
         utilisateur: { organisation: { organisation_id: organisationId } }
       },
-      relations: ['module', 'module.parcours', 'utilisateur'],
+      relations: ['parcours', 'utilisateur'],
     });
 
     // Calculer les statistiques de progression par parcours
@@ -170,7 +170,7 @@ export class OrganisationsService {
     for (const orgPath of organisationParcours) {
       const parcoursId = orgPath.parcours.parcours_id;
       const parcoursProgressions = progressions.filter(p => 
-        p.module?.parcours?.parcours_id === parcoursId
+        p.parcours?.parcours_id === parcoursId
       );
 
       const usersInParcours = new Set(parcoursProgressions.map(p => p.utilisateur.users_id));
@@ -219,6 +219,17 @@ export class OrganisationsService {
     // Statistiques d'engagement
     const activeUsers = new Set(progressions.map(p => p.utilisateur.users_id)).size;
     const engagementRate = totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0;
+
+    // Gamification: points totaux, niveaux et badges par organisation
+    const userLevelRepo = this.usersRepository.manager.getRepository('UserLevel');
+    const userBadgeRepo = this.usersRepository.manager.getRepository('UserBadge');
+    const orgUsers = await this.usersRepository.find({ where: { organisation: { organisation_id: organisationId } } });
+    const userIds = orgUsers.map(u => u.users_id);
+    const levels = userIds.length ? await userLevelRepo.find({ where: { utilisateur: { users_id: In(userIds) } } } as any) : [];
+    const badges = userIds.length ? await userBadgeRepo.find({ where: { utilisateur: { users_id: In(userIds) } }, relations: ['badge'] } as any) : [];
+    const totalPoints = levels.reduce((sum: number, l: any) => sum + (l.points_totaux || 0), 0);
+    const avgPoints = totalUsers > 0 ? totalPoints / totalUsers : 0;
+    const totalBadges = badges.length;
 
     // Statistiques temporelles (derniers 30 jours)
     const thirtyDaysAgo = new Date();
@@ -316,6 +327,12 @@ export class OrganisationsService {
         // Classements
         top_parcours_engagement: parcoursEngagement,
         top_utilisateurs_actifs: topUsers,
+        // Gamification
+        gamification: {
+          total_points: Math.round(totalPoints),
+          points_moyens_par_utilisateur: Math.round(avgPoints * 100) / 100,
+          total_badges_attribues: totalBadges,
+        },
         
         // Métriques de performance
         performance_globale: {
@@ -357,20 +374,25 @@ export class OrganisationsService {
     const progressions = await this.progressRepository.find({
       where: { 
         utilisateur: { organisation: { organisation_id: organisationId } },
-        module: { parcours: { parcours_id: parcoursId } }
+        parcours: { parcours_id: parcoursId }
       },
-      relations: ['module', 'module.parcours', 'utilisateur'],
+      relations: ['parcours', 'utilisateur'],
     });
 
     // Progressions récentes
     const progressionsRecentes = progressions.filter(p => p.date_creation >= dateLimite);
 
-    // Statistiques par module
+    // Statistiques par module (basées sur les quiz de module)
     const modulesStats = new Map<number, any>();
     for (const module of orgParcours.parcours.modules || []) {
-      const moduleProgressions = progressions.filter(p => p.module.module_id === module.module_id);
-      const moduleProgressionsRecentes = progressionsRecentes.filter(p => p.module.module_id === module.module_id);
+      // Pour les statistiques par module, on utilise les quiz de module
+      // La progression est maintenant liée au parcours, mais on peut calculer les stats par module
+      // en analysant les quiz de chaque module
+      
+      const moduleProgressions = progressions.filter(p => p.parcours.parcours_id === parcoursId);
+      const moduleProgressionsRecentes = progressionsRecentes.filter(p => p.parcours.parcours_id === parcoursId);
 
+      // Calculer les statistiques basées sur la progression du parcours
       const completedCount = moduleProgressions.filter(p => p.statut === ProgressStatus.TERMINE).length;
       const recentCompletedCount = moduleProgressionsRecentes.filter(p => p.statut === ProgressStatus.TERMINE).length;
 
@@ -480,7 +502,7 @@ export class OrganisationsService {
     // Récupérer toutes les progressions de l'utilisateur
     const progressions = await this.progressRepository.find({
       where: { utilisateur: { users_id: userId } },
-      relations: ['module', 'module.parcours'],
+      relations: ['parcours'],
     });
 
     // Récupérer les certifications de l'utilisateur
@@ -492,14 +514,14 @@ export class OrganisationsService {
     // Statistiques par parcours
     const parcoursStats = new Map<number, any>();
     for (const prog of progressions) {
-      const parcoursId = prog.module?.parcours?.parcours_id;
+      const parcoursId = prog.parcours?.parcours_id;
       if (!parcoursId) continue;
 
       if (!parcoursStats.has(parcoursId)) {
         parcoursStats.set(parcoursId, {
           parcours_id: parcoursId,
-          titre: prog.module.parcours.titre,
-          public_cible: prog.module.parcours.public_cible,
+          titre: prog.parcours.titre,
+          public_cible: prog.parcours.public_cible,
           modules_completes: 0,
           score_moyen: 0,
           temps_total: 0,
@@ -520,7 +542,7 @@ export class OrganisationsService {
 
     // Calculer les scores moyens et statuts par parcours
     for (const [parcoursId, parcoursData] of parcoursStats) {
-      const parcoursProgressions = progressions.filter(p => p.module?.parcours?.parcours_id === parcoursId);
+      const parcoursProgressions = progressions.filter(p => p.parcours?.parcours_id === parcoursId);
       if (parcoursProgressions.length > 0) {
         parcoursData.score_moyen = Math.round(
           parcoursProgressions.reduce((sum, p) => sum + (p.score || 0), 0) / parcoursProgressions.length * 100
@@ -612,7 +634,7 @@ export class OrganisationsService {
         utilisateur: { organisation: { organisation_id: organisationId } },
         date_creation: MoreThanOrEqual(dateLimite)
       },
-      relations: ['module', 'module.parcours', 'utilisateur'],
+      relations: ['parcours', 'utilisateur'],
     });
 
     // Comparatif des performances par parcours
@@ -621,7 +643,7 @@ export class OrganisationsService {
     for (const orgPath of organisationParcours) {
       const parcoursId = orgPath.parcours.parcours_id;
       const parcoursProgressions = progressionsRecentes.filter(p => 
-        p.module?.parcours?.parcours_id === parcoursId
+        p.parcours?.parcours_id === parcoursId
       );
 
       const usersInParcours = new Set(parcoursProgressions.map(p => p.utilisateur.users_id));

@@ -97,6 +97,13 @@ export class AnalyticsService {
     const topPerformingOrganisations = await this.getTopPerformingOrganisations(query.limit);
     const topLearningPaths = await this.getTopLearningPaths(query.limit);
 
+    // Gamification global metrics
+    const userLevelRepo = this.userRepository.manager.getRepository('UserLevel');
+    const userBadgeRepo = this.userRepository.manager.getRepository('UserBadge');
+    const allLevels = await userLevelRepo.find();
+    const allBadges = await userBadgeRepo.count();
+    const totalPoints = allLevels.reduce((sum: number, l: any) => sum + (l.points_totaux || 0), 0);
+
     return {
       overview: {
         totalUsers,
@@ -109,6 +116,11 @@ export class AnalyticsService {
         completedModules,
         totalProgress,
         completionRate: totalProgress > 0 ? (completedModules / totalProgress * 100).toFixed(2) : 0,
+        gamification: {
+          totalPoints,
+          avgPointsPerUser: totalUsers > 0 ? (totalPoints / totalUsers).toFixed(2) : '0',
+          totalBadgesAwarded: allBadges,
+        }
       },
       trends: {
         userGrowth,
@@ -145,6 +157,8 @@ export class AnalyticsService {
       .addSelect('COUNT(DISTINCT user.users_id)', 'totalUsers')
       .addSelect('COUNT(DISTINCT progress.progression_id)', 'totalProgress')
       .addSelect('COUNT(DISTINCT CASE WHEN progress.statut = "termine" THEN progress.progression_id END)', 'completedProgress')
+      .addSelect('COUNT(DISTINCT CASE WHEN progress.certificat_obtenu = true THEN progress.progression_id END)', 'certificationsObtenues')
+      .addSelect('AVG(progress.score)', 'avgScore')
       .leftJoin('org.utilisateurs', 'user')
       .leftJoin('user.progressions', 'progress')
       .where('progress.date_creation BETWEEN :start AND :end', { start, end })
@@ -154,6 +168,8 @@ export class AnalyticsService {
     return stats.map(stat => ({
       ...stat,
       completionRate: stat.totalProgress > 0 ? (stat.completedProgress / stat.totalProgress * 100).toFixed(2) : 0,
+      certificationRate: stat.totalProgress > 0 ? (stat.certificationsObtenues / stat.totalProgress * 100).toFixed(2) : 0,
+      avgScore: parseFloat(stat.avgScore || '0').toFixed(2),
     }));
   }
 
@@ -165,8 +181,8 @@ export class AnalyticsService {
       .addSelect('COUNT(DISTINCT progress.progression_id)', 'totalProgress')
       .addSelect('COUNT(DISTINCT CASE WHEN progress.statut = "termine" THEN progress.progression_id END)', 'completedProgress')
       .addSelect('AVG(progress.score)', 'avgProgress')
-      .leftJoin('path.modules', 'module')
-      .leftJoin('module.progressions', 'progress')
+      .addSelect('COUNT(DISTINCT CASE WHEN progress.certificat_obtenu = true THEN progress.progression_id END)', 'certificationsObtenues')
+      .leftJoin('path.progressions', 'progress')
       .where('progress.date_creation BETWEEN :start AND :end', { start, end })
       .groupBy('path.parcours_id')
       .getRawMany();
@@ -175,6 +191,7 @@ export class AnalyticsService {
       ...stat,
       completionRate: stat.totalProgress > 0 ? (stat.completedProgress / stat.totalProgress * 100).toFixed(2) : 0,
       avgProgress: parseFloat(stat.avgProgress || '0').toFixed(2),
+      certificationRate: stat.totalProgress > 0 ? (stat.certificationsObtenues / stat.totalProgress * 100).toFixed(2) : 0,
     }));
   }
 

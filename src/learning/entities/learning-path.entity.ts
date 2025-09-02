@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { LearningPathModule } from './learning-module.entity';
 import { Certification } from './certification.entity';
 import { OrganisationLearningPath } from './organisation-learning-path.entity';
+import { Quiz } from './quiz.entity';
+import { Progress } from './progress.entity';
 
 export enum TargetAudience {
   ENTREPRISE = 'entreprise',           // Employés d'entreprise
@@ -48,6 +50,14 @@ export class LearningPath {
   // Relation avec les certifications
   @OneToMany(() => Certification, certification => certification.parcours)
   certifications: Certification[];
+
+  // Relation avec les quiz finaux du parcours
+  @OneToMany(() => Quiz, quiz => quiz.parcours)
+  quiz_finaux: Quiz[];
+
+  // Relation avec les progressions des utilisateurs
+  @OneToMany(() => Progress, progression => progression.parcours)
+  progressions: Progress[];
 
   // Relation many-to-many avec les organisations via la table de liaison
   @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.parcours)

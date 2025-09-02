@@ -1,0 +1,185 @@
+### Tests des Certificats - Application de Sensibilisation à la Cybersécurité
+
+### 1. Connexion utilisateur
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "marie.dupont@droit-associes.fr",
+  "password": "password123"
+}
+
+### 2. Vérifier l'éligibilité à une certification (routes certificate du LearningModule)
+GET http://localhost:3000/learning/certificates/eligibility/1
+Authorization: Bearer {{authToken}}
+
+### 3. Générer une certification pour un parcours
+POST http://localhost:3000/learning/certificates/generate/1
+Authorization: Bearer {{authToken}}
+
+### 4. Récupérer toutes les certifications de l'utilisateur
+GET http://localhost:3000/learning/certificates/user
+Authorization: Bearer {{authToken}}
+
+### 5. Récupérer une certification spécifique
+GET http://localhost:3000/learning/certificates/1
+Authorization: Bearer {{authToken}}
+
+### 6. Télécharger le certificat PDF
+GET http://localhost:3000/learning/certificates/1/download
+Authorization: Bearer {{authToken}}
+
+### 7. Statistiques des certifications de l'utilisateur
+GET http://localhost:3000/learning/certificates/stats/user
+Authorization: Bearer {{authToken}}
+
+### 8. Vérifier l'éligibilité pour un autre parcours
+GET http://localhost:3000/learning/certificates/eligibility/2
+Authorization: Bearer {{authToken}}
+
+### 9. Générer une certification pour un autre parcours
+POST http://localhost:3000/learning/certificates/generate/2
+Authorization: Bearer {{authToken}}
+
+### 10. Récupérer les détails d'une certification avec gamification
+GET http://localhost:3000/learning/certificates/2
+Authorization: Bearer {{authToken}}
+
+### 11. Test d'intégration avec la gamification - Completion d'un module
+POST http://localhost:3000/learning/gamification/modules/1/complete
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "score": 85,
+  "temps_passe": 2.5
+}
+
+### 12. Test d'intégration avec la gamification - Réussite d'un quiz
+POST http://localhost:3000/learning/gamification/quiz/1/success
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "score": 92,
+  "temps_reponse": 180
+}
+
+### 13. Test d'intégration avec la gamification - Réussite d'une simulation
+POST http://localhost:3000/learning/gamification/simulations/1/success
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "score": 88,
+  "temps_reponse": 45
+}
+
+### 14. Vérifier la progression après les actions de gamification
+GET http://localhost:3000/learning/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### 15. Vérifier l'éligibilité à la certification après progression
+GET http://localhost:3000/learning/certificates/eligibility/1
+Authorization: Bearer {{authToken}}
+
+### 16. Générer la certification après avoir complété tous les modules
+POST http://localhost:3000/learning/certificates/generate/1
+Authorization: Bearer {{authToken}}
+
+### 17. Vérifier les badges obtenus
+GET http://localhost:3000/learning/gamification/badges
+Authorization: Bearer {{authToken}}
+
+### 18. Vérifier le niveau de gamification
+GET http://localhost:3000/learning/gamification/level
+Authorization: Bearer {{authToken}}
+
+### 19. Récupérer les statistiques complètes
+GET http://localhost:3000/learning/gamification/stats
+Authorization: Bearer {{authToken}}
+
+### 20. Vérifier les certifications avec métriques de gamification
+GET http://localhost:3000/learning/certificates/user
+Authorization: Bearer {{authToken}}
+
+### 21. Test de validation d'une certification expirée
+GET http://localhost:3000/learning/certificates/3
+Authorization: Bearer {{authToken}}
+
+### 22. Test d'accès non autorisé à une certification
+GET http://localhost:3000/learning/certificates/999
+Authorization: Bearer {{authToken}}
+
+### 23. Test de génération de certification sans éligibilité
+POST http://localhost:3000/learning/certificates/generate/999
+Authorization: Bearer {{authToken}}
+
+### 24. Test de téléchargement d'un certificat inexistant
+GET http://localhost:3000/learning/certificates/999/download
+Authorization: Bearer {{authToken}}
+
+### 25. Vérifier les métriques de gamification dans les certificats
+GET http://localhost:3000/learning/certificates/1
+Authorization: Bearer {{authToken}}
+
+### 26. Test de progression de parcours avec points de gamification
+POST http://localhost:3000/learning/progress
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "utilisateur": 1,
+  "parcours": 1,
+  "score": 90,
+  "statut": "termine",
+  "temps_passe": 3.2
+}
+
+### 27. Test de soumission de quiz avec intégration gamification
+POST http://localhost:3000/learning/quizzes/1/submit
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 2
+    },
+    {
+      "question_id": 2,
+      "reponses_multiple": [3, 4]
+    }
+  ],
+  "temps_total_secondes": 300
+}
+
+### 28. Vérifier la progression après quiz
+GET http://localhost:3000/learning/progress/parcours/1
+Authorization: Bearer {{authToken}}
+
+### 29. Test de completion de parcours complet
+POST http://localhost:3000/learning/gamification/parcours/1/complete
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "score_final": 87,
+  "modules_completes": 5,
+  "quiz_reussis": 5,
+  "simulations_reussies": 3
+}
+
+### 30. Générer la certification finale avec toutes les métriques
+POST http://localhost:3000/certificates/generate/1
+Authorization: Bearer {{authToken}}
+
+### Variables d'environnement
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### Variables de test
+# @authToken = token_jwt_de_l_utilisateur
+# @certificationId = id_de_la_certification_generee
+# @parcoursId = id_du_parcours_complete

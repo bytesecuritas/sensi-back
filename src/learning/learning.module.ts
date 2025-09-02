@@ -12,8 +12,25 @@ import { Quiz } from './entities/quiz.entity';
 import { Question } from './entities/question.entity';
 import { Reponse } from './entities/reponse.entity';
 import { QuizResponse } from './entities/quiz-response.entity';
+import { Badge } from './entities/badge.entity';
+import { UserBadge } from './entities/user-badge.entity';
+import { UserLevel } from './entities/user-level.entity';
+import { Simulation } from './entities/simulation.entity';
+import { SimulationResponse } from './entities/simulation-response.entity';
+import { Challenge } from './entities/challenge.entity';
+import { ChallengeParticipation } from './entities/challenge-participation.entity';
+import { CyberAlert } from './entities/cyber-alert.entity';
+import { AlertShare } from './entities/alert-share.entity';
+import { ChatbotConversation } from './entities/chatbot-conversation.entity';
+import { ChatbotMessage } from './entities/chatbot-message.entity';
 import { LearningController } from './learning.controller';
 import { LearningService } from './learning.service';
+import { GamificationController } from './gamification.controller';
+import { GamificationService } from './gamification.service';
+import { SimulationService } from './simulation.service';
+import { ChatbotService } from './chatbot.service';
+import { CertificateController } from './certificate.controller';
+import { CertificateService } from './certificate.service';
 import { User } from '../users/users.entity';
 import { Organisation} from '../organisations/organisations.entity'
 
@@ -30,6 +47,17 @@ import { Organisation} from '../organisations/organisations.entity'
       Question,
       Reponse,
       QuizResponse,
+      Badge,
+      UserBadge,
+      UserLevel,
+      Simulation,
+      SimulationResponse,
+      Challenge,
+      ChallengeParticipation,
+      CyberAlert,
+      AlertShare,
+      ChatbotConversation,
+      ChatbotMessage,
       User,
       Organisation,
     ]),
@@ -43,8 +71,8 @@ import { Organisation} from '../organisations/organisations.entity'
       })
     }),
   ],
-  controllers: [LearningController],
-  providers: [LearningService],
-  exports: [LearningService],
+  controllers: [LearningController, GamificationController, CertificateController],
+  providers: [LearningService, GamificationService, SimulationService, ChatbotService, CertificateService],
+  exports: [LearningService, GamificationService, SimulationService, ChatbotService, CertificateService],
 })
 export class LearningModule {}

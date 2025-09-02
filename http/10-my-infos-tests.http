@@ -1,7 +1,7 @@
 ### ========================================
-### TESTS POUR GET MY INFOS
+### TESTS POUR PROFILE
 ### ========================================
-### Tests pour la route /auth/my-infos qui retourne des informations selon le rôle
+### Tests pour la route /auth/profile qui retourne des informations selon le rôle
 ### Cette route utilise une logique de routage basée sur le rôle de l'utilisateur
 
 ### Variables globales pour les tests
@@ -14,42 +14,49 @@
 ### 1. TESTS POUR UTILISATEUR NORMAL (ROLE: USER)
 ### ========================================
 
-### Test getMyInfos pour un utilisateur normal
-### Doit retourner les informations détaillées de l'utilisateur via getUserInfos
-GET {{base_url}}/auth/my-infos
+### Test profile pour un utilisateur normal
+### Doit retourner les informations détaillées de l'utilisateur selon son rôle
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{user_token}}
 Content-Type: application/json
 
+### Attentes clés (manuel):
+# - Réponse contient `user` et `gamification` avec `points_totaux`, `badges`
+# - Statistiques utilisateur présentes (modules, certificats)
 ### ========================================
 ### 2. TESTS POUR ADMIN (ROLE: ADMIN)
 ### ========================================
 
-### Test getMyInfos pour un admin
-### Doit retourner les statistiques de son organisation via getOrganisationStats
-GET {{base_url}}/auth/my-infos
+### Test profile pour un admin
+### Doit retourner les statistiques de son organisation selon son rôle
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{admin_token}}
 Content-Type: application/json
 
+### Attentes clés (manuel):
+# - Réponse contient `stats.gamification` (total_points, points_moyens_par_utilisateur, total_badges_attribues)
 ### ========================================
 ### 3. TESTS POUR SUPERADMIN (ROLE: SUPERADMIN)
 ### ========================================
 
-### Test getMyInfos pour un superadmin
-### Doit retourner le dashboard global via getGlobalDashboard
-GET {{base_url}}/auth/my-infos
+### Test profile pour un superadmin
+### Doit retourner le dashboard global selon son rôle
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
+### Attentes clés (manuel):
+# - Réponse contient `overview.gamification` (totalPoints, avgPointsPerUser, totalBadgesAwarded)
 ### ========================================
 ### 4. TESTS DE SÉCURITÉ ET ERREURS
 ### ========================================
 
 ### Test d'accès sans token (doit échouer)
-GET {{base_url}}/auth/my-infos
+GET {{base_url}}/auth/profile
 Content-Type: application/json
 
 ### Test avec token invalide (doit échouer)
-GET {{base_url}}/auth/my-infos
+GET {{base_url}}/auth/profile
 Authorization: Bearer invalid_token_here
 Content-Type: application/json
 
@@ -57,7 +64,7 @@ Content-Type: application/json
 ### 5. WORKFLOW COMPLET DE TEST
 ### ========================================
 
-### Étape 1: Login superadmin et test getMyInfos
+### Étape 1: Login superadmin et test profile
 # @name login_superadmin
 POST {{base_url}}/auth/login
 Content-Type: application/json
@@ -67,12 +74,12 @@ Content-Type: application/json
   "password": "SuperAdmin123!"
 }
 
-### Étape 2: Test getMyInfos pour superadmin
-GET {{base_url}}/auth/my-infos
+### Étape 2: Test profile pour superadmin
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{login_superadmin.response.body.access_token}}
 Content-Type: application/json
 
-### Étape 3: Login admin et test getMyInfos
+### Étape 3: Login admin et test profile
 # @name login_admin
 POST {{base_url}}/auth/login
 Content-Type: application/json
@@ -82,12 +89,12 @@ Content-Type: application/json
   "password": "AdminTech123!"
 }
 
-### Étape 4: Test getMyInfos pour admin
-GET {{base_url}}/auth/my-infos
+### Étape 4: Test profile pour admin
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{login_admin.response.body.access_token}}
 Content-Type: application/json
 
-### Étape 5: Login utilisateur et test getMyInfos
+### Étape 5: Login utilisateur et test profile
 # @name login_user
 POST {{base_url}}/auth/login
 Content-Type: application/json
@@ -97,8 +104,8 @@ Content-Type: application/json
   "password": "User123!"
 }
 
-### Étape 6: Test getMyInfos pour utilisateur
-GET {{base_url}}/auth/my-infos
+### Étape 6: Test profile pour utilisateur
+GET {{base_url}}/auth/profile
 Authorization: Bearer {{login_user.response.body.access_token}}
 Content-Type: application/json
 
@@ -106,7 +113,7 @@ Content-Type: application/json
 ### NOTES D'UTILISATION
 ### ========================================
 ###
-### Cette route /auth/my-infos implémente une logique de routage basée sur les rôles :
+### Cette route /auth/profile implémente une logique de routage basée sur les rôles :
 ###
 ### **Pour un utilisateur avec rôle 'user' :**
 ### - Appelle usersService.getUserInfos(userId)

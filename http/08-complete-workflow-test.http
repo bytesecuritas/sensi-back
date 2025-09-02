@@ -225,69 +225,108 @@ Content-Type: {{contentType}}
 
 ###
 
-### 12. Commencer la formation (utilisateur 1)
-POST {{baseUrl}}/learning/progress
+### 12. Créer un quiz de module 1
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
-Authorization: Bearer {{user1_token}}
+Authorization: Bearer {{superadmin_token}}
 
 {
-  "module_id": 1,
-  "statut": "en_cours",
-  "score": 0,
-  "temps_passe": 0
+  "titre": "Quiz M1 - Phishing",
+  "description": "Identifier les signaux",
+  "questions": [
+    {
+      "enonce": "Indicateur d'email suspect ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "reponses": [
+        { "texte": "Urgence", "est_correcte": true, "ordre": 1 },
+        { "texte": "Signature parfaite", "est_correcte": false, "ordre": 2 }
+      ]
+    },
+    {
+      "enonce": "Bon réflexe (texte)",
+      "type_question": "texte_libre",
+      "ordre": 2,
+      "termes": ["ne pas cliquer", "signaler", "support it", "contacter it"],
+      "explication": "Expliquer le bon réflexe"
+    }
+  ]
 }
 
 ###
 
-### 13. Terminer le premier module (utilisateur 1)
-PATCH {{baseUrl}}/learning/progress/1
+### 13. Soumettre les réponses du quiz M1 (100%)
+POST {{baseUrl}}/learning/quizzes/1/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{user1_token}}
 
 {
-  "statut": "termine",
-  "score": 88.5,
-  "temps_passe": 3.2
+  "reponses": [
+    { "question_id": 1, "reponse_id": 1 },
+    { "question_id": 2, "reponse_texte": "Ne pas cliquer, signaler au support IT" }
+  ],
+  "temps_total_secondes": 150
 }
 
 ###
 
-### 14. Commencer le deuxième module (utilisateur 1)
-POST {{baseUrl}}/learning/progress
+### 14. Créer un quiz de module 2
+POST {{baseUrl}}/learning/modules/2/quizzes
 Content-Type: {{contentType}}
-Authorization: Bearer {{user1_token}}
+Authorization: Bearer {{superadmin_token}}
 
 {
-  "module_id": 2,
-  "statut": "en_cours",
-  "score": 0,
-  "temps_passe": 0
+  "titre": "Quiz M2 - Protection",
+  "description": "Bonne pratiques",
+  "questions": [
+    {
+      "enonce": "Choix multiples valides",
+      "type_question": "choix_multiple",
+      "ordre": 1,
+      "reponses": [
+        { "texte": "Vérifier l'URL", "est_correcte": true, "ordre": 1 },
+        { "texte": "Partager ses identifiants", "est_correcte": false, "ordre": 2 },
+        { "texte": "Activer MFA", "est_correcte": true, "ordre": 3 }
+      ]
+    },
+    {
+      "enonce": "Vrai/Faux : CLIQUER tous les liens",
+      "type_question": "vrai_faux",
+      "ordre": 2,
+      "reponses": [
+        { "texte": "Vrai", "est_correcte": false, "ordre": 1 },
+        { "texte": "Faux", "est_correcte": true, "ordre": 2 }
+      ]
+    }
+  ]
 }
 
 ###
 
-### 15. Terminer le deuxième module (utilisateur 1)
-PATCH {{baseUrl}}/learning/progress/2
+### 15. Soumettre les réponses du quiz M2 (100%)
+POST {{baseUrl}}/learning/quizzes/2/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{user1_token}}
 
 {
-  "statut": "termine",
-  "score": 92.0,
-  "temps_passe": 4.1
+  "reponses": [
+    { "question_id": 1, "reponses_multiple": [1,3] },
+    { "question_id": 2, "reponse_vrai_faux": false }
+  ],
+  "temps_total_secondes": 180
 }
 
 ###
 
 ### PHASE 6: CERTIFICATION
-### 16. Créer une certification pour l'utilisateur 1
+### 16. (Optionnel) Créer une certification manuelle pour l'utilisateur 1
 POST {{baseUrl}}/learning/certifications
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
 {
-  "utilisateur_id": 1,
-  "parcours_id": 1,
+  "utilisateur": 1,
+  "parcours": 1,
   "type_certification": "sensibilisation_basique",
   "url_certification": "https://example.com/certifications/cybersec-enterprise-employee1.pdf"
 }

@@ -210,32 +210,21 @@ export class AuthController {
     }
   }
 
-  @Get('profile')
-  @ApiOperation({ summary: 'Profil de l\'utilisateur connecté' })
-  @ApiBearerAuth('bearer')
-  @UseGuards(AuthGuard('jwt'))
-  async getProfile(@Request() req) {
-    const userId = req.user?.users_id;
-    if (!userId) {
-      throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
-    }
-    return await this.authService.getProfile(userId);
-  }
 
-  @Get('my-infos')
+  @Get('profile')
   @ApiOperation({ summary: 'Obtenir mes informations selon mon rôle' })
   @ApiResponse({ status: 200, description: 'Informations récupérées avec succès' })
   @ApiResponse({ status: 401, description: 'Non autorisé' })
   @ApiResponse({ status: 403, description: 'Accès refusé' })
   @ApiBearerAuth('bearer')
   @UseGuards(AuthGuard('jwt'))
-  async getMyInfos(@Request() req) {
+  async getProfile(@Request() req) {
     try {
       const userId = req.user?.users_id;
       if (!userId) {
         throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
       }
-      return await this.authService.getMyInfos(userId);
+      return await this.authService.getProfile(userId);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

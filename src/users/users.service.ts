@@ -195,6 +195,13 @@ export class UsersService {
       }
     });
 
+    // Récupérer les données de gamification de l'utilisateur si disponibles
+    // On interroge les relations UserLevel et UserBadge via le manager pour éviter un import croisé direct du service
+    const userLevelRepo = this.usersRepository.manager.getRepository('UserLevel');
+    const userBadgeRepo = this.usersRepository.manager.getRepository('UserBadge');
+    const userLevel = await userLevelRepo.findOne({ where: { utilisateur: { users_id: userId } } } as any);
+    const userBadges = await userBadgeRepo.find({ where: { utilisateur: { users_id: userId } }, relations: ['badge'] } as any);
+
     return {
       user: {
         users_id: user.users_id,
@@ -214,6 +221,23 @@ export class UsersService {
         score_moyen: scoreMoyen.toFixed(2),
         nombre_certificats: certificats.length,
       },
+      gamification: userLevel ? {
+        niveau_actuel: (userLevel as any).niveau_actuel,
+        points_totaux: (userLevel as any).points_totaux,
+        points_niveau_actuel: (userLevel as any).points_niveau_actuel,
+        points_pour_niveau_suivant: (userLevel as any).points_pour_niveau_suivant,
+        modules_completes: (userLevel as any).modules_completes,
+        quiz_reussis: (userLevel as any).quiz_reussis,
+        simulations_reussies: (userLevel as any).simulations_reussies,
+        jours_consecutifs: (userLevel as any).jours_consecutifs,
+        badges: (userBadges as any[]).map(ub => ({
+          badge_id: ub.badge.badge_id,
+          nom: ub.badge.nom,
+          type: ub.badge.type,
+          date_obtention: ub.date_obtention,
+          points_gagnes: ub.points_gagnes,
+        }))
+      } : undefined,
       parcours: statsParcours,
       certificats: certificats.map(cert => ({
         certification_id: cert.certification_id,

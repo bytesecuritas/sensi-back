@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { LearningPath } from './learning-path.entity';
 import { MediaContent } from './media-content.entity';
-import { Progress } from './progress.entity';
 import { Quiz } from './quiz.entity';
 
 export enum DifficultyLevel {
@@ -66,6 +65,22 @@ export class LearningPathModule {
   @Column('simple-array', { nullable: true })
   objectifs_apprentissage: string[];
 
+  // ===== PROPRIÉTÉS DE GAMIFICATION =====
+  @Column({ type: 'integer', default: 50 })
+  points_completion: number; // Points gagnés pour compléter le module
+
+  @Column({ type: 'integer', default: 25 })
+  points_quiz_reussi: number; // Points bonus pour réussir le quiz
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  badge_associe: string; // Badge débloqué lors de la completion
+
+  @Column({ type: 'boolean', default: false })
+  simulation_requise: boolean; // Si le module nécessite une simulation
+
+  @Column({ type: 'integer', default: 0 })
+  points_simulation: number; // Points pour réussir la simulation
+
   @CreateDateColumn({ type: 'timestamp' })
   date_creation: Date;
 
@@ -80,10 +95,6 @@ export class LearningPathModule {
   // Relation avec les contenus médias
   @OneToMany(() => MediaContent, media => media.module)
   contenus_media: MediaContent[];
-
-  // Relation avec les progressions
-  @OneToMany(() => Progress, progression => progression.module)
-  progressions: Progress[];
 
   // Relation avec les quiz
   @OneToMany(() => Quiz, quiz => quiz.module)

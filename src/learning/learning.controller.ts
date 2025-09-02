@@ -413,25 +413,11 @@ export class LearningController {
   }
 
   // ===== PROGRESSIONS =====
-
-  @Post('progress')
-  @ApiOperation({ summary: 'Créer une progression' })
-  async createProgress(@Body() progressData: Partial<Progress>): Promise<Progress> {
-    return await this.learningService.createProgress(progressData);
-  }
-
-  @Put('progress/:id')
-  @ApiOperation({ summary: 'Mettre à jour une progression' })
-  @ApiParam({ name: 'id', type: String })
-  async updateProgress(
-    @Param('id') id: string,
-    @Body() progressData: Partial<Progress>,
-  ): Promise<Progress> {
-    return await this.learningService.updateProgress(+id, progressData);
-  }
+  // La progression est dérivée automatiquement des réponses aux quiz.
+  // Aucune création/mise à jour directe via HTTP n'est exposée.
 
   @Get('progress/user')
-  @ApiOperation({ summary: 'Progressions de l’utilisateur courant' })
+  @ApiOperation({ summary: 'Progressions de l\'utilisateur courant' })
   async getUserProgress(@Request() req): Promise<Progress[]> {
     console.log('getUserProgress called - req.user:', req.user);
     const userId = req.user?.users_id;
@@ -442,20 +428,20 @@ export class LearningController {
     return await this.learningService.getUserProgress(userId);
   }
 
-  @Get('progress/user/:moduleId')
-  @ApiOperation({ summary: 'Progression de l’utilisateur pour un module' })
-  @ApiParam({ name: 'moduleId', type: String })
-  async getModuleProgress(
+  @Get('progress/parcours/:parcoursId')
+  @ApiOperation({ summary: 'Progression de l\'utilisateur pour un parcours' })
+  @ApiParam({ name: 'parcoursId', type: String })
+  async getParcoursProgress(
     @Request() req,
-    @Param('moduleId') moduleId: string,
+    @Param('parcoursId') parcoursId: string,
   ): Promise<Progress> {
-    console.log('getModuleProgress called - req.user:', req.user, 'moduleId:', moduleId);
+    console.log('getParcoursProgress called - req.user:', req.user, 'parcoursId:', parcoursId);
     const userId = req.user?.users_id;
     console.log('Extracted userId:', userId);
     if (!userId) {
       throw new ForbiddenException('Utilisateur non authentifié');
     }
-    return await this.learningService.getModuleProgress(userId, +moduleId);
+    return await this.learningService.getParcoursProgress(userId, +parcoursId);
   }
 
   // ===== CERTIFICATIONS =====
@@ -600,6 +586,26 @@ export class LearningController {
   async deleteQuiz(@Param('quizId') quizId: string): Promise<{ message: string }> {
     await this.learningService.deleteQuiz(+quizId);
     return { message: 'Quiz supprimé avec succès' };
+  }
+
+  // ==================== ROUTES POUR LES QUIZ FINAUX DE PARCOURS ====================
+
+  @Post('parcours/:parcoursId/quiz-final')
+  @ApiOperation({ summary: 'Créer un quiz final pour un parcours' })
+  @ApiParam({ name: 'parcoursId', type: String })
+  @ApiResponse({ status: 201, description: 'Quiz final créé' })
+  async createParcoursFinalQuiz(
+    @Param('parcoursId') parcoursId: string,
+    @Body() quizData: CreateQuizDto
+  ): Promise<any> {
+    return await this.learningService.createParcoursFinalQuiz(+parcoursId, quizData);
+  }
+
+  @Get('parcours/:parcoursId/quiz-finaux')
+  @ApiOperation({ summary: 'Obtenir tous les quiz finaux d\'un parcours' })
+  @ApiParam({ name: 'parcoursId', type: String })
+  async getParcoursFinalQuizzes(@Param('parcoursId') parcoursId: string): Promise<any[]> {
+    return await this.learningService.getParcoursFinalQuizzes(+parcoursId);
   }
 
 }

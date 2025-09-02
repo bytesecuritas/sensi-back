@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, ValidateNested, Min, Max, ValidateIf } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, ValidateNested, Min, Max, ValidateIf, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateReponseDto {
@@ -38,6 +38,13 @@ export class CreateQuestionDto {
   @IsString()
   explication?: string;
 
+  // Liste de termes acceptés pour type texte_libre
+  @ValidateIf(o => o.type_question === 'texte_libre')
+  @IsOptional()
+  @IsArray()
+  @Type(() => String)
+  termes?: string[];
+
   @ValidateIf(o => o.type_question !== 'texte_libre')
   @IsArray()
   @ValidateNested({ each: true })
@@ -71,6 +78,14 @@ export class CreateQuizDto {
   @Min(0)
   @Max(100)
   score_minimum_pour_reussite?: number;
+
+  @IsOptional()
+  @IsEnum(['module', 'parcours_final'])
+  type_quiz?: 'module' | 'parcours_final';
+
+  @IsOptional()
+  @IsBoolean()
+  validation_100_pourcent?: boolean;
 
   @IsArray()
   @ValidateNested({ each: true })

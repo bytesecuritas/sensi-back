@@ -1,7 +1,7 @@
 ### Test des Corrections des Quiz - Sensibilisation Cybersécurité
 ### Vérification des corrections pour les résultats et la suppression
 
-@baseUrl = http://localhost:3000/api
+@baseUrl = http://localhost:3000
 @contentType = application/json
 
 ### Variables d'environnement
@@ -13,13 +13,13 @@
 ### ========================================
 
 ### Test 1: Lister tous les quiz du module 1
-GET {{baseUrl}}/learning/modules/1/quiz
+GET {{baseUrl}}/learning/modules/1/quizzes
 Authorization: Bearer {{superadmin_token}}
 
 ###
 
 ### Test 2: Obtenir un quiz spécifique (si il existe)
-GET {{baseUrl}}/learning/quiz/1
+GET {{baseUrl}}/learning/quizzes/1
 Authorization: Bearer {{superadmin_token}}
 
 ###
@@ -29,7 +29,7 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 3: Créer un nouveau quiz simple pour test
-POST {{baseUrl}}/learning/modules/1/quiz
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -66,7 +66,8 @@ Authorization: Bearer {{superadmin_token}}
       "enonce": "Décrivez votre journée.",
       "type_question": "texte_libre",
       "ordre": 2,
-      "points": 10.0
+      "points": 10.0,
+      "termes": ["bien", "corrections", "quiz", "ok"]
     }
   ]
 }
@@ -78,7 +79,7 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 4: Soumettre des réponses au quiz de test
-POST {{baseUrl}}/learning/quiz/1/submit
+POST {{baseUrl}}/learning/quizzes/1/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{user_token}}
 
@@ -104,13 +105,13 @@ Authorization: Bearer {{user_token}}
 ### ========================================
 
 ### Test 5: Obtenir les résultats du quiz (doit fonctionner maintenant)
-GET {{baseUrl}}/learning/quiz/1/results
+GET {{baseUrl}}/learning/quizzes/1/results
 Authorization: Bearer {{user_token}}
 
 ###
 
-### Test 6: Vérifier la progression du module
-GET {{baseUrl}}/learning/progress/user/1
+### Test 6: Vérifier la progression du parcours
+GET {{baseUrl}}/learning/progress/parcours/1
 Authorization: Bearer {{user_token}}
 
 ###
@@ -120,13 +121,13 @@ Authorization: Bearer {{user_token}}
 ### ========================================
 
 ### Test 7: Supprimer le quiz de test (doit fonctionner maintenant)
-DELETE {{baseUrl}}/learning/quiz/1
+DELETE {{baseUrl}}/learning/quizzes/1
 Authorization: Bearer {{superadmin_token}}
 
 ###
 
 ### Test 8: Vérifier que le quiz a été supprimé
-GET {{baseUrl}}/learning/quiz/1
+GET {{baseUrl}}/learning/quizzes/1
 Authorization: Bearer {{superadmin_token}}
 
 ###
@@ -136,7 +137,7 @@ Authorization: Bearer {{superadmin_token}}
 ### ========================================
 
 ### Test 9: Créer un autre quiz pour test complet
-POST {{baseUrl}}/learning/modules/1/quiz
+POST {{baseUrl}}/learning/modules/1/quizzes
 Content-Type: {{contentType}}
 Authorization: Bearer {{superadmin_token}}
 
@@ -175,7 +176,7 @@ Authorization: Bearer {{superadmin_token}}
 ###
 
 ### Test 10: Soumettre une réponse
-POST {{baseUrl}}/learning/quiz/2/submit
+POST {{baseUrl}}/learning/quizzes/2/submit
 Content-Type: {{contentType}}
 Authorization: Bearer {{user_token}}
 
@@ -193,7 +194,7 @@ Authorization: Bearer {{user_token}}
 ###
 
 ### Test 11: Obtenir les résultats
-GET {{baseUrl}}/learning/quiz/2/results
+GET {{baseUrl}}/learning/quizzes/2/results
 Authorization: Bearer {{user_token}}
 
 ###

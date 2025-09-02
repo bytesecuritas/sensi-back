@@ -1,0 +1,226 @@
+Voici une étude de cas d'utilisation détaillé pour un utilisateur user . Analyse le et Adapte l'application pour qu'il reponde à ces exigence.
+
+1 Profildel’Utilisateur Lambda
+ 1.1 Caractéristiques
+ • Nom: MarieDupont
+ • Âge: 32ans
+ • Profession : Assistante administrative
+ • Organisation : Cabinet d’avocats ”Droit & Associés”
+ • Niveau technique : Intermédiaire (utilise quotidiennement l’informatique)
+ • Contexte : Travaille avec des documents sensibles, reçoit de nombreux emails
+ 1.2 Objectifs
+ • Seformer aux bonnes pratiques de cybersécurité
+ • Protéger les données sensibles de son entreprise
+ • Obtenir des certifications pour valoriser ses compétences
+ • Rester vigilant face aux menaces cyber
+ 2 ScénarioPrincipal : Parcours d’Apprentissage Complet
+ 2.1 Étape1: Première Connexion et Découverte
+ 2.1.1 Inscription et Onboarding
+ Marie reçoit un email de son responsable IT :
+ ”Bonjour Marie, vous avez été inscrite à notre plateforme cybersécurité. Voici vos
+ identifiants de connexion...”
+ Marie se connecte pour la première fois :
+ • URL:https://sensi-security.com
+ • Email : marie.dupont@droit-associes.fr
+ • Motdepasse : temporaire (doit être changé)
+ Interface d’accueil :
+ • Tableau de bord personnalisé
+ • Modules recommandés selon son profil
+ • Badges disponibles à débloquer
+ • Classement de l’équipe
+2.1.2 Découverte de l’Interface
+ Marie découvre :
+ • Sonniveau actuel : Débutant (0 points)
+ • Modules disponibles : 15 modules sur le phishing
+ • Badges à débloquer : ”Premier Pas”, ”Vigilant”
+ • Classement équipe : 8ème sur 12 employés
+ • Progression globale : 0% complété
+ 2.2 Étape2: Premier Module- ”Reconnaître les Emails de Phishing”
+ 2.2.1 Démarrage duModule
+ Marie clique sur ”Commencer le module” :
+ • Durée estimée : 20 minutes
+ • Niveau : Facile
+ • Thématique : Phishing
+ • Points à gagner : 50 points
+ Le module commence avec :
+ • Vidéo d’introduction (3 min)
+ • Quiz interactif (5 questions)
+ • Simulation d’email suspect
+ • Explications détaillées
+ 2.2.2 Interaction avec le Contenu
+ Marie suit le module étape par étape :
+ 1. Vidéo d’introduction :
+ • Exemples d’emails de phishing réels
+ • Indicateurs visuels à repérer
+ • Actions à éviter
+ 2. Quiz interactif :
+ • Question 1 : ”Quel est le principal indicateur d’un email suspect ?”
+ • Marie répond : D) Tous
+ • Options : A) Urgence, B) Demande d’action, C) Expéditeur inconnu, D)
+ Tous
+ • Feedback immédiat : ”Correct ! Les emails de phishing combinent sou
+vent plusieurs indicateurs.”
+ 3. Simulation d’email :
+ • Email fictif : ”URGENT : Votre compte bancaire a été suspendu”
+ • Marie doit identifier les éléments suspects
+ • Elle clique sur ”Marquer comme suspect”
+ • Système : ”Excellent ! Vous avez identifié 4 indicateurs sur 4.”
+2.2.3 Validation et Récompenses
+ À la fin dumodule:
+ • Score obtenu : 95/100
+ • Tempspassé : 18 minutes
+ • Points gagnés : 47 points (95% de 50)
+ • Badge débloqué : ”Premier Pas” (bronze)
+ • Progression : 7% complétée
+ Notification :
+ ”  Félicitations Marie ! Vous avez complété votre premier module. Vous avez gagné
+ 47 points et débloqué le badge ’Premier Pas’.”
+ 2.3 Étape3: Simulation de Cyberattaque
+ 2.3.1 Réception d’une Simulation
+ 2 jours plus tard, Marie reçoit un email :
+ • Expéditeur : support@banque-securisee.fr
+ • Objet : ”URGENT : Votre compte a été suspendu”
+ • Contenu : ”Cliquez ici pour vérifier votre identité”
+ Marie reconnaît les indicateurs appris :
+ • Urgence injustifiée
+ • Demanded’action immédiate
+ • Lien suspect
+ • Adresse email suspecte
+ Elle clique sur ”Marquer comme spam” dans sa boîte mail.
+ 2.3.2 Feedback et Apprentissage
+ Le système détecte son action et envoie :
+ ”  Simulation détectée ! Vous avez correctement identifié un email de phishing.
+ +150 points pour votre vigilance ! Badge ’Vigilant’ débloqué !”
+ Marie apprend :
+ • C’était une simulation orchestrée par la plateforme
+ • Sontempsderéponse : 2 minutes (excellent)
+ • Comparaison avec l’équipe : 3ème meilleur temps
+ 2.4 Étape4: Progression et Gamification
+2.4.1 Suivi de Progression
+ Marie consulte son tableau de bord :
+ • Points totaux : 247 points
+ • Niveau : Intermédiaire (seuil : 200 points)
+ • Badges obtenus : 2 (Premier Pas, Vigilant)
+ • Classement équipe : 5ème sur 12 (progression)
+ • Modules complétés : 3/15
+ Nouvelles recommandations :
+ • ”Gestion des mots de passe sécurisés” (recommandé)
+ • ”Protection contre les rançongiciels” (recommandé)
+ • ”Sécurité sur les réseaux sociaux” (optionnel)
+ 2.4.2 Défis et Challenges
+ Marie découvre les défis disponibles :
+ • ”Défi Hebdomadaire” : Compléter 3 modules cette semaine
+ • Récompense : 100 points bonus + badge ”Assidu”
+ • Progression : 1/3 modules complétés
+ Elle accepte le défi et planifie ses sessions.
+ 2.5 Étape5: QuizetÉvaluations
+ 2.5.1 Participation à un Quiz
+ Marie commence le quiz ”Testez vos connaissances phishing” :
+ • 10questions à choix multiples
+ • Tempslimite : 15 minutes
+ • Score minimum : 70%pour réussir
+ Questions :
+ 1. ”Quelle est la meilleure action face à un email suspect ?”
+ Marie répond : ”Ne pas cliquer et signaler”
+ Correct ! +10 points
+ 2. ”Un email de votre banque demande vos identifiants...”
+ Marie répond : ”Jamais, les banques ne demandent ça par email”
+ Correct ! +10 points
+ Résultat final :
+ • Score : 90/100
+ • Temps: 12minutes
+ • Statut : Réussi
+ • Points gagnés : 90 points
+ • Badge débloqué : ”Quiz Parfait” (bronze)
+ 2.6 Étape6: Études deCasetRéflexion
+2.6.1 Analyse d’une Étude de Cas
+ Marie étudie le cas : ”L’arnaque du faux support technique”
+ • Contexte : Une entreprise victime d’une attaque par vishing
+ • Chronologie des événements
+ • Questions d’analyse
+ Marie réfléchit et répond :
+ • ”Quelles erreurs ont été commises ?”
+ Réponse : ”Confiance excessive, absence de vérification”
+ • ”Commentéviter cette situation ?”
+ Réponse : ”Vérifier l’identité, ne jamais donner d’accès à distance”
+ • ”Quelles leçons en tirer ?”
+ Réponse : ”L’importance de la formation et de la vigilance”
+ Score d’analyse : 85/100
+ Points gagnés : 85 points
+ 2.7 Étape7: Interaction avec le Chatbot
+ 2.7.1 Question au Chatbot
+ Marie a une question spécifique :
+ ”Comment reconnaître un vrai email de ma banque ?”
+ Le chatbot répond :
+ ”Les vraies banques :
+ • N’utilisent jamais votre prénom dans l’email
+ • Nedemandentjamais d’informations sensibles par email
+ • Ontdesadresses email officielles vérifiables
+ • Incluent des informations personnelles que vous seul connaissez
+ Conseil : En cas de doute, appelez directement votre banque.”
+ Marie note la réponse et la trouve très utile.
+ Feedback : ”Réponse claire et pratique” (+5 points)
+ 2.8 Étape8: Veille et Actualités
+ 2.8.1 Consultation des Alertes
+ Marie consulte la section ”Actualités Cyber” :
+ • Alerte : ”Nouvelle vague de phishing ciblant les cabinets d’avocats”
+ • Niveau : Élevé
+ • Conseils pratiques fournis
+ • Actions préventives recommandées
+ Marie partage l’information avec ses collègues via l’interface.
+ Action : Partage d’alerte (+10 points)
+ 2.9 Étape9: Certification et Reconnaissance
+2.9.1 Obtention d’une Certification
+ Après 3 mois de formation :
+ • Modules complétés : 12/15
+ • Points totaux : 1,250 points
+ • Badges obtenus : 8 badges
+ • Niveau : Avancé
+ Marie obtient la certification :
+ ”Certificat de Sensibilisation à la Cybersécurité- Niveau Intermédiaire”
+ • Émis par : Plateforme Sensi Security
+ • Date : 15 mars 2024
+ • Valide pour : 2 ans
+ • URLdevérification : https://sensi-security.com/cert/12345
+ Cette certification peut être ajoutée à son CV et LinkedIn.
+ 2.10 Étape 10: Maintenance et Continuité
+ 2.10.1 Formation Continue
+ Marie continue sa formation :
+ • Nouvelles menaces émergentes
+ • Mises à jour des modules existants
+ • Nouvelles simulations adaptées
+ • Défismensuels pour maintenir l’engagement
+ Elle participe aux :
+ • Webinaires live mensuels
+ • Sessions de questions/réponses
+ • Partage d’expériences avec l’équipe
+ 3 MétriquesdeSuccès
+ 3.1 Indicateurs de Performance
+ orange Indicateur Valeur
+ Engagement
+ Progression
+ Vigilance
+ Retention
+ 3 sessions par semaine en moyenne
+ 80%des modules complétés
+ 95%deréussite aux simulations
+ Connexion régulière sur 6 mois
+ 3.2 Résultats Mesurables
+ • Avant formation : 0 connaissance structurée
+ • Après formation : Niveau intermédiaire certifié
+ • Impact : Aucun incident de sécurité impliquant Marie
+• ROI: Protection des données sensibles du cabinet
+ 4 ÉlémentsdeGamification
+ 4.1 SystèmedePoints
+ • Modulecomplété : 50-100 points
+ • Quiz réussi : 10-100 points selon le score
+ • Simulation réussie : 150 points
+ • Badgeobtenu: 25-100 points
+ • Déficomplété : 100-500 points bonus
+ 4.2 BadgesetRécompenses
+ • Premier Pas (bronze) : Premier module
+ • Vigilant (bronze) : Première simulation réussie
+ • Quiz Parfait (bronze) : 100% à un quiz
+ • Assidu (argent) : 7 jours consécutifs
+ • Expert Phishing (or) : Tous les modules phishing
+ • Défenseur Cyber (or) : 10 simulations réussies
