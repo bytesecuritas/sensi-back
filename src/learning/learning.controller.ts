@@ -5,8 +5,10 @@ import {
     Delete,
     ForbiddenException,
     Get,
+    InternalServerErrorException,
     Param,
     ParseIntPipe,
+    Patch,
     Post,
     Put,
     Query,
@@ -15,8 +17,7 @@ import {
     UploadedFile,
     UseGuards,
     UseInterceptors,
-    ValidationPipe,
-    Patch
+    ValidationPipe
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -27,9 +28,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateLearningModuleDto } from './dto/create-learning-module.dto';
 import { CreateMediaContentDto } from './dto/create-media-content.dto';
-import { UploadMediaContentDto } from './dto/upload-media-content.dto';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { SubmitQuizResponseDto } from './dto/submit-quiz-response.dto';
+import { UpdateOrganisationLearningPathDto } from './dto/update-organisation-learning-path.dto';
+import { UploadMediaContentDto } from './dto/upload-media-content.dto';
 import { Certification } from './entities/certification.entity';
 import { LearningPathModule } from './entities/learning-module.entity';
 import { LearningPath } from './entities/learning-path.entity';
@@ -37,7 +39,6 @@ import { MediaContent } from './entities/media-content.entity';
 import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
 import { Progress } from './entities/progress.entity';
 import { LearningService } from './learning.service';
-import { UpdateOrganisationLearningPathDto } from './dto/update-organisation-learning-path.dto';
 
 @ApiTags('Learning')
 @ApiBearerAuth('bearer')
@@ -55,11 +56,28 @@ export class LearningController {
     return await this.learningService.createLearningPath(learningPathData);
   }
 
+  @Get('health')
+  @ApiOperation({ summary: 'Vérifier la santé de l\'API Learning' })
+  @ApiResponse({ status: 200, description: 'API Learning opérationnelle' })
+  async getHealth(): Promise<{ status: string; timestamp: string }> {
+    return {
+      status: 'OK',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+
+
   @Get('parcours')
   @ApiOperation({ summary: 'Lister les parcours' })
   @ApiResponse({ status: 200, description: 'Liste des parcours', type: [LearningPath] })
   async getAllLearningPaths(): Promise<LearningPath[]> {
-    return await this.learningService.getAllLearningPaths();
+    try {
+      return await this.learningService.getAllLearningPaths();
+    } catch (error) {
+      console.error('Erreur dans getAllLearningPaths:', error);
+      throw new InternalServerErrorException('Erreur lors de la récupération des parcours');
+    }
   }
 
   @Get('parcours/:id')

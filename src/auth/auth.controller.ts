@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, HttpException, HttpStatus, Get, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, HttpException, HttpStatus, Get, Request, Response } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -231,5 +231,98 @@ export class AuthController {
       }
       throw new HttpException('Erreur lors de la récupération des informations', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @Get('swagger-login')
+  @ApiOperation({ summary: 'Page de connexion pour Swagger (Superadmin uniquement)' })
+  @ApiResponse({ status: 200, description: 'Page de connexion HTML' })
+  async getSwaggerLoginPage(@Response() res) {
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Connexion Swagger - Superadmin</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+          .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+          h1 { color: #333; text-align: center; margin-bottom: 30px; }
+          .form-group { margin-bottom: 20px; }
+          label { display: block; margin-bottom: 5px; color: #555; }
+          input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+          button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+          button:hover { background: #0056b3; }
+          .error { color: red; margin-top: 10px; text-align: center; }
+          .success { color: green; margin-top: 10px; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>🔐 Connexion Swagger</h1>
+          <p style="text-align: center; color: #666; margin-bottom: 30px;">Accès réservé aux Superadmins</p>
+          
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required placeholder="superadmin@example.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <input type="password" id="password" name="password" required placeholder="Votre mot de passe">
+            </div>
+            
+            <button type="submit">Se connecter</button>
+          </form>
+          
+          <div id="message"></div>
+        </div>
+
+        <script>
+          document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            
+            try {
+              const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+              });
+              
+              const data = await response.json();
+              
+              if (response.ok) {
+                // Vérifier que l'utilisateur est superadmin
+                if (data.user && data.user.role === 'superadmin') {
+                  // Stocker le token pour Swagger
+                  localStorage.setItem('swagger_authorization_superadmin', data.access_token);
+                  localStorage.setItem('swagger_authorization_bearer', data.access_token);
+                  
+                  messageDiv.innerHTML = '<div class="success">✅ Connexion réussie ! Redirection vers Swagger...</div>';
+                  
+                  // Rediriger vers Swagger après 2 secondes
+                  setTimeout(() => {
+                    window.location.href = '/api/docs';
+                  }, 2000);
+                } else {
+                  messageDiv.innerHTML = '<div class="error">❌ Accès refusé : Rôle superadmin requis</div>';
+                }
+              } else {
+                messageDiv.innerHTML = '<div class="error">❌ Erreur de connexion : ' + (data.message || 'Identifiants invalides') + '</div>';
+              }
+            } catch (error) {
+              messageDiv.innerHTML = '<div class="error">❌ Erreur réseau : ' + error.message + '</div>';
+            }
+          });
+        </script>
+      </body>
+      </html>
+    `;
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   }
 }

@@ -1,0 +1,665 @@
+# ========================================
+# TESTS API SENSIBILISATION - SENSIBACK
+# ========================================
+# 
+# Ce fichier contient tous les tests pour l'API
+# Utilisez l'extension REST Client de VS Code ou importez dans Postman
+#
+# Base URL: http://localhost:3000/api
+# Documentation Swagger: http://localhost:3000/api/docs
+
+# ========================================
+# VARIABLES GLOBALES
+# ========================================
+@baseUrl = http://localhost:3000/api
+@authToken = {{login.response.body.access_token}}
+
+# ========================================
+# 1. AUTHENTIFICATION
+# ========================================
+
+### Inscription d'un nouvel utilisateur
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "TestPassword123!",
+  "nom": "Doe",
+  "prenom": "John",
+  "age": 25,
+  "role": "user",
+  "code_langue": "fr",
+  "organisation_id": "1"
+}
+
+### Connexion utilisateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "TestPassword123!"
+}
+
+### Déconnexion
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{authToken}}
+
+### Changement de mot de passe
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "TestPassword123!",
+  "newPassword": "NewPassword123!"
+}
+
+### Demande de réinitialisation de mot de passe
+POST {{baseUrl}}/auth/reset-password-request
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### Réinitialisation de mot de passe
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_here",
+  "newPassword": "NewPassword123!"
+}
+
+### Récupération du profil utilisateur
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 2. UTILISATEURS
+# ========================================
+
+### Lister tous les utilisateurs
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+
+### Obtenir un utilisateur par ID
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+
+### Mettre à jour un utilisateur
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Doe Updated",
+  "prenom": "John Updated",
+  "age": 26
+}
+
+### Changer le mot de passe d'un utilisateur
+PUT {{baseUrl}}/users/1/password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "newPassword": "NewPassword123!"
+}
+
+### Supprimer un utilisateur
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 3. ORGANISATIONS
+# ========================================
+
+### Créer une organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Organisation Test",
+  "description": "Description de l'organisation test",
+  "secteur": "pme",
+  "taille": "10-50",
+  "adresse": "123 Rue Test, 75000 Paris"
+}
+
+### Lister toutes les organisations
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{authToken}}
+
+### Obtenir une organisation par ID
+GET {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques d'une organisation
+GET {{baseUrl}}/organisations/1/stats
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques d'un parcours pour une organisation
+GET {{baseUrl}}/organisations/1/stats/parcours/1
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques d'un utilisateur dans une organisation
+GET {{baseUrl}}/organisations/1/stats/utilisateur/1
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques comparatives d'une organisation
+GET {{baseUrl}}/organisations/1/stats/comparatif
+Authorization: Bearer {{authToken}}
+
+### Lister les utilisateurs d'une organisation
+GET {{baseUrl}}/organisations/1/users
+Authorization: Bearer {{authToken}}
+
+### Mettre à jour une organisation
+PATCH {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Organisation Test Updated",
+  "description": "Description mise à jour"
+}
+
+### Supprimer une organisation
+DELETE {{baseUrl}}/organisations/1
+Authorization: Bearer {{authToken}}
+
+### Retirer un utilisateur d'une organisation
+DELETE {{baseUrl}}/organisations/1/users/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 4. PARCOURS D'APPRENTISSAGE
+# ========================================
+
+### Créer un parcours d'apprentissage
+POST {{baseUrl}}/learning/parcours
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Parcours Test",
+  "description": "Description du parcours test",
+  "niveau": "debutant",
+  "duree_estimee": 120,
+  "thematique_cyber": "phishing"
+}
+
+### Lister tous les parcours
+GET {{baseUrl}}/learning/parcours
+Authorization: Bearer {{authToken}}
+
+### Obtenir un parcours par ID
+GET {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{authToken}}
+
+### Obtenir les parcours disponibles pour l'utilisateur
+GET {{baseUrl}}/learning/parcours/user/available
+Authorization: Bearer {{authToken}}
+
+### Supprimer un parcours
+DELETE {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 5. MODULES D'APPRENTISSAGE
+# ========================================
+
+### Créer un module
+POST {{baseUrl}}/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test",
+  "description": "Description du module test",
+  "ordre": 1,
+  "parcours_id": 1,
+  "thematique_cyber": "phishing",
+  "duree_estimee": 30
+}
+
+### Lister tous les modules
+GET {{baseUrl}}/learning/modules
+Authorization: Bearer {{authToken}}
+
+### Obtenir un module par ID
+GET {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{authToken}}
+
+### Lister les modules d'un parcours
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{authToken}}
+
+### Mettre à jour un module
+PUT {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test Updated",
+  "description": "Description mise à jour"
+}
+
+### Supprimer un module
+DELETE {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 6. MÉDIAS ET CONTENUS
+# ========================================
+
+### Uploader un média
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.pdf"
+Content-Type: application/pdf
+
+< ./test.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Mettre à jour un média
+PUT {{baseUrl}}/learning/media/1/upload?module_id=1
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="updated.pdf"
+Content-Type: application/pdf
+
+< ./updated.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Supprimer un média
+DELETE {{baseUrl}}/learning/media/1
+Authorization: Bearer {{authToken}}
+
+### Lister les médias d'un module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{authToken}}
+
+### Streamer un média
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 7. PROGRESSIONS
+# ========================================
+
+### Obtenir les progressions de l'utilisateur
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{authToken}}
+
+### Obtenir la progression d'un parcours
+GET {{baseUrl}}/learning/progress/parcours/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 8. CERTIFICATIONS
+# ========================================
+
+### Créer une certification
+POST {{baseUrl}}/learning/certifications
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "parcours": 1,
+  "utilisateur": 1,
+  "score": 85,
+  "date_obtention": "2024-01-15T10:00:00Z"
+}
+
+### Obtenir les certifications de l'utilisateur
+GET {{baseUrl}}/learning/certifications/user
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 9. GESTION DES PARCOURS PAR ORGANISATION
+# ========================================
+
+### Associer un parcours à une organisation
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{authToken}}
+
+### Retirer un parcours d'une organisation
+DELETE {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{authToken}}
+
+### Mettre à jour l'association parcours-organisation
+PATCH {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "actif": false
+}
+
+### Lister les parcours d'une organisation
+GET {{baseUrl}}/learning/organisations/1/parcours
+Authorization: Bearer {{authToken}}
+
+### Vérifier l'accès d'un utilisateur à un parcours
+GET {{baseUrl}}/learning/access/check/1
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 10. QUIZ
+# ========================================
+
+### Créer un quiz pour un module
+POST {{baseUrl}}/learning/modules/1/quiz
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz Test",
+  "description": "Description du quiz test",
+  "ordre": 1,
+  "questions": [
+    {
+      "enonce": "Qu'est-ce que le phishing ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "reponses": [
+        {
+          "texte": "Une technique d'attaque par email",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "Un type de virus",
+          "est_correcte": false,
+          "ordre": 2
+        }
+      ]
+    }
+  ]
+}
+
+### Obtenir tous les quiz d'un module
+GET {{baseUrl}}/learning/modules/1/quiz
+Authorization: Bearer {{authToken}}
+
+### Obtenir un quiz spécifique
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{authToken}}
+
+### Soumettre les réponses d'un quiz
+POST {{baseUrl}}/learning/quiz/1/submit
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    }
+  ],
+  "temps_total_secondes": 120
+}
+
+### Obtenir les résultats d'un quiz
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{authToken}}
+
+### Supprimer un quiz
+DELETE {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{authToken}}
+
+### Créer un quiz final pour un parcours
+POST {{baseUrl}}/learning/parcours/1/quiz-final
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz Final",
+  "description": "Quiz final du parcours",
+  "ordre": 1,
+  "questions": [
+    {
+      "enonce": "Question finale ?",
+      "type_question": "choix_unique",
+      "ordre": 1,
+      "reponses": [
+        {
+          "texte": "Réponse correcte",
+          "est_correcte": true,
+          "ordre": 1
+        }
+      ]
+    }
+  ]
+}
+
+### Obtenir tous les quiz finaux d'un parcours
+GET {{baseUrl}}/learning/parcours/1/quiz-finaux
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 11. GAMIFICATION
+# ========================================
+
+### Obtenir le dashboard de gamification
+GET {{baseUrl}}/learning/gamification/dashboard
+Authorization: Bearer {{authToken}}
+
+### Enregistrer une connexion quotidienne
+POST {{baseUrl}}/learning/gamification/daily-login
+Authorization: Bearer {{authToken}}
+
+### Obtenir les simulations disponibles
+GET {{baseUrl}}/learning/gamification/simulations
+Authorization: Bearer {{authToken}}
+
+### Envoyer une simulation
+POST {{baseUrl}}/learning/gamification/simulations/1/send
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1
+}
+
+### Répondre à une simulation
+POST {{baseUrl}}/learning/gamification/simulations/respond
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 1,
+  "reponse": "Ma réponse à la simulation"
+}
+
+### Obtenir l'historique des simulations
+GET {{baseUrl}}/learning/gamification/simulations/history
+Authorization: Bearer {{authToken}}
+
+### Créer une conversation chatbot
+POST {{baseUrl}}/learning/gamification/chatbot/conversations
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "sujet": "Question sur la cybersécurité"
+}
+
+### Lister les conversations chatbot
+GET {{baseUrl}}/learning/gamification/chatbot/conversations
+Authorization: Bearer {{authToken}}
+
+### Ajouter un message à une conversation
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/1/messages
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Mon message",
+  "type": "utilisateur"
+}
+
+### Obtenir l'historique d'une conversation
+GET {{baseUrl}}/learning/gamification/chatbot/conversations/1/history
+Authorization: Bearer {{authToken}}
+
+### Terminer une conversation
+PUT {{baseUrl}}/learning/gamification/chatbot/conversations/1/end
+Authorization: Bearer {{authToken}}
+
+### Évaluer une conversation
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/1/rate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "note": 5,
+  "commentaire": "Très utile"
+}
+
+### Obtenir les statistiques des simulations
+GET {{baseUrl}}/learning/gamification/stats/simulations
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques du chatbot
+GET {{baseUrl}}/learning/gamification/stats/chatbot
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques des intents du chatbot
+GET {{baseUrl}}/learning/gamification/stats/chatbot/intents
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 12. CERTIFICATS
+# ========================================
+
+### Vérifier l'éligibilité à un certificat
+GET {{baseUrl}}/learning/certificates/eligibility/1
+Authorization: Bearer {{authToken}}
+
+### Générer un certificat
+POST {{baseUrl}}/learning/certificates/generate/1
+Authorization: Bearer {{authToken}}
+
+### Obtenir les certificats de l'utilisateur
+GET {{baseUrl}}/learning/certificates/user
+Authorization: Bearer {{authToken}}
+
+### Obtenir un certificat spécifique
+GET {{baseUrl}}/learning/certificates/1
+Authorization: Bearer {{authToken}}
+
+### Télécharger un certificat
+GET {{baseUrl}}/learning/certificates/1/download
+Authorization: Bearer {{authToken}}
+
+### Obtenir les statistiques des certificats de l'utilisateur
+GET {{baseUrl}}/learning/certificates/stats/user
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 13. ANALYTICS
+# ========================================
+
+### Obtenir le dashboard analytics
+GET {{baseUrl}}/analytics/dashboard
+Authorization: Bearer {{authToken}}
+
+### Obtenir le rapport d'une organisation
+GET {{baseUrl}}/analytics/organisations/1/report
+Authorization: Bearer {{authToken}}
+
+### Vérifier la santé du système
+GET {{baseUrl}}/analytics/system/health
+
+### Obtenir les tendances des utilisateurs
+GET {{baseUrl}}/analytics/trends/users
+Authorization: Bearer {{authToken}}
+
+### Obtenir les tendances des organisations
+GET {{baseUrl}}/analytics/trends/organisations
+Authorization: Bearer {{authToken}}
+
+### Obtenir les tendances des parcours d'apprentissage
+GET {{baseUrl}}/analytics/trends/learning-paths
+Authorization: Bearer {{authToken}}
+
+### Obtenir les tendances des certifications
+GET {{baseUrl}}/analytics/trends/certifications
+Authorization: Bearer {{authToken}}
+
+### Obtenir les meilleurs performeurs (organisations)
+GET {{baseUrl}}/analytics/top-performers/organisations
+Authorization: Bearer {{authToken}}
+
+### Obtenir les meilleurs performeurs (parcours)
+GET {{baseUrl}}/analytics/top-performers/learning-paths
+Authorization: Bearer {{authToken}}
+
+### Exporter des données
+POST {{baseUrl}}/analytics/export
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "type": "users",
+  "format": "csv",
+  "periode": {
+    "debut": "2024-01-01",
+    "fin": "2024-12-31"
+  }
+}
+
+### Obtenir l'activité en temps réel
+GET {{baseUrl}}/analytics/realtime/activity
+Authorization: Bearer {{authToken}}
+
+### Obtenir les prédictions d'engagement
+GET {{baseUrl}}/analytics/predictions/engagement
+Authorization: Bearer {{authToken}}
+
+### Obtenir l'analyse comparative des périodes
+GET {{baseUrl}}/analytics/comparative/periods
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 14. TESTS DE SANTÉ ET DEBUG
+# ========================================
+
+### Test de santé de l'API principale
+GET {{baseUrl}}/health
+
+### Test de santé du système analytics
+GET {{baseUrl}}/analytics/system/health
+
+### Documentation Swagger
+GET {{baseUrl}}/docs
+
+### Documentation Swagger JSON
+GET {{baseUrl}}/docs-json
+
+# ========================================
+# NOTES D'UTILISATION
+# ========================================
+#
+# 1. Assurez-vous que le serveur backend est démarré sur le port 3000
+# 2. Remplacez les IDs (1, 2, etc.) par des IDs valides de votre base de données
+# 3. Le token d'authentification est automatiquement récupéré après la connexion
+# 4. Certaines routes nécessitent des rôles spécifiques (admin, superadmin)
+# 5. Pour les tests de fichiers, créez des fichiers de test appropriés
+# 6. Vérifiez la documentation Swagger pour plus de détails sur les paramètres
+#
+# ========================================

@@ -26,10 +26,18 @@ async function bootstrap() {
 
   // Configuration CORS pour permettre les requêtes cross-origin
   app.enableCors({
-    origin: ['http://localhost:8081', 'http://localhost:3000'],
+    origin: [
+      'http://localhost:8081', 
+      'http://localhost:3000',
+      'http://localhost:8082', // Port du frontend
+      'http://127.0.0.1:8082'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   });
 
   // Préfixe global pour toutes les routes de l'API
@@ -40,6 +48,7 @@ async function bootstrap() {
     .setDescription('Documentation Swagger de l’API de sensibilisation: authentification, organisations, apprentissage et médias')
     .setVersion('1.0.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'bearer')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'superadmin')
     .setContact('BytCode', 'https://bytcode.example', 'support@bytcode.example')
     .addServer('/api', 'API prefix')
     .build();
@@ -48,6 +57,20 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: { persistAuthorization: true },
     customSiteTitle: 'Sensibilisation API Docs',
+    customCss: `
+      .swagger-ui .topbar { display: none }
+      .swagger-ui .info { margin: 20px 0 }
+    `,
+    customJs: `
+      // Vérification de l'authentification superadmin
+      window.addEventListener('load', function() {
+        const token = localStorage.getItem('swagger_authorization_superadmin');
+        if (!token) {
+          // Rediriger vers la page de connexion si pas de token
+          window.location.href = '/api/auth/login-page';
+        }
+      });
+    `
   });
 
   app.useGlobalPipes(new ValidationPipe({

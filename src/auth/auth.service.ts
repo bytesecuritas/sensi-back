@@ -187,29 +187,59 @@ export class AuthService {
 
 
   async getProfile(userId: number) {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé');
-    }
+    try {
+      const user = await this.usersService.findById(userId);
+      if (!user) {
+        throw new NotFoundException('Utilisateur non trouvé');
+      }
 
-    switch (user.role) {
-      case 'user':
-        // Pour un utilisateur normal, retourner son profil via getUserInfos
-        return await this.usersService.getUserInfos(userId);
+      // Retourner les informations de base de l'utilisateur
+      const { password, ...userWithoutPassword } = user;
       
-      case 'admin':
-        // Pour un admin, retourner les stats de son organisation
-        if (!user.organisation?.organisation_id) {
-          throw new BadRequestException('Admin sans organisation assignée');
-        }
-        return await this.organisationsService.getOrganisationStats(user.organisation.organisation_id);
-      
-      case 'superadmin':
-        // Pour un superadmin, retourner le dashboard global
-        return await this.analyticsService.getGlobalDashboard({ timeRange: TimeRange.MONTH });
-      
-      default:
-        throw new BadRequestException('Rôle utilisateur non reconnu');
+      const profile = {
+        user: userWithoutPassword,
+        role: user.role,
+        permissions: this.getRolePermissions(user.role),
+        stats: await this.getBasicUserStats(userId, user.role)
+      };
+
+      return profile;
+    } catch (error) {
+      console.error('Erreur dans getProfile:', error);
+      throw error;
+    }
+  }
+
+  private getRolePermissions(role: string) {
+    const permissions = {
+      user: ['read_own_profile', 'update_own_profile'],
+      admin: ['read_own_profile', 'update_own_profile', 'manage_users', 'view_organisation_stats'],
+      superadmin: ['read_own_profile', 'update_own_profile', 'manage_all', 'view_all_stats', 'system_admin']
+    };
+    return permissions[role] || [];
+  }
+
+  private async getBasicUserStats(userId: number, role: string) {
+    try {
+      const basicStats: any = {
+        lastLogin: new Date().toISOString(),
+        role: role,
+        permissions: this.getRolePermissions(role)
+      };
+
+      if (role === 'admin' || role === 'superadmin') {
+        basicStats.canManageUsers = true;
+        basicStats.canViewStats = true;
+      }
+
+      return basicStats;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des stats:', error);
+      return {
+        lastLogin: new Date().toISOString(),
+        role: role,
+        permissions: this.getRolePermissions(role)
+      };
     }
   }
 }

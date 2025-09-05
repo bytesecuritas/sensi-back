@@ -1,0 +1,141 @@
+# ========================================
+# TEST AUTHENTIFICATION SUPERADMIN SWAGGER
+# ========================================
+# 
+# Ce fichier teste l'authentification superadmin pour la documentation Swagger
+# Base URL: http://localhost:3000/api
+# Swagger UI: http://localhost:3000/api/docs
+# 
+# Utilisez ces tokens dans Swagger pour tester les routes protégées :
+# - 'bearer' : Pour les routes utilisateur/admin
+# - 'superadmin' : Pour les routes superadmin uniquement
+
+@baseUrl = http://localhost:3000/api
+
+# ========================================
+# 1. CONNEXION SUPERADMIN
+# ========================================
+
+### Connexion superadmin pour obtenir un token
+# @name superadminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperAdmin123!"
+}
+
+# ========================================
+# 2. TOKENS POUR SWAGGER
+# ========================================
+# 
+# Copiez le token de la réponse ci-dessus dans Swagger :
+# 
+# 1. Allez sur http://localhost:3000/api/docs
+# 2. Cliquez sur le bouton "Authorize" (🔒)
+# 3. Dans le champ "bearer", entrez le token sans "Bearer "
+# 4. Dans le champ "superadmin", entrez le même token
+# 5. Cliquez sur "Authorize"
+# 
+# Maintenant vous pouvez tester toutes les routes protégées !
+
+# ========================================
+# 3. TEST DES ROUTES SUPERADMIN
+# ========================================
+
+### Créer un nouvel utilisateur (route superadmin)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{superadminLogin.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "TestPassword123!",
+  "nom": "Doe",
+  "prenom": "John",
+  "age": 25,
+  "role": "user",
+  "code_langue": "fr",
+  "organisation_id": "1"
+}
+
+### Créer un nouvel admin (route superadmin)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{superadminLogin.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "AdminPassword123!",
+  "nom": "Admin",
+  "prenom": "Jane",
+  "age": 30,
+  "role": "admin",
+  "code_langue": "fr",
+  "organisation_id": "1"
+}
+
+### Créer un autre superadmin (route superadmin)
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{superadminLogin.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "email": "superadmin2@example.com",
+  "password": "SuperAdmin2123!",
+  "nom": "SuperAdmin2",
+  "prenom": "Bob",
+  "age": 35,
+  "role": "superadmin",
+  "code_langue": "fr",
+  "organisation_id": "1"
+}
+
+# ========================================
+# 4. TEST DES ROUTES ADMIN (avec token superadmin)
+# ========================================
+
+### Lister tous les utilisateurs (route admin)
+GET {{baseUrl}}/users
+Authorization: Bearer {{superadminLogin.response.body.access_token}}
+
+### Lister toutes les organisations (route admin)
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{superadminLogin.response.body.access_token}}
+
+### Lister tous les parcours (route publique)
+GET {{baseUrl}}/learning/parcours
+
+### Lister tous les modules (route publique)
+GET {{baseUrl}}/learning/modules
+
+# ========================================
+# 5. DOCUMENTATION SWAGGER
+# ========================================
+# 
+# Dans Swagger, vous verrez maintenant :
+# 
+# 🔒 bearer - Pour les routes utilisateur/admin
+# 🔒 superadmin - Pour les routes superadmin uniquement
+# 
+# Routes protégées par 'bearer' :
+# - POST /auth/register (admin/superadmin)
+# - GET /auth/profile
+# - POST /auth/change-password
+# - POST /auth/logout
+# - GET /users (admin/superadmin)
+# - GET /organisations (admin/superadmin)
+# 
+# Routes protégées par 'superadmin' :
+# - POST /auth/register (superadmin uniquement)
+# - Routes sensibles réservées aux superadmins
+# 
+# Routes publiques :
+# - POST /auth/login
+# - POST /auth/reset-password-request
+# - POST /auth/reset-password
+# - GET /learning/parcours
+# - GET /learning/modules
+# 
+# ========================================

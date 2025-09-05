@@ -1,0 +1,63 @@
+# ========================================
+# TEST DE LA ROUTE /PARCOURS
+# ========================================
+# 
+# Ce fichier teste la route /api/learning/parcours qui retourne []
+# malgré qu'il y ait des parcours dans la base de données
+# Base URL: http://localhost:3000/api
+
+@baseUrl = http://localhost:3000/api
+
+# ========================================
+# 1. TEST DE SANTÉ DE L'API LEARNING
+# ========================================
+
+### Vérifier la santé de l'API Learning
+GET {{baseUrl}}/learning/health
+
+# ========================================
+# 2. TEST DE LA ROUTE /PARCOURS
+# ========================================
+
+### Récupérer tous les parcours
+GET {{baseUrl}}/learning/parcours
+
+# ========================================
+# 3. TEST DE DEBUG DE LA BASE DE DONNÉES
+# ========================================
+
+### Debug de la base de données
+GET {{baseUrl}}/learning/debug
+
+# ========================================
+# 4. TESTS ALTERNATIFS
+# ========================================
+
+### Test avec paramètres de pagination
+GET {{baseUrl}}/learning/parcours?limit=10&offset=0
+
+### Test de récupération d'un parcours spécifique (si on connaît un ID)
+# GET {{baseUrl}}/learning/parcours/1
+
+# ========================================
+# NOTES DE DEBUG
+# ========================================
+#
+# Si la route /parcours retourne encore [] :
+#
+# 1. Vérifiez les logs du serveur backend
+# 2. Vérifiez que la base de données contient bien des parcours
+# 3. Vérifiez que les relations ne causent pas d'erreurs
+# 4. Utilisez la route /debug pour voir les détails de la base
+#
+# La route /parcours devrait maintenant retourner :
+# [
+#   {
+#     "parcours_id": 1,
+#     "titre": "Nom du parcours",
+#     "description": "Description...",
+#     "modules": [...]
+#   }
+# ]
+#
+# ========================================

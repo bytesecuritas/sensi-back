@@ -1,0 +1,73 @@
+# ========================================
+# TEST DE LA ROUTE /PROFILE
+# ========================================
+# 
+# Ce fichier teste la route /api/auth/profile qui causait une erreur 500
+# Base URL: http://localhost:3000/api
+
+@baseUrl = http://localhost:3000/api
+@authToken = {{login.response.body.access_token}}
+
+# ========================================
+# 1. CONNEXION POUR OBTENIR UN TOKEN
+# ========================================
+
+### Connexion utilisateur
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "TestPassword123!"
+}
+
+# ========================================
+# 2. TEST DE LA ROUTE /PROFILE
+# ========================================
+
+### Récupération du profil utilisateur
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{authToken}}
+
+# ========================================
+# 3. TESTS ALTERNATIFS
+# ========================================
+
+### Test sans token (doit retourner 401)
+GET {{baseUrl}}/auth/profile
+
+### Test avec un token invalide (doit retourner 401)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer invalid_token_here
+
+# ========================================
+# 4. VÉRIFICATION DE LA SANTÉ DE L'API
+# ========================================
+
+### Test de santé de l'API
+GET {{baseUrl}}/health
+
+### Documentation Swagger
+GET {{baseUrl}}/docs
+
+# ========================================
+# NOTES DE DEBUG
+# ========================================
+#
+# Si vous obtenez encore une erreur 500 sur /profile :
+#
+# 1. Vérifiez que le serveur backend est démarré
+# 2. Vérifiez les logs du serveur pour voir l'erreur exacte
+# 3. Vérifiez que la base de données est accessible
+# 4. Vérifiez que l'utilisateur existe dans la base
+#
+# La route /profile devrait maintenant retourner :
+# {
+#   "user": { ... },
+#   "role": "user|admin|superadmin",
+#   "permissions": [...],
+#   "stats": { ... }
+# }
+#
+# ========================================

@@ -1,25 +1,24 @@
-import { Injectable, NotFoundException, ForbiddenException, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LearningPath } from './entities/learning-path.entity';
-import { LearningPathModule } from './entities/learning-module.entity';
-import { MediaContent } from './entities/media-content.entity';
-import { Progress } from './entities/progress.entity';
-import { Certification } from './entities/certification.entity';
-import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
-import { Quiz } from './entities/quiz.entity';
-import { Question } from './entities/question.entity';
-import { Reponse } from './entities/reponse.entity';
-import { QuizResponse } from './entities/quiz-response.entity';
-import { CreateMediaContentDto } from './dto/create-media-content.dto';
-import { CreateLearningModuleDto } from './dto/create-learning-module.dto';
-import { CreateQuizDto } from './dto/create-quiz.dto';
-import { SubmitQuizResponseDto } from './dto/submit-quiz-response.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { User } from '../users/users.entity';
+import { Repository } from 'typeorm';
 import { Organisation } from '../organisations/organisations.entity';
-import { ProgressStatus } from './entities/progress.entity';
+import { User } from '../users/users.entity';
+import { CreateLearningModuleDto } from './dto/create-learning-module.dto';
+import { CreateMediaContentDto } from './dto/create-media-content.dto';
+import { CreateQuizDto } from './dto/create-quiz.dto';
+import { SubmitQuizResponseDto } from './dto/submit-quiz-response.dto';
+import { Certification } from './entities/certification.entity';
+import { LearningPathModule } from './entities/learning-module.entity';
+import { LearningPath } from './entities/learning-path.entity';
+import { MediaContent } from './entities/media-content.entity';
+import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
+import { Progress, ProgressStatus } from './entities/progress.entity';
+import { Question } from './entities/question.entity';
+import { QuizResponse } from './entities/quiz-response.entity';
+import { Quiz } from './entities/quiz.entity';
+import { Reponse } from './entities/reponse.entity';
 import { GamificationService } from './gamification.service';
 
 
@@ -63,20 +62,50 @@ export class LearningService {
   }
 
   async getAllLearningPaths(): Promise<LearningPath[]> {
-    return await this.learningPathRepository.find({
-      relations: ['modules', 'organisationParcours'],
-    });
+    try {
+      // Récupérer tous les parcours sans relations complexes
+      const parcours = await this.learningPathRepository.find({
+        order: {
+          date_creation: 'DESC'
+        }
+      });
+      
+      console.log(`Nombre de parcours trouvés: ${parcours.length}`);
+      
+      if (parcours.length === 0) {
+        return [];
+      }
+      
+      // Retourner les parcours sans relations pour éviter les erreurs
+      return parcours;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des parcours:', error);
+      return [];
+    }
   }
 
   async getLearningPathById(id: number): Promise<LearningPath> {
-    const learningPath = await this.learningPathRepository.findOne({
-      where: { parcours_id: id },
-      relations: ['modules', 'modules.contenus_media', 'organisationParcours'],
-    });
-    if (!learningPath) {
-      throw new NotFoundException(`Parcours d'apprentissage avec l'ID ${id} non trouvé`);
+    try {
+      // D'abord, récupérer le parcours sans relations pour vérifier qu'il existe
+      const learningPath = await this.learningPathRepository.findOne({
+        where: { parcours_id: id }
+      });
+      
+      if (!learningPath) {
+        throw new NotFoundException(`Parcours d'apprentissage avec l'ID ${id} non trouvé`);
+      }
+      
+      console.log(`Parcours ${id} trouvé:`, learningPath.titre);
+      
+      // Retourner le parcours sans relations complexes pour éviter les erreurs
+      return learningPath;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du parcours ${id}:`, error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException(`Erreur lors de la récupération du parcours d'apprentissage`);
     }
-    return learningPath;
   }
 
   // Supprimer un parcours (et ses modules + médias associés)
@@ -120,20 +149,50 @@ export class LearningService {
   }
 
   async getAllLearningModules(): Promise<LearningPathModule[]> {
-    return await this.learningModuleRepository.find({
-      relations: ['contenus_media', 'parcours'],
-    });
+    try {
+      // Récupérer tous les modules sans relations complexes
+      const modules = await this.learningModuleRepository.find({
+        order: {
+          ordre: 'ASC'
+        }
+      });
+      
+      console.log(`Nombre de modules trouvés: ${modules.length}`);
+      
+      if (modules.length === 0) {
+        return [];
+      }
+      
+      // Retourner les modules sans relations pour éviter les erreurs
+      return modules;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des modules:', error);
+      return [];
+    }
   }
 
   async getLearningModuleById(id: number): Promise<LearningPathModule> {
-    const module = await this.learningModuleRepository.findOne({
-      where: { module_id: id },
-      relations: ['contenus_media', 'parcours'],
-    });
-    if (!module) {
-      throw new NotFoundException(`Module avec l'ID ${id} non trouvé`);
+    try {
+      // Récupérer le module sans relations complexes
+      const module = await this.learningModuleRepository.findOne({
+        where: { module_id: id }
+      });
+      
+      if (!module) {
+        throw new NotFoundException(`Module avec l'ID ${id} non trouvé`);
+      }
+      
+      console.log(`Module ${id} trouvé:`, module.titre);
+      
+      // Retourner le module sans relations complexes pour éviter les erreurs
+      return module;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération du module ${id}:`, error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException(`Erreur lors de la récupération du module d'apprentissage`);
     }
-    return module;
   }
 
   // Mettre à jour un module

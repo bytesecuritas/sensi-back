@@ -1,0 +1,122 @@
+# ========================================
+# TESTS DES ROUTES D'AUTHENTIFICATION
+# ========================================
+# 
+# Ce fichier teste toutes les routes d'auth du backend
+# Base URL: http://localhost:3000/api
+# Frontend: http://localhost:8082
+
+@baseUrl = http://localhost:3000/api
+@authToken = {{login.response.body.access_token}}
+
+# ========================================
+# 1. INSCRIPTION (POST /auth/register)
+# ========================================
+# Route protégée - Nécessite un token admin/superadmin
+# 
+# POST {{baseUrl}}/auth/register
+# Authorization: Bearer {{authToken}}
+# Content-Type: application/json
+# 
+# {
+#   "email": "test@example.com",
+#   "password": "TestPassword123!",
+#   "nom": "Doe",
+#   "prenom": "John",
+#   "age": 25,
+#   "role": "user",
+#   "code_langue": "fr",
+#   "organisation_id": "1"
+# }
+
+# ========================================
+# 2. CONNEXION (POST /auth/login)
+# ========================================
+# Route publique - Pas de token requis
+# 
+# @name login
+# POST {{baseUrl}}/auth/login
+# Content-Type: application/json
+# 
+# {
+#   "email": "test@example.com",
+#   "password": "TestPassword123!"
+# }
+
+# ========================================
+# 3. DÉCONNEXION (POST /auth/logout)
+# ========================================
+# Route protégée - Nécessite un token valide
+# 
+# POST {{baseUrl}}/auth/logout
+# Authorization: Bearer {{authToken}}
+
+# ========================================
+# 4. CHANGEMENT DE MOT DE PASSE (POST /auth/change-password)
+# ========================================
+# Route protégée - Nécessite un token valide
+# 
+# POST {{baseUrl}}/auth/change-password
+# Authorization: Bearer {{authToken}}
+# Content-Type: application/json
+# 
+# {
+#   "currentPassword": "TestPassword123!",
+#   "newPassword": "NewPassword123!"
+# }
+
+# ========================================
+# 5. DEMANDE DE RÉINITIALISATION (POST /auth/reset-password-request)
+# ========================================
+# Route publique - Pas de token requis
+# 
+# POST {{baseUrl}}/auth/reset-password-request
+# Content-Type: application/json
+# 
+# {
+#   "email": "test@example.com"
+# }
+
+# ========================================
+# 6. RÉINITIALISATION DE MOT DE PASSE (POST /auth/reset-password)
+# ========================================
+# Route publique - Pas de token requis
+# 
+# POST {{baseUrl}}/auth/reset-password
+# Content-Type: application/json
+# 
+# {
+#   "token": "reset_token_here",
+#   "newPassword": "NewPassword123!"
+# }
+
+# ========================================
+# 7. PROFIL UTILISATEUR (GET /auth/profile)
+# ========================================
+# Route protégée - Nécessite un token valide
+# 
+# GET {{baseUrl}}/auth/profile
+# Authorization: Bearer {{authToken}}
+
+# ========================================
+# RÉSUMÉ DES ROUTES D'AUTHENTIFICATION
+# ========================================
+#
+# ROUTES PUBLIQUES (pas de token requis):
+# - POST /auth/login - Connexion utilisateur
+# - POST /auth/reset-password-request - Demande de réinitialisation
+# - POST /auth/reset-password - Réinitialisation de mot de passe
+#
+# ROUTES PROTÉGÉES (token requis):
+# - POST /auth/register - Inscription (admin/superadmin seulement)
+# - POST /auth/logout - Déconnexion
+# - POST /auth/change-password - Changement de mot de passe
+# - GET /auth/profile - Récupération du profil
+#
+# SÉCURITÉ:
+# - Rate limiting sur login et reset-password-request
+# - Validation stricte des mots de passe
+# - Protection par rôles pour l'inscription
+# - JWT pour l'authentification
+#
+# ========================================
