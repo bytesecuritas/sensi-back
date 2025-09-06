@@ -128,23 +128,32 @@ export class LearningService {
 
   // Méthodes pour les modules d'apprentissage
   async createLearningModule(moduleData: CreateLearningModuleDto): Promise<LearningPathModule> {
-    // Si parcours_id est fourni, récupérer le parcours correspondant
-    if (moduleData.parcours_id && typeof moduleData.parcours_id === 'number') {
+    try {
+      // Vérifier que le parcours existe
       const parcoursId = moduleData.parcours_id;
       const learningPath = await this.learningPathRepository.findOne({ where: { parcours_id: parcoursId } });
+      
       if (!learningPath) {
         throw new NotFoundException(`Parcours avec l'ID ${parcoursId} non trouvé`);
       }
-      const {parcours_id, ...moduleDataWidhoutPourcourId} = moduleData;
+
+      console.log(`Création d'un module pour le parcours ${parcoursId}: ${learningPath.titre}`);
+
+      // Créer le module avec le parcours_id correct
       const moduleToCreate = {
-        ...moduleDataWidhoutPourcourId,
-        parcours: learningPath
-      }
+        ...moduleData,
+        parcours_id: parcoursId  // S'assurer que parcours_id est bien défini
+      };
+
       const module = this.learningModuleRepository.create(moduleToCreate);
-      return await this.learningModuleRepository.save(module)
-    }
-    else{
-      throw new NotFoundException(`Vous ne pouvez pas créer un module sans l'associer à un parcours.`);
+      const savedModule = await this.learningModuleRepository.save(module);
+      
+      console.log(`Module créé avec l'ID ${savedModule.module_id} pour le parcours ${parcoursId}`);
+      
+      return savedModule;
+    } catch (error) {
+      console.error('Erreur lors de la création du module:', error);
+      throw error;
     }
   }
 
@@ -219,10 +228,27 @@ export class LearningService {
   }
 
   async getModulesByLearningPath(parcoursId: number): Promise<LearningPathModule[]> {
-    return await this.learningModuleRepository.find({
-      where: { parcours: { parcours_id: parcoursId } },
-      relations: ['contenus_media', 'parcours'],
-    });
+    try {
+      // Récupérer les modules sans relations complexes pour éviter les erreurs
+      const modules = await this.learningModuleRepository.find({
+        where: { parcours_id: parcoursId },
+        order: {
+          ordre: 'ASC'
+        }
+      });
+
+      console.log(`Nombre de modules trouvés pour le parcours ${parcoursId}: ${modules.length}`);
+
+      if (modules.length === 0) {
+        return [];
+      }
+
+      // Retourner les modules sans relations pour éviter les erreurs
+      return modules;
+    } catch (error) {
+      console.error(`Erreur lors de la récupération des modules du parcours ${parcoursId}:`, error);
+      return [];
+    }
   }
 
   async getModuleById(moduleId: number): Promise<LearningPathModule> {

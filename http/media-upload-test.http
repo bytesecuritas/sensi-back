@@ -1,0 +1,62 @@
+### Test d'upload de média avec titre
+### Variables
+@authToken = your_jwt_token_here
+@moduleId = 4
+
+### 1. Connexion pour obtenir le token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!"
+}
+
+### 2. Upload d'un fichier média avec titre
+POST http://localhost:3000/api/learning/media/upload?module_id={{moduleId}}
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+Introduction à la cybersécurité
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Vidéo d'introduction aux concepts de base de la cybersécurité
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-video.mp4"
+Content-Type: video/mp4
+
+< ./test-video.mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3. Test sans titre (doit échouer)
+POST http://localhost:3000/api/learning/media/upload?module_id={{moduleId}}
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Test sans titre
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-video.mp4"
+Content-Type: video/mp4
+
+< ./test-video.mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 4. Vérifier les médias du module
+GET http://localhost:3000/api/learning/modules/{{moduleId}}/media
+Authorization: Bearer {{authToken}}
+Accept: application/json

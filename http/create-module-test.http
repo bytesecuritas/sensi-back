@@ -1,0 +1,81 @@
+### Test de création de module pour le parcours 8
+### Variables
+@authToken = your_jwt_token_here
+@parcoursId = 8
+
+### 1. Connexion pour obtenir le token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!"
+}
+
+### 2. Créer un module pour le parcours 8
+POST http://localhost:3000/api/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Sécurité des Applications Mobiles",
+  "description": "Apprendre à sécuriser les applications mobiles et protéger les données sensibles",
+  "public_cible": "intermediaire",
+  "code_langue": "fr",
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "mobile_security",
+  "parcours_id": {{parcoursId}},
+  "ordre": 1,
+  "objectifs_apprentissage": [
+    "Comprendre les risques de sécurité mobile",
+    "Appliquer les bonnes pratiques de développement",
+    "Configurer la sécurité des applications"
+  ],
+  "type_contenu": "formation",
+  "duree_minutes": 45
+}
+
+### 3. Créer un deuxième module pour le parcours 8
+POST http://localhost:3000/api/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Gestion des Appareils BYOD",
+  "description": "Politiques et pratiques pour la gestion des appareils personnels en entreprise",
+  "public_cible": "avance",
+  "code_langue": "fr",
+  "niveau_difficulte": "difficile",
+  "thematique_cyber": "mobile_security",
+  "parcours_id": {{parcoursId}},
+  "ordre": 2,
+  "objectifs_apprentissage": [
+    "Définir une politique BYOD",
+    "Implémenter la séparation des données",
+    "Surveiller et auditer les appareils"
+  ],
+  "type_contenu": "formation",
+  "duree_minutes": 60
+}
+
+### 4. Vérifier que les modules ont été créés pour le parcours 8
+GET http://localhost:3000/api/learning/parcours/{{parcoursId}}/modules
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 5. Lister tous les modules pour vérifier
+GET http://localhost:3000/api/learning/modules
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 6. Test avec un parcours inexistant (doit échouer)
+POST http://localhost:3000/api/learning/modules
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test",
+  "description": "Test avec parcours inexistant",
+  "code_langue": "fr",
+  "parcours_id": 999
+}

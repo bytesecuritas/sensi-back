@@ -29,8 +29,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:8081', 
       'http://localhost:3000',
-      'http://localhost:8082', // Port du frontend
-      'http://127.0.0.1:8082'
+      'http://localhost:8083', // Port du frontend
+      'http://127.0.0.1:8082',
+      'http://127.0.0.1:8083'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -67,7 +68,7 @@ async function bootstrap() {
         const token = localStorage.getItem('swagger_authorization_superadmin');
         if (!token) {
           // Rediriger vers la page de connexion si pas de token
-          window.location.href = '/api/auth/login-page';
+          window.location.href = '/api/auth/swagger-login';
         }
       });
     `

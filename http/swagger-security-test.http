@@ -1,0 +1,40 @@
+### Test de sécurité Swagger - Accès sans authentification
+GET http://localhost:3000/api/docs
+Accept: text/html
+
+### Test de sécurité Swagger - Accès avec token invalide
+GET http://localhost:3000/api/docs
+Authorization: Bearer token_invalide
+Accept: text/html
+
+### Test de sécurité Swagger - Accès avec token utilisateur normal (non superadmin)
+GET http://localhost:3000/api/docs
+Authorization: Bearer {{userToken}}
+Accept: text/html
+
+### Test de sécurité Swagger - Accès avec token superadmin valide
+GET http://localhost:3000/api/docs
+Authorization: Bearer {{superadminToken}}
+Accept: text/html
+
+### Test de la page de connexion Swagger
+GET http://localhost:3000/api/auth/swagger-login
+Accept: text/html
+
+### Connexion superadmin pour obtenir le token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@example.com",
+  "password": "SuperAdmin123!"
+}
+
+### Connexion utilisateur normal pour obtenir le token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!"
+}

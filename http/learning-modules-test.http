@@ -1,0 +1,42 @@
+### Test de récupération des modules d'un parcours
+### Variables
+@authToken = your_jwt_token_here
+@parcoursId = 8
+
+### 1. Connexion pour obtenir le token
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "User123!"
+}
+
+### 2. Récupérer les modules du parcours 8
+GET http://localhost:3000/api/learning/parcours/{{parcoursId}}/modules
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 3. Test avec un parcours inexistant
+GET http://localhost:3000/api/learning/parcours/999/modules
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 4. Test sans authentification
+GET http://localhost:3000/api/learning/parcours/{{parcoursId}}/modules
+Accept: application/json
+
+### 5. Vérifier que le parcours existe d'abord
+GET http://localhost:3000/api/learning/parcours/{{parcoursId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 6. Lister tous les parcours pour vérifier
+GET http://localhost:3000/api/learning/parcours
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### 7. Lister tous les modules pour vérifier
+GET http://localhost:3000/api/learning/modules
+Authorization: Bearer {{authToken}}
+Accept: application/json

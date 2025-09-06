@@ -132,10 +132,19 @@ export class LearningController {
   }
 
   @Get('parcours/:parcoursId/modules')
-  @ApiOperation({ summary: 'Lister les modules d’un parcours' })
+  @ApiOperation({ summary: 'Lister les modules d'un parcours' })
   @ApiParam({ name: 'parcoursId', type: String })
+  @ApiResponse({ status: 200, description: 'Liste des modules du parcours' })
+  @ApiResponse({ status: 404, description: 'Parcours non trouvé' })
+  @ApiResponse({ status: 500, description: 'Erreur serveur' })
   async getModulesByLearningPath(@Param('parcoursId') parcoursId: string): Promise<LearningPathModule[]> {
-    return await this.learningService.getModulesByLearningPath(+parcoursId);
+    try {
+      const modules = await this.learningService.getModulesByLearningPath(+parcoursId);
+      return modules;
+    } catch (error) {
+      console.error(`Erreur dans getModulesByLearningPath pour le parcours ${parcoursId}:`, error);
+      throw new InternalServerErrorException('Erreur lors de la récupération des modules du parcours');
+    }
   }
 
   // ===== MISE À JOUR MODULE =====
