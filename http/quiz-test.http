@@ -1,0 +1,91 @@
+### Test des routes de quiz
+### Assurez-vous d'avoir un token JWT valide
+
+@baseUrl = http://localhost:3000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Récupérer les quiz d'un module
+GET {{baseUrl}}/learning/modules/4/quiz
+Authorization: Bearer {{token}}
+
+### 2. Récupérer un quiz spécifique avec ses questions
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{token}}
+
+### 3. Créer un quiz de test pour le module 4
+POST {{baseUrl}}/learning/modules/4/quiz
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz Test - Cybersécurité",
+  "description": "Quiz de test pour vérifier le fonctionnement",
+  "duree_minutes": 15,
+  "score_minimum": 70,
+  "nombre_tentatives_max": 3,
+  "questions": [
+    {
+      "texte_question": "Qu'est-ce qu'une attaque de phishing ?",
+      "type_question": "CHOIX_UNIQUE",
+      "ordre": 1,
+      "points": 10,
+      "reponses": [
+        {
+          "texte_reponse": "Une attaque par email frauduleux",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte_reponse": "Un virus informatique",
+          "est_correcte": false,
+          "ordre": 2
+        },
+        {
+          "texte_reponse": "Un pare-feu",
+          "est_correcte": false,
+          "ordre": 3
+        }
+      ]
+    },
+    {
+      "texte_question": "Le phishing est-il une menace sérieuse ?",
+      "type_question": "VRAI_FAUX",
+      "ordre": 2,
+      "points": 5,
+      "reponses": [
+        {
+          "texte_reponse": "Vrai",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte_reponse": "Faux",
+          "est_correcte": false,
+          "ordre": 2
+        }
+      ]
+    }
+  ]
+}
+
+### 4. Soumettre des réponses à un quiz
+POST {{baseUrl}}/learning/quiz/1/submit
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    },
+    {
+      "question_id": 2,
+      "reponse_id": 1
+    }
+  ]
+}
+
+### 5. Récupérer les résultats d'un quiz
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{token}}

@@ -1,0 +1,39 @@
+### Test de débogage des quiz
+### Remplacez YOUR_JWT_TOKEN_HERE par un token valide
+
+@baseUrl = http://localhost:3000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Vérifier les quiz du module 4
+GET {{baseUrl}}/learning/modules/4/quiz
+Authorization: Bearer {{token}}
+
+### 2. Vérifier le quiz ID 5 avec ses questions
+GET {{baseUrl}}/learning/quiz/5
+Authorization: Bearer {{token}}
+
+### 3. Vérifier les questions du quiz 5
+GET {{baseUrl}}/learning/quiz/5
+Authorization: Bearer {{token}}
+
+### 4. Test de soumission de réponses
+POST {{baseUrl}}/learning/quiz/5/submit
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reponses": [
+    {
+      "question_id": 5,
+      "reponse_id": 1
+    },
+    {
+      "question_id": 6,
+      "reponse_id": 2
+    },
+    {
+      "question_id": 7,
+      "reponse_id": 1
+    }
+  ]
+}

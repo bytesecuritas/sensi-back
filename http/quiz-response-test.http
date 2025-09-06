@@ -1,0 +1,28 @@
+### Test pour vérifier que les réponses des quiz sont bien retournées
+### Remplacez YOUR_JWT_TOKEN_HERE par un token valide
+
+@baseUrl = http://localhost:3000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Tester la récupération du quiz ID 5 avec ses questions et réponses
+GET {{baseUrl}}/learning/quiz/5
+Authorization: Bearer {{token}}
+
+### 2. Tester la récupération des quiz du module 4
+GET {{baseUrl}}/learning/modules/4/quiz
+Authorization: Bearer {{token}}
+
+### 3. Vérifier la structure de la réponse JSON
+### La réponse devrait contenir :
+### - quiz_id
+### - titre
+### - description
+### - questions[] avec :
+###   - question_id
+###   - enonce
+###   - type_question
+###   - reponses[] avec :
+###     - reponse_id
+###     - texte
+###     - est_correcte
+###     - ordre

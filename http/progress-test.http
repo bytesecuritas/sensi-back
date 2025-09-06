@@ -1,0 +1,21 @@
+### Test de l'API de progression
+### Assurez-vous d'être connecté et d'avoir un token JWT valide
+
+### 1. Récupérer les progressions de l'utilisateur courant
+GET http://localhost:3000/api/learning/progress/user
+Authorization: Bearer {{token}}
+
+### 2. Récupérer la progression d'un parcours spécifique
+GET http://localhost:3000/api/learning/progress/parcours/1
+Authorization: Bearer {{token}}
+
+### 3. Récupérer la progression d'un module spécifique
+GET http://localhost:3000/api/learning/progress/user/1
+Authorization: Bearer {{token}}
+
+### 4. Test sans token (doit retourner 401)
+GET http://localhost:3000/api/learning/progress/user
+
+### 5. Test avec token invalide (doit retourner 401)
+GET http://localhost:3000/api/learning/progress/user
+Authorization: Bearer invalid_token

@@ -724,20 +724,48 @@ export class LearningService {
 
   // Obtenir tous les quiz d'un module
   async getModuleQuizzes(moduleId: number): Promise<Quiz[]> {
-    return await this.quizRepository.find({
+    const quizzes = await this.quizRepository.find({
       where: { module: { module_id: moduleId }, actif: true },
       relations: ['questions', 'questions.reponses'],
       order: { ordre: 'ASC' }
     });
+
+    // Filtrer les réponses actives pour chaque quiz
+    quizzes.forEach(quiz => {
+      if (quiz.questions) {
+        quiz.questions.forEach(question => {
+          if (question.reponses) {
+            question.reponses = question.reponses.filter(reponse => reponse.actif);
+            question.reponses.sort((a, b) => a.ordre - b.ordre);
+          }
+        });
+      }
+    });
+
+    return quizzes;
   }
 
   // Obtenir tous les quiz finaux d'un parcours
   async getParcoursFinalQuizzes(parcoursId: number): Promise<Quiz[]> {
-    return await this.quizRepository.find({
+    const quizzes = await this.quizRepository.find({
       where: { parcours: { parcours_id: parcoursId }, type_quiz: 'parcours_final' as any, actif: true },
       relations: ['questions', 'questions.reponses'],
       order: { ordre: 'ASC' }
     });
+
+    // Filtrer les réponses actives pour chaque quiz
+    quizzes.forEach(quiz => {
+      if (quiz.questions) {
+        quiz.questions.forEach(question => {
+          if (question.reponses) {
+            question.reponses = question.reponses.filter(reponse => reponse.actif);
+            question.reponses.sort((a, b) => a.ordre - b.ordre);
+          }
+        });
+      }
+    });
+
+    return quizzes;
   }
 
   // Obtenir un quiz spécifique avec ses questions
@@ -751,11 +779,13 @@ export class LearningService {
       throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
     }
 
-    // Trier les questions et réponses manuellement
+    // Trier les questions et réponses manuellement, et filtrer les réponses actives
     if (quiz.questions) {
       quiz.questions.sort((a, b) => a.ordre - b.ordre);
       quiz.questions.forEach(question => {
         if (question.reponses) {
+          // Filtrer les réponses actives
+          question.reponses = question.reponses.filter(reponse => reponse.actif);
           question.reponses.sort((a, b) => a.ordre - b.ordre);
         }
       });
