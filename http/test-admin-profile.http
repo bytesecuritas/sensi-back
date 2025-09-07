@@ -1,0 +1,59 @@
+### Test simple pour vérifier le profil admin
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+### 1. Login superadmin
+# @name login_superadmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "superadmin@cybersec.com",
+  "password": "SuperAdmin123!"
+}
+
+### 2. Créer une organisation
+POST {{baseUrl}}/organisations
+Content-Type: {{contentType}}
+Authorization: Bearer {{login_superadmin.response.body.access_token}}
+
+{
+  "nom": "Test Organisation",
+  "type": "entreprise_privee",
+  "code_pays": "FR"
+}
+
+### 3. Créer un admin
+# @name create_admin
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{login_superadmin.response.body.access_token}}
+
+{
+  "email": "admin@test.com",
+  "password": "AdminTest123!",
+  "nom": "Test",
+  "prenom": "Admin",
+  "age": 30,
+  "role": "admin",
+  "code_langue": "FR",
+  "organisation_id": "1"
+}
+
+### 4. Login admin
+# @name login_admin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@test.com",
+  "password": "AdminTest123!"
+}
+
+### 5. Tester le profil admin
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{login_admin.response.body.access_token}}
+
+### 6. Tester le dashboard admin
+GET {{baseUrl}}/auth/dashboard
+Authorization: Bearer {{login_admin.response.body.access_token}}

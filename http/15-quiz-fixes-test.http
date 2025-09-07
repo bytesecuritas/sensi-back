@@ -67,7 +67,28 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 2,
       "points": 10.0,
-      "termes": ["bien", "corrections", "quiz", "ok"]
+      "reponses": [
+        {
+          "texte": "bien",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "corrections",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "quiz",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "ok",
+          "est_correcte": true,
+          "ordre": 4
+        }
+      ]
     }
   ]
 }

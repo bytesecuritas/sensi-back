@@ -9,6 +9,8 @@ import { LearningPathModule } from '../learning/entities/learning-module.entity'
 import { MediaContent } from '../learning/entities/media-content.entity';
 import { OrganisationLearningPath } from '../learning/entities/organisation-learning-path.entity';
 import { Certification } from '../learning/entities/certification.entity';
+import { UserLevel } from '../learning/entities/user-level.entity';
+import { UserBadge } from '../learning/entities/user-badge.entity';
 import { AnalyticsQueryDto, TimeRange } from './dto/analytics.dto';
 
 @Injectable()
@@ -30,6 +32,10 @@ export class AnalyticsService {
     private orgLearningPathRepository: Repository<OrganisationLearningPath>,
     @InjectRepository(Certification)
     private certificationRepository: Repository<Certification>,
+    @InjectRepository(UserLevel)
+    private userLevelRepository: Repository<UserLevel>,
+    @InjectRepository(UserBadge)
+    private userBadgeRepository: Repository<UserBadge>,
   ) {}
 
   private getDateRange(timeRange: TimeRange = TimeRange.MONTH, startDate?: string, endDate?: string) {
@@ -98,11 +104,16 @@ export class AnalyticsService {
     const topLearningPaths = await this.getTopLearningPaths(query.limit);
 
     // Gamification global metrics
-    const userLevelRepo = this.userRepository.manager.getRepository('UserLevel');
-    const userBadgeRepo = this.userRepository.manager.getRepository('UserBadge');
-    const allLevels = await userLevelRepo.find();
-    const allBadges = await userBadgeRepo.count();
-    const totalPoints = allLevels.reduce((sum: number, l: any) => sum + (l.points_totaux || 0), 0);
+    let totalPoints = 0;
+    let allBadges = 0;
+    
+    try {
+      const allLevels = await this.userLevelRepository.find();
+      allBadges = await this.userBadgeRepository.count();
+      totalPoints = allLevels.reduce((sum: number, l: UserLevel) => sum + (l.points_totaux || 0), 0);
+    } catch (error) {
+      console.warn('Gamification data not available:', error.message);
+    }
 
     return {
       overview: {

@@ -4,7 +4,7 @@
 ### Variables globales
 @baseUrl = http://localhost:3000/api
 @contentType = application/json
-@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTY0MDM1MjMsImV4cCI6MTc1NjQwNzEyM30.3TpyosPM8MvYEAMj6cbVbOZtLkjyr8diOR-bqL5Mea4
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NzEyODAyOCwiZXhwIjoxNzU3MTMxNjI4fQ.Wu0V-UtI96b-1p4UuZsMFFfH-hZl5Ev0JIp6T_6geG0
 @superadmin_refresh = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW4yQGN5YmVyc2VjLmNvbSIsInN1YiI6MSwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTYzMzExMjMsImV4cCI6MTc1NjkzNTkyM30.tVJkcSGvPVu69Po0iyHoEwUVwQUiZpQK3CEatvB7l1M
 
 ### 0. Login du superadmin
@@ -12,7 +12,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "superadmin2@cybersec.com",
+  "email": "superadmin@cybersec.com",
   "password": "SuperAdmin123!"
 }
 
@@ -91,7 +91,7 @@ Content-Type: {{contentType}}
 }
 
 ###
-@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzMxNjQ4LCJleHAiOjE3NTYzMzUyNDh9.b_q-V0Jj2WIEpOPlLsHz2zdV0dLPK6zSwD6Yd_7xs_o
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU3MTI4OTA2LCJleHAiOjE3NTcxMzI1MDZ9.abHggWdHRd9NhMN_22QueyG5EG8AhTKcOv3bvK98Uy4
 @admin_refresh = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU2MzMxNjQ4LCJleHAiOjE3NTY5MzY0NDh9.MGPUPqqgWeVRa7T3shtf_bE5nImfQuehdYRQyZ-aaaQ
 ### 4. Créer un utilisateur normal pour TechCorp Solutions
 POST {{baseUrl}}/auth/register
@@ -150,7 +150,7 @@ Content-Type: {{contentType}}
 }
 
 ###
-
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlY2hjb3JwLmNvbSIsInN1YiI6Miwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU3MTI5NTMxLCJleHAiOjE3NTcxMzMxMzF9.5bSLJWWROtFDwFV4liQ4DnZa1bo-0AT-6BQGWS0ipf0
 ### 8. Login d'un utilisateur normal
 POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
@@ -187,7 +187,11 @@ Content-Type: {{contentType}}
 
 ### 11. Obtenir le profil utilisateur
 GET {{baseUrl}}/auth/profile
-Authorization: Bearer {{user_token}}
+Authorization: Bearer {{admin_token}}
+
+### 11b. Obtenir le dashboard de l'admin
+GET {{baseUrl}}/auth/dashboard
+Authorization: Bearer {{admin_token}}
 
 ###
 

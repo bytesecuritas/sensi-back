@@ -212,7 +212,7 @@ export class AuthController {
 
 
   @Get('profile')
-  @ApiOperation({ summary: 'Obtenir mes informations selon mon rôle' })
+  @ApiOperation({ summary: 'Obtenir mes informations personnelles' })
   @ApiResponse({ status: 200, description: 'Informations récupérées avec succès' })
   @ApiResponse({ status: 401, description: 'Non autorisé' })
   @ApiResponse({ status: 403, description: 'Accès refusé' })
@@ -230,6 +230,28 @@ export class AuthController {
         throw error;
       }
       throw new HttpException('Erreur lors de la récupération des informations', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Obtenir mon tableau de bord' })
+  @ApiResponse({ status: 200, description: 'Tableau de bord récupéré avec succès' })
+  @ApiResponse({ status: 401, description: 'Non autorisé' })
+  @ApiResponse({ status: 403, description: 'Accès refusé' })
+  @ApiBearerAuth('bearer')
+  @UseGuards(AuthGuard('jwt'))
+  async getDashboard(@Request() req) {
+    try {
+      const userId = req.user?.users_id;
+      if (!userId) {
+        throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
+      }
+      return await this.authService.getDashboard(userId);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException('Erreur lors de la récupération du tableau de bord', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

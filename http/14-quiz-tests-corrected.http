@@ -111,7 +111,33 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 4,
       "points": 10.0,
-      "termes": ["ne pas partager", "mfa", "2fa", "vpn", "mots de passe forts"],
+      "reponses": [
+        {
+          "texte": "ne pas partager",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "mfa",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "2fa",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "vpn",
+          "est_correcte": true,
+          "ordre": 4
+        },
+        {
+          "texte": "mots de passe forts",
+          "est_correcte": true,
+          "ordre": 5
+        }
+      ],
       "explication": "La protection des données personnelles est essentielle"
     }
   ]
@@ -207,7 +233,23 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 1,
       "points": 20.0,
-      "termes": ["gestionnaire", "unique", "ne pas reutiliser"],
+      "reponses": [
+        {
+          "texte": "gestionnaire",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "unique",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "ne pas reutiliser",
+          "est_correcte": true,
+          "ordre": 3
+        }
+      ],
       "explication": "La réutilisation de mots de passe multiplie les risques"
     },
     {
@@ -215,7 +257,28 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 2,
       "points": 20.0,
-      "termes": ["ne pas cliquer", "signaler", "vérifier l'url", "contacter it"],
+      "reponses": [
+        {
+          "texte": "ne pas cliquer",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "signaler",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "vérifier l'url",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "contacter it",
+          "est_correcte": true,
+          "ordre": 4
+        }
+      ],
       "explication": "Il faut toujours être prudent avec les emails suspects"
     },
     {
@@ -223,7 +286,28 @@ Authorization: Bearer {{superadmin_token}}
       "type_question": "texte_libre",
       "ordre": 3,
       "points": 20.0,
-      "termes": ["antivirus", "pare-feu", "mises à jour", "mots de passe forts"],
+      "reponses": [
+        {
+          "texte": "antivirus",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "pare-feu",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "mises à jour",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "mots de passe forts",
+          "est_correcte": true,
+          "ordre": 4
+        }
+      ],
       "explication": "Plusieurs mesures sont nécessaires pour une protection complète"
     }
   ]

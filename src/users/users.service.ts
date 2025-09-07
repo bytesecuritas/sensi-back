@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './users.entity';
 import { Organisation } from '../organisations/organisations.entity';
+import { Progress } from '../learning/entities/progress.entity';
+import { Certification } from '../learning/entities/certification.entity';
+import { UserLevel } from '../learning/entities/user-level.entity';
+import { UserBadge } from '../learning/entities/user-badge.entity';
 import { CreateUserDto } from './dto';
 
 @Injectable()
@@ -19,7 +23,10 @@ export class UsersService {
   }
 
   async findById(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { users_id: id } });
+    const user = await this.usersRepository.findOne({ 
+      where: { users_id: id },
+      relations: ['organisation']
+    });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -142,12 +149,17 @@ export class UsersService {
     }
 
     // Récupérer les progressions de l'utilisateur
-    const progressions = await this.usersRepository.manager
-      .getRepository('Progress')
-      .find({
-        where: { utilisateur: { users_id: userId } },
-        relations: ['module', 'module.parcours'],
-      });
+    let progressions: Progress[] = [];
+    try {
+      progressions = await this.usersRepository.manager
+        .getRepository(Progress)
+        .find({
+          where: { utilisateur: { users_id: userId } },
+          relations: ['parcours'],
+        });
+    } catch (error) {
+      console.warn('Progress data not available:', error.message);
+    }
 
     // Calculer les statistiques
     const totalModules = progressions.length;
@@ -158,21 +170,26 @@ export class UsersService {
       : 0;
 
     // Récupérer les certificats
-    const certificats = await this.usersRepository.manager
-      .getRepository('Certification')
-      .find({
-        where: { utilisateur: { users_id: userId } },
-        relations: ['parcours'],
-      });
+    let certificats: Certification[] = [];
+    try {
+      certificats = await this.usersRepository.manager
+        .getRepository(Certification)
+        .find({
+          where: { utilisateur: { users_id: userId } },
+          relations: ['parcours'],
+        });
+    } catch (error) {
+      console.warn('Certification data not available:', error.message);
+    }
 
     // Statistiques par parcours
     const statsParcours = {};
     for (const prog of progressions) {
-      if (prog.module?.parcours) {
-        const parcoursId = prog.module.parcours.parcours_id;
+      if (prog.parcours) {
+        const parcoursId = prog.parcours.parcours_id;
         if (!statsParcours[parcoursId]) {
           statsParcours[parcoursId] = {
-            titre: prog.module.parcours.titre,
+            titre: prog.parcours.titre,
             modules_completes: 0,
             temps_total: 0,
             score_moyen: 0,
@@ -195,12 +212,25 @@ export class UsersService {
       }
     });
 
+    // recuperer les infos de son organisation
+    const organisation = user.organisation ? 
+      await this.organisationsRepository.findOne({ where: { organisation_id: user.organisation.organisation_id } }) : 
+      null;
+
     // Récupérer les données de gamification de l'utilisateur si disponibles
     // On interroge les relations UserLevel et UserBadge via le manager pour éviter un import croisé direct du service
-    const userLevelRepo = this.usersRepository.manager.getRepository('UserLevel');
-    const userBadgeRepo = this.usersRepository.manager.getRepository('UserBadge');
-    const userLevel = await userLevelRepo.findOne({ where: { utilisateur: { users_id: userId } } } as any);
-    const userBadges = await userBadgeRepo.find({ where: { utilisateur: { users_id: userId } }, relations: ['badge'] } as any);
+    let userLevel: UserLevel | null = null;
+    let userBadges: UserBadge[] = [];
+    
+    try {
+      const userLevelRepo = this.usersRepository.manager.getRepository(UserLevel);
+      const userBadgeRepo = this.usersRepository.manager.getRepository(UserBadge);
+      userLevel = await userLevelRepo.findOne({ where: { utilisateur: { users_id: userId } } });
+      userBadges = await userBadgeRepo.find({ where: { utilisateur: { users_id: userId } }, relations: ['badge'] });
+    } catch (error) {
+      // Si les tables de gamification n'existent pas encore, on continue sans ces données
+      console.warn('Gamification data not available:', error.message);
+    }
 
     return {
       user: {
@@ -211,7 +241,19 @@ export class UsersService {
         role: user.role,
         age: user.age,
         code_langue: user.code_langue,
-        organisation: user.organisation,
+      },
+      organisation :{
+        organisation_id: organisation?.organisation_id ?? null,
+        organisation_nom: organisation?.nom ?? null,
+        organisation_type: organisation?.type ?? null,
+        organisation_code_pays: organisation?.code_pays ?? null,
+        organisation_date_creation: organisation?.date_creation ?? null,
+        organisation_email: organisation?.email ?? null,
+        organisation_telephone: organisation?.telephone ?? null,
+        organisation_site_web: organisation?.site_web ?? null,
+        organisation_code_postal: organisation?.code_postal ?? null,
+        organisation_ville: organisation?.ville ?? null,
+        organisation_pays: organisation?.pays ?? null,
       },
       statistiques: {
         total_modules: totalModules,
@@ -222,15 +264,15 @@ export class UsersService {
         nombre_certificats: certificats.length,
       },
       gamification: userLevel ? {
-        niveau_actuel: (userLevel as any).niveau_actuel,
-        points_totaux: (userLevel as any).points_totaux,
-        points_niveau_actuel: (userLevel as any).points_niveau_actuel,
-        points_pour_niveau_suivant: (userLevel as any).points_pour_niveau_suivant,
-        modules_completes: (userLevel as any).modules_completes,
-        quiz_reussis: (userLevel as any).quiz_reussis,
-        simulations_reussies: (userLevel as any).simulations_reussies,
-        jours_consecutifs: (userLevel as any).jours_consecutifs,
-        badges: (userBadges as any[]).map(ub => ({
+        niveau_actuel: userLevel.niveau_actuel,
+        points_totaux: userLevel.points_totaux,
+        points_niveau_actuel: userLevel.points_niveau_actuel,
+        points_pour_niveau_suivant: userLevel.points_pour_niveau_suivant,
+        modules_completes: userLevel.modules_completes,
+        quiz_reussis: userLevel.quiz_reussis,
+        simulations_reussies: userLevel.simulations_reussies,
+        jours_consecutifs: userLevel.jours_consecutifs,
+        badges: userBadges.map(ub => ({
           badge_id: ub.badge.badge_id,
           nom: ub.badge.nom,
           type: ub.badge.type,
@@ -241,9 +283,9 @@ export class UsersService {
       parcours: statsParcours,
       certificats: certificats.map(cert => ({
         certification_id: cert.certification_id,
-        titre: cert.titre,
-        type: cert.type,
-        date_obtention: cert.date_obtention,
+        titre: cert.type_certification,
+        type: cert.type_certification,
+        date_obtention: cert.date_emission,
         parcours: cert.parcours?.titre
       }))
     };

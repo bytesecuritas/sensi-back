@@ -185,8 +185,15 @@ export class AuthService {
     return hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
   }
 
-
   async getProfile(userId: number) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+    return await this.usersService.getUserInfos(userId);
+  }
+
+  async getDashboard(userId: number) {
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new NotFoundException('Utilisateur non trouvé');

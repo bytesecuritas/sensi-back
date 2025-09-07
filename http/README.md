@@ -60,12 +60,13 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
 - Comparaisons de périodes
 - Monitoring de la santé système
 
-### 10. `10-my-infos-tests.http` - Tests de la Route Profile
+### 10. `10-my-infos-tests.http` - Tests des Routes Profile et Dashboard
 - Tests pour utilisateurs normaux (rôle: user)
 - Tests pour administrateurs (rôle: admin)
 - Tests pour superadmins (rôle: superadmin)
 - Tests de sécurité et gestion d'erreurs
 - Workflow complet de test avec authentification
+- **Nouveau:** Tests du endpoint `/auth/dashboard` avec logique de routage basée sur les rôles
 
 ### 11. `11-media-upload-examples.http` - Exemples d'Upload de Médias
 - Exemples d'upload de différents types de fichiers
@@ -188,7 +189,7 @@ Ce dossier contient une suite complète de tests HTTP pour l'application de sens
     - Valider le système d'analytics du superadmin
 
 10. **Tester `10-my-infos-tests.http`**
-    - Valider la route /auth/profile avec routage basé sur les rôles
+    - Valider les routes /auth/profile et /auth/dashboard avec logique de routage basée sur les rôles
 
 11. **Tester `11-media-upload-examples.http`**
     - Valider les fonctionnalités d'upload de médias

@@ -8,6 +8,8 @@ import { Progress, ProgressStatus } from '../learning/entities/progress.entity';
 import { LearningPath } from '../learning/entities/learning-path.entity';
 import { OrganisationLearningPath } from '../learning/entities/organisation-learning-path.entity';
 import { Certification } from '../learning/entities/certification.entity';
+import { UserLevel } from '../learning/entities/user-level.entity';
+import { UserBadge } from '../learning/entities/user-badge.entity';
 
 @Injectable()
 export class OrganisationsService {
@@ -137,7 +139,7 @@ export class OrganisationsService {
 
   async getOrganisationStats(organisationId: number): Promise<any> {
     const organisation = await this.findOne(organisationId);
-    
+
     // Statistiques de base des utilisateurs
     const [totalUsers, adminCount, userCount] = await Promise.all([
       this.usersRepository.count({ where: { organisation: { organisation_id: organisationId } } }),
@@ -221,13 +223,13 @@ export class OrganisationsService {
     const engagementRate = totalUsers > 0 ? (activeUsers / totalUsers) * 100 : 0;
 
     // Gamification: points totaux, niveaux et badges par organisation
-    const userLevelRepo = this.usersRepository.manager.getRepository('UserLevel');
-    const userBadgeRepo = this.usersRepository.manager.getRepository('UserBadge');
+    const userLevelRepo = this.usersRepository.manager.getRepository(UserLevel);
+    const userBadgeRepo = this.usersRepository.manager.getRepository(UserBadge);
     const orgUsers = await this.usersRepository.find({ where: { organisation: { organisation_id: organisationId } } });
     const userIds = orgUsers.map(u => u.users_id);
-    const levels = userIds.length ? await userLevelRepo.find({ where: { utilisateur: { users_id: In(userIds) } } } as any) : [];
-    const badges = userIds.length ? await userBadgeRepo.find({ where: { utilisateur: { users_id: In(userIds) } }, relations: ['badge'] } as any) : [];
-    const totalPoints = levels.reduce((sum: number, l: any) => sum + (l.points_totaux || 0), 0);
+    const levels = userIds.length ? await userLevelRepo.find({ where: { utilisateur: { users_id: In(userIds) } } }) : [];
+    const badges = userIds.length ? await userBadgeRepo.find({ where: { utilisateur: { users_id: In(userIds) } }, relations: ['badge'] }) : [];
+    const totalPoints = levels.reduce((sum: number, l: UserLevel) => sum + (l.points_totaux || 0), 0);
     const avgPoints = totalUsers > 0 ? totalPoints / totalUsers : 0;
     const totalBadges = badges.length;
 
@@ -293,6 +295,12 @@ export class OrganisationsService {
       type: organisation.type,
       code_pays: organisation.code_pays,
       date_creation: organisation.date_creation,
+      email: organisation.email,
+      telephone: organisation.telephone,
+      site_web: organisation.site_web,
+      code_postal: organisation.code_postal,
+      ville: organisation.ville,
+      pays: organisation.pays,
       stats: {
         // Statistiques de base
         total_users: totalUsers,

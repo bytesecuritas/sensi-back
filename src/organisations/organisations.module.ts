@@ -8,6 +8,8 @@ import { Progress } from '../learning/entities/progress.entity';
 import { LearningPath } from '../learning/entities/learning-path.entity';
 import { OrganisationLearningPath } from '../learning/entities/organisation-learning-path.entity';
 import { Certification } from '../learning/entities/certification.entity';
+import { UserLevel } from '../learning/entities/user-level.entity';
+import { UserBadge } from '../learning/entities/user-badge.entity';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import { Certification } from '../learning/entities/certification.entity';
       Progress, 
       LearningPath, 
       OrganisationLearningPath, 
-      Certification
+      Certification,
+      UserLevel,
+      UserBadge
     ])
   ],
   controllers: [OrganisationsController],

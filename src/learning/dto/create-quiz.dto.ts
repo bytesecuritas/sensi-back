@@ -38,18 +38,10 @@ export class CreateQuestionDto {
   @IsString()
   explication?: string;
 
-  // Liste de termes acceptés pour type texte_libre
-  @ValidateIf(o => o.type_question === 'texte_libre')
-  @IsOptional()
-  @IsArray()
-  @Type(() => String)
-  termes?: string[];
-
-  @ValidateIf(o => o.type_question !== 'texte_libre')
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateReponseDto)
-  reponses?: CreateReponseDto[];
+  reponses: CreateReponseDto[];
 }
 
 export class CreateQuizDto {

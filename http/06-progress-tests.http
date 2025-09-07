@@ -3,8 +3,11 @@
 ### NOUVELLE LOGIQUE : Progression liée au parcours, pas aux modules
 
 ### Variables globales
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3000/api
 @contentType = application/json
+@user1_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtcGxveWVlMUBjeWJlcnNlYy1lbnRlcnByaXNlLmNvbSIsInN1YiI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTcxMzEwNjksImV4cCI6MTc1NzEzNDY2OX0.6cs5mdZq9olTRxhLldY2MbZbFeOW4yjvYf0XoCSCmEA
+@user2_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtcGxveWVlMkBjeWJlcnNlYy1lbnRlcnByaXNlLmNvbSIsInN1YiI6Nywicm9sZSI6InVzZXIiLCJpYXQiOjE3NTcxMzExMzksImV4cCI6MTc1NzEzNDczOX0.6W9yP5C6-F6F1f-kNvIxX3t8Km30BkG6y-L5dZ_b5s4
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGN5YmVyc2VjLWVudGVycHJpc2UuY29tIiwic3ViIjo1LCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTcxMzIzMzEsImV4cCI6MTc1NzEzNTkzMX0.W2N10KaiC15KGXg9p-ZlV7wzthpWir7ay9NUkRYz8Jc
 
 ### 1. NOTE: La progression est gérée automatiquement par les quiz de module.
 ###    Il n'est plus possible de créer directement une progression via HTTP.

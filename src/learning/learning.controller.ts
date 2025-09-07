@@ -38,11 +38,13 @@ import { OrganisationLearningPath } from './entities/organisation-learning-path.
 import { Progress } from './entities/progress.entity';
 import { LearningService } from './learning.service';
 import { UpdateOrganisationLearningPathDto } from './dto/update-organisation-learning-path.dto';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @ApiTags('Learning')
 @ApiBearerAuth('bearer')
 @Controller('learning')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class LearningController {
   constructor(private readonly learningService: LearningService) {}
 
@@ -51,6 +53,7 @@ export class LearningController {
   @Post('parcours')
   @ApiOperation({ summary: 'Créer un parcours', description: 'Crée un nouveau parcours d’apprentissage.' })
   @ApiResponse({ status: 201, description: 'Parcours créé', type: LearningPath })
+  @Roles('superadmin')
   async createLearningPath(@Body() learningPathData: Partial<LearningPath>): Promise<LearningPath> {
     return await this.learningService.createLearningPath(learningPathData);
   }
@@ -84,6 +87,7 @@ export class LearningController {
   @Delete('parcours/:id')
   @ApiOperation({ summary: 'Supprimer un parcours (cascade modules et médias)' })
   @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
   async deleteLearningPath(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningPath(+id);
     return { message: 'Parcours supprimé avec succès (modules et médias associés également supprimés)' };
@@ -94,6 +98,7 @@ export class LearningController {
   @Post('modules')
   @ApiOperation({ summary: 'Créer un module' })
   @ApiResponse({ status: 201, description: 'Module créé', type: LearningPathModule })
+  @Roles('superadmin')
   async createLearningModule(@Body() moduleData: CreateLearningModuleDto): Promise<LearningPathModule> {
     return await this.learningService.createLearningModule(moduleData);
   }
@@ -125,6 +130,7 @@ export class LearningController {
   @Put('modules/:id')
   @ApiOperation({ summary: 'Mettre à jour un module' })
   @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
   async updateLearningModule(
     @Param('id') id: string,
     @Body() moduleData: Partial<LearningPathModule>
@@ -137,6 +143,7 @@ export class LearningController {
   @Delete('modules/:id')
   @ApiOperation({ summary: 'Supprimer un module' })
   @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
   async deleteLearningModule(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningModule(+id, true);
     return { message: 'Module supprimé avec succès (médias associés également supprimés)' };
@@ -150,6 +157,7 @@ export class LearningController {
   @ApiConsumes('multipart/form-data')
   @ApiQuery({ name: 'module_id', type: Number, required: true })
   @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @Roles('superadmin')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
@@ -263,6 +271,7 @@ export class LearningController {
   @ApiParam({ name: 'id', type: String })
   @ApiQuery({ name: 'module_id', type: Number, required: true })
   @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @Roles('superadmin')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
@@ -357,6 +366,7 @@ export class LearningController {
   @Delete('media/:id')
   @ApiOperation({ summary: 'Supprimer un média' })
   @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
   async deleteMediaContent(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteMediaContent(+id);
     return { message: 'Media supprimé avec succès (fichier associé également supprimé)' };
@@ -468,6 +478,7 @@ export class LearningController {
   @ApiOperation({ summary: 'Associer un parcours à une organisation' })
   @ApiParam({ name: 'organisationId', type: String })
   @ApiParam({ name: 'parcoursId', type: String })
+  @Roles('superadmin')
   async addLearningPathToOrganisation(
     @Param('organisationId') organisationId: string,
     @Param('parcoursId') parcoursId: string,
@@ -479,6 +490,7 @@ export class LearningController {
   @ApiOperation({ summary: 'Retirer un parcours d’une organisation' })
   @ApiParam({ name: 'organisationId', type: String })
   @ApiParam({ name: 'parcoursId', type: String })
+  @Roles('superadmin')
   async removeLearningPathFromOrganisation(
     @Param('organisationId') organisationId: string,
     @Param('parcoursId') parcoursId: string,
@@ -492,6 +504,7 @@ export class LearningController {
   @ApiParam({ name: 'organisationId', type: String })
   @ApiParam({ name: 'parcoursId', type: String })
   @ApiResponse({ status: 200, description: 'Parcours mis à jour', type: OrganisationLearningPath })
+  @Roles('superadmin')
   async updateOrganisationLearningPath(
     @Param('organisationId') organisationId: string,
     @Param('parcoursId') parcoursId: string,
@@ -530,6 +543,7 @@ export class LearningController {
   @ApiOperation({ summary: 'Créer un quiz pour un module' })
   @ApiParam({ name: 'moduleId', type: String })
   @ApiResponse({ status: 201, description: 'Quiz créé' })
+  @Roles('superadmin')
   async createQuiz(
     @Param('moduleId') moduleId: string,
     @Body() quizData: CreateQuizDto
@@ -583,6 +597,7 @@ export class LearningController {
   @Delete('quiz/:quizId')
   @ApiOperation({ summary: 'Supprimer un quiz' })
   @ApiParam({ name: 'quizId', type: String })
+  @Roles('superadmin')
   async deleteQuiz(@Param('quizId') quizId: string): Promise<{ message: string }> {
     await this.learningService.deleteQuiz(+quizId);
     return { message: 'Quiz supprimé avec succès' };
@@ -594,6 +609,7 @@ export class LearningController {
   @ApiOperation({ summary: 'Créer un quiz final pour un parcours' })
   @ApiParam({ name: 'parcoursId', type: String })
   @ApiResponse({ status: 201, description: 'Quiz final créé' })
+  @Roles('superadmin')
   async createParcoursFinalQuiz(
     @Param('parcoursId') parcoursId: string,
     @Body() quizData: CreateQuizDto

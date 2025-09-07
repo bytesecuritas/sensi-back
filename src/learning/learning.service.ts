@@ -558,7 +558,6 @@ export class LearningService {
           points: pointsParQuestion, // Points calculés automatiquement
           quiz: savedQuiz,
           type_question: questionDataWithoutReponses.type_question as any,
-          termes_acceptes: (questionData as any).termes || null,
         });
 
         const savedQuestion = await this.questionRepository.save(question);
@@ -615,7 +614,6 @@ export class LearningService {
           points: pointsParQuestion, // Points calculés automatiquement
           quiz: savedQuiz,
           type_question: questionDataWithoutReponses.type_question as any,
-          termes_acceptes: (questionData as any).termes || null,
         });
 
         const savedQuestion = await this.questionRepository.save(question);
@@ -659,7 +657,7 @@ export class LearningService {
   async getQuizById(quizId: number): Promise<Quiz> {
     const quiz = await this.quizRepository.findOne({
       where: { quiz_id: quizId, actif: true },
-      relations: ['questions', 'questions.reponses', 'module']
+      relations: ['questions', 'questions.reponses', 'module', 'module.parcours', 'parcours']
     });
 
     if (!quiz) {
@@ -762,12 +760,15 @@ export class LearningService {
           break;
 
         case 'texte_libre':
-          // Validation par correspondance de termes acceptés (si définis)
+          // Validation par correspondance avec les réponses correctes
           if (reponse.reponse_texte && reponse.reponse_texte.trim().length > 0) {
             const answer = reponse.reponse_texte.toLowerCase();
-            const accepted: string[] = (question as any).termes_acceptes || [];
-            if (accepted.length > 0) {
-              const matched = accepted.some(t => answer.includes(String(t).toLowerCase()));
+            const correctAnswers = question.reponses.filter(r => r.est_correcte);
+            if (correctAnswers.length > 0) {
+              // Vérifier si la réponse contient au moins un terme correct
+              const matched = correctAnswers.some(r => 
+                answer.includes(r.texte.toLowerCase())
+              );
               isCorrect = matched;
             } else {
               // fallback: toute réponse non vide est acceptée
@@ -817,7 +818,7 @@ export class LearningService {
     }
 
     // Mettre à jour la progression selon le type de quiz
-    if (quiz.type_quiz === 'module' && quiz.module) {
+    if (quiz.type_quiz === 'module' && quiz.module && quiz.module.parcours) {
       await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, scoreFinal, isReussi);
     } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
       await this.updateCertification(userId, quiz.parcours.parcours_id, scoreFinal, isReussi);
@@ -882,7 +883,7 @@ export class LearningService {
     // Obtenir le parcours avec tous ses modules
     const parcours = await this.learningPathRepository.findOne({
       where: { parcours_id: parcoursId },
-      relations: ['modules', 'modules.quiz']
+      relations: ['modules', 'modules.quiz', 'modules.quiz.questions']
     });
 
     if (!parcours) {
@@ -920,7 +921,7 @@ export class LearningService {
 
           // Vérifier si le quiz est réussi (100% pour les quiz de module)
           const scoreQuiz = reponsesQuiz.reduce((sum, r) => sum + r.points_obtenus, 0);
-          const pointsTotauxQuiz = quiz.questions.reduce((sum, q) => sum + q.points, 0);
+          const pointsTotauxQuiz = quiz.questions ? quiz.questions.reduce((sum, q) => sum + q.points, 0) : 0;
           const pourcentageQuiz = pointsTotauxQuiz > 0 ? (scoreQuiz / pointsTotauxQuiz) * 100 : 0;
           
           if (pourcentageQuiz < 100) {

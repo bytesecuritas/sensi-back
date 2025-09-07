@@ -62,7 +62,28 @@ Authorization: Bearer {{superadmin_token}}
       "enonce": "Expliquez pourquoi il est important de ne pas réutiliser les mêmes mots de passe.",
       "type_question": "texte_libre",
       "ordre": 1,
-      "termes": ["ne pas reutiliser", "mots de passe", "gestionnaire", "unique"],
+      "reponses": [
+        {
+          "texte": "ne pas reutiliser",
+          "est_correcte": true,
+          "ordre": 1
+        },
+        {
+          "texte": "mots de passe",
+          "est_correcte": true,
+          "ordre": 2
+        },
+        {
+          "texte": "gestionnaire",
+          "est_correcte": true,
+          "ordre": 3
+        },
+        {
+          "texte": "unique",
+          "est_correcte": true,
+          "ordre": 4
+        }
+      ],
       "explication": "La réutilisation de mots de passe multiplie les risques"
     }
   ]

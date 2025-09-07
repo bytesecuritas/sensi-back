@@ -1,8 +1,9 @@
 ### ========================================
-### TESTS POUR PROFILE
+### TESTS POUR PROFILE ET DASHBOARD
 ### ========================================
-### Tests pour la route /auth/profile qui retourne des informations selon le rôle
-### Cette route utilise une logique de routage basée sur le rôle de l'utilisateur
+### Tests pour les routes /auth/profile et /auth/dashboard
+### - /auth/profile : Retourne toujours getUserInfos() pour tous les rôles
+### - /auth/dashboard : Logique de routage basée sur le rôle de l'utilisateur
 
 ### Variables globales pour les tests
 @base_url = http://localhost:3000
@@ -15,8 +16,14 @@
 ### ========================================
 
 ### Test profile pour un utilisateur normal
-### Doit retourner les informations détaillées de l'utilisateur selon son rôle
+### Retourne toujours getUserInfos() - informations détaillées de l'utilisateur
 GET {{base_url}}/auth/profile
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+### Test dashboard pour un utilisateur normal
+### Retourne getUserInfos() - même contenu que profile
+GET {{base_url}}/auth/dashboard
 Authorization: Bearer {{user_token}}
 Content-Type: application/json
 
@@ -28,25 +35,39 @@ Content-Type: application/json
 ### ========================================
 
 ### Test profile pour un admin
-### Doit retourner les statistiques de son organisation selon son rôle
+### Retourne toujours getUserInfos() - informations détaillées de l'admin
 GET {{base_url}}/auth/profile
 Authorization: Bearer {{admin_token}}
 Content-Type: application/json
 
+### Test dashboard pour un admin
+### Retourne getOrganisationStats() - statistiques de son organisation
+GET {{base_url}}/auth/dashboard
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
 ### Attentes clés (manuel):
-# - Réponse contient `stats.gamification` (total_points, points_moyens_par_utilisateur, total_badges_attribues)
+# - Profile: Réponse contient `user` et `gamification` avec `points_totaux`, `badges`
+# - Dashboard: Réponse contient `stats.gamification` (total_points, points_moyens_par_utilisateur, total_badges_attribues)
 ### ========================================
 ### 3. TESTS POUR SUPERADMIN (ROLE: SUPERADMIN)
 ### ========================================
 
 ### Test profile pour un superadmin
-### Doit retourner le dashboard global selon son rôle
+### Retourne toujours getUserInfos() - informations détaillées du superadmin
 GET {{base_url}}/auth/profile
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
+### Test dashboard pour un superadmin
+### Retourne getGlobalDashboard() - tableau de bord global du système
+GET {{base_url}}/auth/dashboard
+Authorization: Bearer {{superadmin_token}}
+Content-Type: application/json
+
 ### Attentes clés (manuel):
-# - Réponse contient `overview.gamification` (totalPoints, avgPointsPerUser, totalBadgesAwarded)
+# - Profile: Réponse contient `user` et `gamification` avec `points_totaux`, `badges`
+# - Dashboard: Réponse contient `overview.gamification` (totalPoints, avgPointsPerUser, totalBadgesAwarded)
 ### ========================================
 ### 4. TESTS DE SÉCURITÉ ET ERREURS
 ### ========================================
@@ -55,8 +76,15 @@ Content-Type: application/json
 GET {{base_url}}/auth/profile
 Content-Type: application/json
 
+GET {{base_url}}/auth/dashboard
+Content-Type: application/json
+
 ### Test avec token invalide (doit échouer)
 GET {{base_url}}/auth/profile
+Authorization: Bearer invalid_token_here
+Content-Type: application/json
+
+GET {{base_url}}/auth/dashboard
 Authorization: Bearer invalid_token_here
 Content-Type: application/json
 
@@ -74,12 +102,16 @@ Content-Type: application/json
   "password": "SuperAdmin123!"
 }
 
-### Étape 2: Test profile pour superadmin
+### Étape 2: Test profile et dashboard pour superadmin
 GET {{base_url}}/auth/profile
 Authorization: Bearer {{login_superadmin.response.body.access_token}}
 Content-Type: application/json
 
-### Étape 3: Login admin et test profile
+GET {{base_url}}/auth/dashboard
+Authorization: Bearer {{login_superadmin.response.body.access_token}}
+Content-Type: application/json
+
+### Étape 3: Login admin et test profile/dashboard
 # @name login_admin
 POST {{base_url}}/auth/login
 Content-Type: application/json
@@ -89,12 +121,16 @@ Content-Type: application/json
   "password": "AdminTech123!"
 }
 
-### Étape 4: Test profile pour admin
+### Étape 4: Test profile et dashboard pour admin
 GET {{base_url}}/auth/profile
 Authorization: Bearer {{login_admin.response.body.access_token}}
 Content-Type: application/json
 
-### Étape 5: Login utilisateur et test profile
+GET {{base_url}}/auth/dashboard
+Authorization: Bearer {{login_admin.response.body.access_token}}
+Content-Type: application/json
+
+### Étape 5: Login utilisateur et test profile/dashboard
 # @name login_user
 POST {{base_url}}/auth/login
 Content-Type: application/json
@@ -104,8 +140,12 @@ Content-Type: application/json
   "password": "User123!"
 }
 
-### Étape 6: Test profile pour utilisateur
+### Étape 6: Test profile et dashboard pour utilisateur
 GET {{base_url}}/auth/profile
+Authorization: Bearer {{login_user.response.body.access_token}}
+Content-Type: application/json
+
+GET {{base_url}}/auth/dashboard
 Authorization: Bearer {{login_user.response.body.access_token}}
 Content-Type: application/json
 
@@ -113,12 +153,17 @@ Content-Type: application/json
 ### NOTES D'UTILISATION
 ### ========================================
 ###
-### Cette route /auth/profile implémente une logique de routage basée sur les rôles :
+### **Route /auth/profile :**
+### - Retourne TOUJOURS usersService.getUserInfos(userId) pour tous les rôles
+### - Informations détaillées de l'utilisateur (profil + gamification)
+### - Inclut statistiques, parcours, certificats, badges, points
+###
+### **Route /auth/dashboard :**
+### - Implémente une logique de routage basée sur les rôles :
 ###
 ### **Pour un utilisateur avec rôle 'user' :**
 ### - Appelle usersService.getUserInfos(userId)
-### - Retourne les informations détaillées de l'utilisateur
-### - Inclut statistiques, parcours, certificats
+### - Même contenu que /auth/profile
 ###
 ### **Pour un utilisateur avec rôle 'admin' :**
 ### - Appelle organisationsService.getOrganisationStats(organisationId)
