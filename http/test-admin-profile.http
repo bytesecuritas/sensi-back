@@ -46,14 +46,14 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "admin@test.com",
-  "password": "AdminTest123!"
+  "email": "employee1@cybersec-enterprise.com",
+  "password": "Employee123!"
 }
 
 ### 5. Tester le profil admin
 GET {{baseUrl}}/auth/profile
-Authorization: Bearer {{login_admin.response.body.access_token}}
+Authorization: Bearer {{login_superadmin.response.body.access_token}}
 
 ### 6. Tester le dashboard admin
 GET {{baseUrl}}/auth/dashboard
-Authorization: Bearer {{login_admin.response.body.access_token}}
+Authorization: Bearer {{login_superadmin.response.body.access_token}}

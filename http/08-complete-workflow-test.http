@@ -435,6 +435,50 @@ Authorization: Bearer {{superadmin_token}}
 
 ###
 
+### 26. Récupérer les médias du module 1
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27. Lire/streamer un contenu média (exemple avec le premier média du module 1)
+# Note: Remplacez 1 par l'ID réel du média retourné par la requête précédente
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 28. Vérifier la progression après consultation des médias
+GET {{baseUrl}}/learning/progress/user
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 29. Tenter d'accéder à un quiz sans avoir complété les prérequis (doit échouer)
+# Note: Remplacez 2 par l'ID d'un quiz qui nécessite des prérequis
+GET {{baseUrl}}/learning/quiz/2
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 30. Tenter de soumettre un quiz sans avoir complété les prérequis (doit échouer)
+# Note: Remplacez 2 par l'ID d'un quiz qui nécessite des prérequis
+POST {{baseUrl}}/learning/quiz/2/submit
+Authorization: Bearer {{user1_token}}
+Content-Type: {{contentType}}
+
+{
+  "reponses": [
+    {
+      "question_id": 1,
+      "reponse_id": 1
+    }
+  ],
+  "temps_total_secondes": 120
+}
+
+###
+
 ### 26. Logout utilisateur
 POST {{baseUrl}}/auth/logout
 Authorization: Bearer {{user1_token}}

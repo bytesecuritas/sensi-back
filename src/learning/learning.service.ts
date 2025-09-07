@@ -654,7 +654,7 @@ export class LearningService {
   }
 
   // Obtenir un quiz spécifique avec ses questions
-  async getQuizById(quizId: number): Promise<Quiz> {
+  async getQuizById(quizId: number, userId?: number): Promise<Quiz> {
     const quiz = await this.quizRepository.findOne({
       where: { quiz_id: quizId, actif: true },
       relations: ['questions', 'questions.reponses', 'module', 'module.parcours', 'parcours']
@@ -662,6 +662,11 @@ export class LearningService {
 
     if (!quiz) {
       throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
+    }
+
+    // Si un userId est fourni, vérifier l'accès au quiz
+    if (userId) {
+      await this.validateQuizAccess(userId, quiz);
     }
 
     // Trier les questions et réponses manuellement
@@ -691,6 +696,9 @@ export class LearningService {
     if (!quiz) {
       throw new NotFoundException('Quiz non trouvé');
     }
+
+    // Vérifier si l'utilisateur peut accéder à ce quiz (ordre et prérequis)
+    await this.validateQuizAccess(userId, quiz);
 
     // Vérifier que l'utilisateur n'a pas déjà répondu à ce quiz
     const existingResponse = await this.quizResponseRepository.findOne({
@@ -819,9 +827,13 @@ export class LearningService {
 
     // Mettre à jour la progression selon le type de quiz
     if (quiz.type_quiz === 'module' && quiz.module && quiz.module.parcours) {
+      console.log(`Mise à jour progression pour user ${userId}, parcours ${quiz.module.parcours.parcours_id}, score ${scoreFinal}, réussi: ${isReussi}`);
       await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, scoreFinal, isReussi);
     } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
+      console.log(`Mise à jour certification pour user ${userId}, parcours ${quiz.parcours.parcours_id}, score ${scoreFinal}, réussi: ${isReussi}`);
       await this.updateCertification(userId, quiz.parcours.parcours_id, scoreFinal, isReussi);
+    } else {
+      console.log(`Quiz type: ${quiz.type_quiz}, module: ${quiz.module?.module_id}, parcours: ${quiz.parcours?.parcours_id}`);
     }
 
     // Gamification automatique
@@ -880,6 +892,8 @@ export class LearningService {
 
   // Mettre à jour la progression d'un parcours basée sur les quiz de module
   private async updateParcoursProgressFromModule(userId: number, parcoursId: number, scoreQuiz: number, isReussi: boolean): Promise<void> {
+    console.log(`updateParcoursProgressFromModule: userId=${userId}, parcoursId=${parcoursId}, scoreQuiz=${scoreQuiz}, isReussi=${isReussi}`);
+    
     // Obtenir le parcours avec tous ses modules
     const parcours = await this.learningPathRepository.findOne({
       where: { parcours_id: parcoursId },
@@ -887,8 +901,11 @@ export class LearningService {
     });
 
     if (!parcours) {
+      console.log(`Parcours ${parcoursId} non trouvé`);
       return;
     }
+
+    console.log(`Parcours trouvé: ${parcours.titre}, modules: ${parcours.modules?.length || 0}`);
 
     // Obtenir toutes les réponses de l'utilisateur pour ce parcours (quiz de module uniquement)
     const reponsesUtilisateur = await this.quizResponseRepository.find({
@@ -938,6 +955,7 @@ export class LearningService {
 
     // Calculer la progression finale (pourcentage de modules complétés)
     const progressionFinale = totalModules > 0 ? (modulesCompletes / totalModules) * 100 : 0;
+    console.log(`Progression calculée: ${modulesCompletes}/${totalModules} modules complétés = ${progressionFinale}%`);
 
     // Mettre à jour ou créer la progression du parcours
     let progression = await this.progressRepository.findOne({
@@ -946,6 +964,8 @@ export class LearningService {
         parcours: { parcours_id: parcoursId }
       }
     });
+
+    console.log(`Progression existante trouvée: ${!!progression}`);
 
     if (!progression) {
       progression = this.progressRepository.create({
@@ -962,6 +982,128 @@ export class LearningService {
     }
 
     await this.progressRepository.save(progression);
+    console.log(`Progression sauvegardée: score=${progression.score}, statut=${progression.statut}`);
+  }
+
+  /**
+   * Valide si un utilisateur peut accéder à un quiz selon l'ordre et les prérequis
+   */
+  private async validateQuizAccess(userId: number, quiz: Quiz): Promise<void> {
+    if (quiz.type_quiz === 'module' && quiz.module) {
+      // Pour les quiz de module, vérifier l'ordre dans le module et les modules précédents
+      await this.validateModuleQuizAccess(userId, quiz);
+    } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
+      // Pour les quiz finaux, vérifier que tous les modules du parcours sont complétés
+      await this.validateParcoursFinalQuizAccess(userId, quiz);
+    }
+  }
+
+  /**
+   * Valide l'accès aux quiz de module selon l'ordre
+   */
+  private async validateModuleQuizAccess(userId: number, quiz: Quiz): Promise<void> {
+    const module = quiz.module;
+    const parcours = module.parcours;
+
+    // 1. Vérifier que tous les modules précédents sont complétés
+    const allModules = await this.learningPathRepository.findOne({
+      where: { parcours_id: parcours.parcours_id },
+      relations: ['modules', 'modules.quiz']
+    });
+
+    if (!allModules) {
+      throw new NotFoundException('Parcours non trouvé');
+    }
+
+    // Trier les modules par ordre
+    const sortedModules = allModules.modules.sort((a, b) => a.ordre - b.ordre);
+    const currentModuleIndex = sortedModules.findIndex(m => m.module_id === module.module_id);
+
+    // Vérifier que tous les modules précédents sont complétés
+    for (let i = 0; i < currentModuleIndex; i++) {
+      const previousModule = sortedModules[i];
+      const moduleProgress = await this.progressRepository.findOne({
+        where: {
+          utilisateur: { users_id: userId },
+          parcours: { parcours_id: parcours.parcours_id }
+        }
+      });
+
+      if (!moduleProgress || moduleProgress.score < 100) {
+        throw new BadRequestException(`Vous devez compléter le module "${previousModule.titre}" avant d'accéder à ce quiz`);
+      }
+    }
+
+    // 2. Vérifier l'ordre des quiz dans le module actuel
+    const moduleQuizzes = await this.getModuleQuizzes(module.module_id);
+    const currentQuizIndex = moduleQuizzes.findIndex(q => q.quiz_id === quiz.quiz_id);
+
+    // Vérifier que tous les quiz précédents dans le module sont complétés
+    for (let i = 0; i < currentQuizIndex; i++) {
+      const previousQuiz = moduleQuizzes[i];
+      const quizResponse = await this.quizResponseRepository.findOne({
+        where: {
+          utilisateur: { users_id: userId },
+          quiz: { quiz_id: previousQuiz.quiz_id }
+        },
+        relations: ['quiz', 'quiz.questions']
+      });
+
+      if (!quizResponse) {
+        throw new BadRequestException(`Vous devez compléter le quiz "${previousQuiz.titre}" avant d'accéder à ce quiz`);
+      }
+
+      // Vérifier que le quiz précédent est réussi à 100%
+      const totalScore = await this.calculateQuizScore(userId, previousQuiz.quiz_id);
+      const totalPoints = previousQuiz.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+      const scorePercentage = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0;
+
+      if (scorePercentage < 100) {
+        throw new BadRequestException(`Vous devez réussir le quiz "${previousQuiz.titre}" à 100% avant d'accéder à ce quiz`);
+      }
+    }
+  }
+
+  /**
+   * Valide l'accès aux quiz finaux de parcours
+   */
+  private async validateParcoursFinalQuizAccess(userId: number, quiz: Quiz): Promise<void> {
+    const parcours = quiz.parcours;
+
+    // Vérifier que tous les modules du parcours sont complétés
+    const allModules = await this.learningPathRepository.findOne({
+      where: { parcours_id: parcours.parcours_id },
+      relations: ['modules']
+    });
+
+    if (!allModules) {
+      throw new NotFoundException('Parcours non trouvé');
+    }
+
+    const progression = await this.progressRepository.findOne({
+      where: {
+        utilisateur: { users_id: userId },
+        parcours: { parcours_id: parcours.parcours_id }
+      }
+    });
+
+    if (!progression || progression.score < 100) {
+      throw new BadRequestException('Vous devez compléter tous les modules du parcours avant d\'accéder au quiz final');
+    }
+  }
+
+  /**
+   * Calcule le score d'un quiz pour un utilisateur
+   */
+  private async calculateQuizScore(userId: number, quizId: number): Promise<number> {
+    const responses = await this.quizResponseRepository.find({
+      where: {
+        utilisateur: { users_id: userId },
+        quiz: { quiz_id: quizId }
+      }
+    });
+
+    return responses.reduce((sum, r) => sum + (r.points_obtenus || 0), 0);
   }
 
   // Mettre à jour la certification basée sur le quiz final
@@ -1004,7 +1146,7 @@ export class LearningService {
         utilisateur: { users_id: userId },
         quiz: { quiz_id: quizId }
       },
-      relations: ['question', 'reponse_choisie', 'quiz', 'quiz.questions']
+      relations: ['question', 'question.reponses', 'reponse_choisie', 'quiz', 'quiz.questions']
     });
 
     if (reponses.length === 0) {
@@ -1032,7 +1174,7 @@ export class LearningService {
         question_id: r.question.question_id,
         enonce: r.question.enonce,
         reponse_choisie: r.reponse_choisie?.texte || r.reponse_texte,
-        reponse_correcte: r.question.reponses.find(re => re.est_correcte)?.texte,
+        reponse_correcte: r.question.reponses?.find(re => re.est_correcte)?.texte || 'Réponse non disponible',
         est_correcte: r.est_correcte,
         points_obtenus: r.points_obtenus,
         explication: r.question.explication

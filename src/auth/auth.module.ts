@@ -10,12 +10,15 @@ import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RolesGuard } from './roles.guard';
 import { UserCreationGuard } from './user-creation.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserLevel } from '../learning/entities/user-level.entity';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => OrganisationsModule),
     forwardRef(() => AnalyticsModule),
+    TypeOrmModule.forFeature([UserLevel]),
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

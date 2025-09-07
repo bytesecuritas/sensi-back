@@ -8,6 +8,9 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/users.entity';
 import { CreateUserDto } from '../users/dto';
 import { randomBytes } from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserLevel } from '../learning/entities/user-level.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +19,8 @@ export class AuthService {
     private organisationsService: OrganisationsService,
     private analyticsService: AnalyticsService,
     private jwtService: JwtService,
+    @InjectRepository(UserLevel)
+    private userLevelRepository: Repository<UserLevel>,
   ) {}
 
   // Stockage temporaire des tokens de réinitialisation (en production, utiliser Redis ou base de données)
@@ -31,6 +36,11 @@ export class AuthService {
   }
 
   async login(user: Partial<User>) {
+    // Initialiser le niveau utilisateur s'il n'existe pas (première connexion)
+    if (user.users_id) {
+      await this.initializeUserLevelIfNeeded(user.users_id);
+    }
+    
     const payload = { email: user.email, sub: user.users_id, role: user.role };
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
     const refresh_token = this.generateRefreshToken(payload);
@@ -49,6 +59,35 @@ export class AuthService {
     // Pour l'instant, on retourne juste un message de succès
     // Le client devra supprimer le token côté frontend
     return { message: 'Déconnexion réussie' };
+  }
+
+  /**
+   * Initialise le niveau utilisateur s'il n'existe pas (première connexion)
+   */
+  private async initializeUserLevelIfNeeded(userId: number): Promise<void> {
+    const existingLevel = await this.userLevelRepository.findOne({
+      where: { utilisateur: { users_id: userId } }
+    });
+
+    if (!existingLevel) {
+      console.log(`Initialisation du niveau utilisateur pour user ${userId} (première connexion)`);
+      
+      const userLevel = this.userLevelRepository.create({
+        utilisateur: { users_id: userId } as any,
+        niveau_actuel: 'debutant' as any,
+        points_totaux: 0,
+        points_niveau_actuel: 0,
+        points_pour_niveau_suivant: 100,
+        quiz_reussis: 0,
+        modules_completes: 0,
+        simulations_reussies: 0,
+        jours_consecutifs: 0,
+        derniere_activite: new Date()
+      });
+
+      await this.userLevelRepository.save(userLevel);
+      console.log(`Niveau utilisateur initialisé pour user ${userId}`);
+    }
   }
 
   async changePassword(userId: number, currentPassword: string, newPassword: string) {
@@ -213,7 +252,12 @@ export class AuthService {
       
       case 'superadmin':
         // Pour un superadmin, retourner le dashboard global
-        return await this.analyticsService.getGlobalDashboard({ timeRange: TimeRange.MONTH });
+        try {
+          return await this.analyticsService.getGlobalDashboard({ timeRange: TimeRange.MONTH });
+        } catch (error) {
+          console.error('Erreur lors de la récupération du dashboard global:', error);
+          throw new BadRequestException('Erreur lors de la récupération du tableau de bord');
+        }
       
       default:
         throw new BadRequestException('Rôle utilisateur non reconnu');

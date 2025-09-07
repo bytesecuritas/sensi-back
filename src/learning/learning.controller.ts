@@ -561,8 +561,9 @@ export class LearningController {
   @Get('quiz/:quizId')
   @ApiOperation({ summary: 'Obtenir un quiz spécifique avec ses questions' })
   @ApiParam({ name: 'quizId', type: String })
-  async getQuizById(@Param('quizId') quizId: string): Promise<any> {
-    return await this.learningService.getQuizById(+quizId);
+  async getQuizById(@Param('quizId') quizId: string, @Request() req): Promise<any> {
+    const userId = req.user?.users_id;
+    return await this.learningService.getQuizById(+quizId, userId);
   }
 
   @Post('quiz/:quizId/submit')

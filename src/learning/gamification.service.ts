@@ -598,16 +598,31 @@ export class GamificationService {
    * Ajoute des points lors de la réussite d'un quiz
    */
   async addQuizSuccessPoints(userId: number, moduleId: number, score: number): Promise<any> {
-    const userLevel = await this.userLevelRepository.findOne({
+    let userLevel = await this.userLevelRepository.findOne({
       where: { utilisateur: { users_id: userId } },
     });
 
     if (!userLevel) {
-      throw new Error('Niveau utilisateur non trouvé');
+      console.log(`Création du niveau utilisateur pour user ${userId}`);
+      // Créer le niveau utilisateur s'il n'existe pas
+      userLevel = this.userLevelRepository.create({
+        utilisateur: { users_id: userId } as any,
+        niveau_actuel: 'debutant' as any,
+        points_totaux: 0,
+        points_niveau_actuel: 0,
+        points_pour_niveau_suivant: 100, // Points nécessaires pour le niveau suivant
+        quiz_reussis: 0,
+        modules_completes: 0,
+        simulations_reussies: 0,
+        jours_consecutifs: 0,
+        derniere_activite: new Date()
+      });
+      await this.userLevelRepository.save(userLevel);
     }
 
     // Points proportionnels au score (0-100)
     const pointsGagnes = Math.max(0, Math.round(score));
+    console.log(`Ajout de ${pointsGagnes} points pour user ${userId}, score: ${score}`);
 
     userLevel.points_totaux += pointsGagnes;
     userLevel.points_niveau_actuel += pointsGagnes;
@@ -615,6 +630,7 @@ export class GamificationService {
     userLevel.derniere_activite = new Date();
 
     await this.userLevelRepository.save(userLevel);
+    console.log(`Points sauvegardés: total=${userLevel.points_totaux}, niveau=${userLevel.points_niveau_actuel}`);
 
     // Badge "Quiz Parfait" pour 100%
     if (score >= 100) {

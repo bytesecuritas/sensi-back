@@ -210,11 +210,10 @@ export class AnalyticsService {
     const stats = await this.certificationRepository
       .createQueryBuilder('cert')
       .select('cert.certification_id', 'id')
-      .addSelect('cert.titre', 'title')
-      .addSelect('cert.type', 'type')
+      .addSelect('cert.type_certification', 'type')
       .addSelect('COUNT(DISTINCT cert.certification_id)', 'totalCertifications')
-      .addSelect('COUNT(DISTINCT CASE WHEN cert.date_obtention BETWEEN :start AND :end THEN cert.certification_id END)', 'newCertifications')
-      .where('cert.date_creation BETWEEN :start AND :end', { start, end })
+      .addSelect('COUNT(DISTINCT CASE WHEN cert.date_emission BETWEEN :start AND :end THEN cert.certification_id END)', 'newCertifications')
+      .where('cert.date_emission BETWEEN :start AND :end', { start, end })
       .groupBy('cert.certification_id')
       .getRawMany();
 
@@ -245,8 +244,7 @@ export class AnalyticsService {
       .addSelect('COUNT(DISTINCT progress.progression_id)', 'totalProgress')
       .addSelect('COUNT(DISTINCT CASE WHEN progress.statut = "termine" THEN progress.progression_id END)', 'completedProgress')
       .addSelect('AVG(progress.score)', 'avgProgress')
-      .leftJoin('path.modules', 'module')
-      .leftJoin('module.progressions', 'progress')
+      .leftJoin('path.progressions', 'progress')
       .groupBy('path.parcours_id')
       .orderBy('completedProgress', 'DESC')
       .limit(limit)
@@ -322,8 +320,7 @@ export class AnalyticsService {
       .addSelect('AVG(progress.score)', 'avgProgress')
       .addSelect('MIN(progress.date_creation)', 'firstStarted')
       .addSelect('MAX(progress.date_maj)', 'lastActivity')
-      .leftJoin('path.modules', 'module')
-      .leftJoin('module.progressions', 'progress')
+      .leftJoin('path.progressions', 'progress')
       .leftJoin('progress.utilisateur', 'user')
       .where('user.organisation.organisation_id = :organisationId', { organisationId })
       .andWhere('progress.date_creation BETWEEN :start AND :end', { start, end })
@@ -335,12 +332,11 @@ export class AnalyticsService {
     return this.certificationRepository
       .createQueryBuilder('cert')
       .select('cert.certification_id', 'id')
-      .addSelect('cert.titre', 'title')
-      .addSelect('cert.type', 'type')
-      .addSelect('cert.date_obtention', 'obtainedAt')
+      .addSelect('cert.type_certification', 'type')
+      .addSelect('cert.date_emission', 'obtainedAt')
       .leftJoin('cert.utilisateur', 'user')
       .where('user.organisation.organisation_id = :organisationId', { organisationId })
-      .andWhere('cert.date_obtention BETWEEN :start AND :end', { start, end })
+      .andWhere('cert.date_emission BETWEEN :start AND :end', { start, end })
       .getMany();
   }
 
