@@ -265,34 +265,6 @@ Authorization: Bearer {{superadmin_token}}
 }
 
 ###
-
-### 13. Soumettre les réponses du quiz M1 (100%)
-POST {{baseUrl}}/learning/quiz/1/submit
-Content-Type: {{contentType}}
-Authorization: Bearer {{user1_token}}
-
-{
-  "quiz_id": 1,
-  "reponses": [
-    { "question_id": 1, "reponse_id": 1 },
-    { "question_id": 2, "reponse_texte": "Ne pas cliquer, signaler au support IT" }
-  ],
-  "temps_total_secondes": 150
-}
-
-###
-###  Obtenir les résultats du quiz (doit fonctionner maintenant)
-GET {{baseUrl}}/learning/quiz/1/results
-Authorization: Bearer {{user1_token}}
-
-###
-
-### optenir la progession de l'utilisateur sur ce parcours
-GET {{baseUrl}}/learning/progress/parcours/1
-Authorization: Bearer {{user1_token}}
-
-###
-
 ### 14. Créer un quiz de module 2 (choix_multiple + vrai_faux)
 POST {{baseUrl}}/learning/quizzes/module/parent/2
 Content-Type: {{contentType}}
@@ -324,6 +296,35 @@ Authorization: Bearer {{superadmin_token}}
   ]
 }
 
+### 13. Soumettre les réponses du quiz M1 (100%)
+POST {{baseUrl}}/learning/quiz/1/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{user1_token}}
+
+{
+  "quiz_id": 1,
+  "reponses": [
+    { "question_id": 1, "reponse_id": 1 },
+    { "question_id": 2, "reponse_texte": "Ne pas cliquer, signaler au support IT" }
+  ],
+  "temps_total_secondes": 150
+}
+
+###
+###  Obtenir les résultats du quiz (doit fonctionner maintenant)
+GET {{baseUrl}}/learning/quiz/1/results
+Authorization: Bearer {{user1_token}}
+
+###
+
+### optenir la progession de l'utilisateur sur ce parcours
+GET {{baseUrl}}/learning/progress/parcours/1
+Authorization: Bearer {{user1_token}}
+
+###
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{user1_token}}
+
 ###
 
 ### 15. Soumettre une tentative partielle du quiz M2 (<100%)
@@ -339,6 +340,17 @@ Authorization: Bearer {{user1_token}}
   ],
   "temps_total_secondes": 90
 }
+
+###
+###  Obtenir les résultats du quiz (doit fonctionner maintenant)
+GET {{baseUrl}}/learning/quiz/2/results
+Authorization: Bearer {{user1_token}}
+
+###
+
+### optenir la progession de l'utilisateur sur ce parcours
+GET {{baseUrl}}/learning/progress/parcours/1
+Authorization: Bearer {{user1_token}}
 
 ###
 
@@ -389,6 +401,9 @@ Authorization: Bearer {{superadmin_token}}
 }
 
 ###
+### 19. Vérifier l'éligibilité à la certification (user1 sur parcours 1)
+GET {{baseUrl}}/certificates/eligibility/1
+Authorization: Bearer {{user1_token}}
 
 ### 17. Récupérer les quiz finaux du parcours
 GET {{baseUrl}}/learning/quizzes/parcours_final/parent/1
@@ -445,17 +460,36 @@ Authorization: Bearer {{user1_token}}
 ###
 
 ### PHASE 6: CERTIFICATION
-### 19. (Optionnel) Créer une certification manuelle pour l'utilisateur 1
-POST {{baseUrl}}/learning/certifications
-Content-Type: {{contentType}}
-Authorization: Bearer {{superadmin_token}}
+### 19. Vérifier l'éligibilité à la certification (user1 sur parcours 1)
+GET {{baseUrl}}/certificates/eligibility/1
+Authorization: Bearer {{user1_token}}
 
-{
-  "utilisateur": 6,
-  "parcours": 1,
-  "type_certification": "sensibilisation_basique",
-  "url_certification": "https://example.com/certifications/cybersec-enterprise-employee1.pdf"
-}
+###
+
+### 20. Générer la certification (JSON, ne pas streamer)
+POST {{baseUrl}}/certificates/generate/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 21. Générer la certification et afficher le PDF en ligne (stream=1)
+POST {{baseUrl}}/certificates/generate/1?stream=1
+Authorization: Bearer {{user1_token}}
+
+###
+### Supprimer l'encienne certification
+POST {{baseUrl}}/certificates/delete/7
+Authorization: Bearer {{user1_token}}
+
+### 22. Lister les certifications de l'utilisateur
+GET {{baseUrl}}/certificates/user
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 23. Télécharger le certificat PDF (remplacer 1 par l'ID réel si nécessaire)
+GET {{baseUrl}}/certificates/1/download
+Authorization: Bearer {{user1_token}}
 
 ###
 
@@ -506,6 +540,15 @@ Authorization: Bearer {{user1_token}}
 ### 26. Obtenir le dashboard de l'utilisateur (même contenu que profile pour un user)
 GET {{baseUrl}}/auth/dashboard
 Authorization: Bearer {{user1_token}}
+
+###
+# dasboard et profile superadmin
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{superadmin_token}}
+
+### 26. Obtenir le dashboard de l'superadmin (même contenu que profile pour un user)
+GET {{baseUrl}}/auth/dashboard
+Authorization: Bearer {{superadmin_token}}
 
 ###
 
@@ -566,6 +609,8 @@ Authorization: Bearer {{user1_token}}
 # @superadmin_token = token_jwt_du_superadmin
 # @admin_token = token_jwt_de l_admin
 # @user1_token = token_jwt_de_l_utilisateur_1
+
+# -------------------------- fin test --------------------------------------
 
 ### 15b. (Reprise) Soumettre une tentative partielle du quiz M2 (<100%)
 POST {{baseUrl}}/learning/quiz/2/submit

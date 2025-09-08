@@ -11,6 +11,15 @@ import { UserLevel } from './entities/user-level.entity';
 import { UserBadge } from './entities/user-badge.entity';
 import * as fs from 'fs';
 import * as path from 'path';
+// Puppeteer est utilisé pour générer un PDF paysage A4 depuis le HTML
+// En cas d'absence de la dépendance, un fallback enregistre le HTML à la place
+let puppeteer: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  puppeteer = require('puppeteer');
+} catch (e) {
+  puppeteer = null;
+}
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -66,13 +75,76 @@ export class CertificateService {
     });
 
     const totalModules = parcours.modules.length;
-    const modulesCompletes = progression ? Math.round((progression.score / 100) * totalModules) : 0;
-    
-    // Calculer le score global basé sur la progression du parcours
-    const scoreGlobal = progression ? progression.score : 0;
+    // Calcul précis des modules complétés: un module est complété si tous ses quiz de type module sont validés à 100%
+    let modulesCompletes = 0;
+    if (totalModules > 0) {
+      // Récupérer toutes les réponses de l'utilisateur pour les quiz de module de ce parcours
+      const responsesForParcoursModules = await this.quizResponseRepository.find({
+        where: {
+          utilisateur: { users_id: userId },
+          quiz: { module: { parcours: { parcours_id: parcoursId } }, type_quiz: 'module' as any },
+        },
+        relations: ['quiz', 'quiz.questions', 'quiz.module'],
+      });
 
-    // Vérifier l'éligibilité (tous les modules terminés avec un score minimum de 70%)
-    const eligible = modulesCompletes === totalModules && scoreGlobal >= 70;
+      for (const module of parcours.modules) {
+        // Obtenir les quiz associés à ce module depuis la relation chargée
+        const moduleQuizzes = module.quiz || [];
+        if (moduleQuizzes.length === 0) {
+          continue;
+        }
+
+        let moduleReussi = true;
+        for (const q of moduleQuizzes) {
+          const reps = responsesForParcoursModules.filter(r => r.quiz?.quiz_id === q.quiz_id);
+          if (reps.length === 0) { moduleReussi = false; break; }
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+          const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+          if (pct < 100) { moduleReussi = false; break; }
+        }
+        if (moduleReussi) modulesCompletes++;
+      }
+    }
+    
+    // Vérifier la réussite du(des) quiz finaux du parcours
+    const finalQuizResponses = await this.quizResponseRepository.find({
+      where: {
+        utilisateur: { users_id: userId },
+        quiz: { parcours: { parcours_id: parcoursId }, type_quiz: 'parcours_final' as any },
+      },
+      relations: ['quiz', 'quiz.questions'],
+    });
+
+    // Grouper par quiz et calculer le meilleur score obtenu sur un quiz final
+    const quizIdToResponses = new Map<number, typeof finalQuizResponses>();
+    for (const resp of finalQuizResponses) {
+      const qid = resp.quiz?.quiz_id;
+      if (!qid) continue;
+      const list = quizIdToResponses.get(qid) || ([] as any);
+      list.push(resp);
+      quizIdToResponses.set(qid, list);
+    }
+
+    let bestFinalQuizScorePct = 0;
+    let hasValidatedFinalQuiz = false;
+    for (const [qid, reps] of quizIdToResponses.entries()) {
+      const quiz = reps[0]?.quiz;
+      const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+      const totalPoints = (quiz?.questions || []).reduce((sum, q) => sum + Number(q.points || 0), 0);
+      const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+      bestFinalQuizScorePct = Math.max(bestFinalQuizScorePct, pct);
+      const threshold = Number(quiz?.score_minimum_pour_reussite ?? 80);
+      if (pct >= threshold) {
+        hasValidatedFinalQuiz = true;
+      }
+    }
+
+    // Le score global pour la certification correspond au meilleur score au quiz final
+    const scoreGlobal = bestFinalQuizScorePct;
+
+    // Éligible si au moins un quiz final est validé
+    const eligible = hasValidatedFinalQuiz;
 
     // Récupérer les détails des quiz et simulations
     const details = await this.getCertificationDetails(userId, parcoursId);
@@ -90,6 +162,18 @@ export class CertificateService {
    * Génère une certification complète pour un utilisateur
    */
   async generateCertification(userId: number, parcoursId: number): Promise<Certification> {
+    // Empêcher les doublons: un utilisateur ne peut pas avoir plus d'une certification pour le même parcours
+    const existing = await this.certificationRepository.findOne({
+      where: {
+        utilisateur: { users_id: userId },
+        parcours: { parcours_id: parcoursId },
+      },
+      relations: ['utilisateur', 'parcours'],
+    });
+    if (existing) {
+      throw new Error('Une certification existe déjà pour ce parcours. Supprimez-la avant d\'en générer une nouvelle.');
+    }
+
     const eligibility = await this.checkCertificationEligibility(userId, parcoursId);
     
     if (!eligibility.eligible) {
@@ -155,11 +239,11 @@ export class CertificateService {
   }
 
   /**
-   * Génère le certificat PDF au format A4
+   * Génère le certificat PDF au format A4 paysage et le stocke sous ressources/certicats
    */
   private async generateCertificatePDF(certification: Certification): Promise<string> {
-    // Créer le dossier de certificats s'il n'existe pas
-    const certDir = path.join(process.cwd(), 'certificats');
+    // Créer le dossier de certificats s'il n'existe pas: ressources/certicats
+    const certDir = path.join(process.cwd(), 'ressources', 'certicats');
     if (!fs.existsSync(certDir)) {
       fs.mkdirSync(certDir, { recursive: true });
     }
@@ -167,14 +251,36 @@ export class CertificateService {
     const filename = `certificat_${certification.numero_certification}.pdf`;
     const filepath = path.join(certDir, filename);
 
-    // Utiliser une bibliothèque PDF (comme PDFKit ou Puppeteer)
-    // Pour cet exemple, je vais créer un template HTML qui peut être converti en PDF
     const htmlContent = this.generateCertificateHTML(certification);
-    
-    // Sauvegarder le HTML (en production, utiliser une vraie conversion PDF)
-    fs.writeFileSync(filepath.replace('.pdf', '.html'), htmlContent);
 
-    return `certificats/${filename}`;
+    // Si puppeteer est disponible, on génère un vrai PDF en paysage
+    if (puppeteer) {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        // Ces flags améliorent la compatibilité dans certains environnements CI/Windows
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+      try {
+        const page = await browser.newPage();
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        await page.pdf({
+          path: filepath,
+          format: 'A4',
+          landscape: true,
+          printBackground: true,
+          preferCSSPageSize: true,
+          margin: { top: '0', right: '0', bottom: '0', left: '0' },
+        });
+      } finally {
+        await browser.close();
+      }
+    } else {
+      // Fallback: enregistrer le HTML pour inspection si Puppeteer n'est pas installé
+      fs.writeFileSync(filepath.replace('.pdf', '.html'), htmlContent);
+    }
+
+    // Retourner un chemin relatif exploitable par le contrôleur
+    return path.join('ressources', 'certicats', filename).replace(/\\/g, '/');
   }
 
   /**
@@ -196,95 +302,104 @@ export class CertificateService {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificat de Formation - ${parcours.titre}</title>
     <style>
-        @page {
-            size: A4;
-            margin: 2cm;
+        @page { size: A4 landscape; margin: 0; }
+        html, body {
+            width: 297mm;
+            height: 210mm;
+            margin: 0;
+            padding: 0;
+            page-break-after: avoid;
+            page-break-before: avoid;
+            page-break-inside: avoid;
         }
         body {
             font-family: 'Times New Roman', serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #333;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
         .certificate-container {
             background: white;
             border: 3px solid #2c3e50;
             border-radius: 15px;
-            padding: 40px;
+            padding: 12mm 12mm;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             position: relative;
-            min-height: 800px;
+            width: 297mm; /* ensure fits inside A4 landscape after padding/border */
+            height: 210mm;
+            box-sizing: border-box;
+            page-break-inside: avoid;
         }
         .header {
             text-align: center;
             border-bottom: 2px solid #3498db;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
         }
         .logo {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
         }
         .title {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: bold;
             color: #2c3e50;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
         .subtitle {
-            font-size: 16px;
+            font-size: 14px;
             color: #7f8c8d;
             margin-top: 5px;
         }
         .main-content {
             text-align: center;
-            margin: 40px 0;
+            margin: 24px 0;
         }
         .certificate-text {
-            font-size: 18px;
-            line-height: 2;
-            margin: 30px 0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin: 16px 0;
         }
         .recipient-name {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #2c3e50;
             text-transform: uppercase;
-            margin: 20px 0;
-            padding: 15px;
+            margin: 12px 0;
+            padding: 10px;
             border: 2px solid #3498db;
             border-radius: 10px;
             background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
         }
         .course-info {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
             color: #e74c3c;
-            margin: 20px 0;
+            margin: 12px 0;
         }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-            padding: 20px;
+            gap: 12px;
+            margin: 18px 0;
+            padding: 14px;
             background: #f8f9fa;
             border-radius: 10px;
         }
         .stat-item {
             text-align: center;
-            padding: 15px;
+            padding: 10px;
             background: white;
             border-radius: 8px;
             border: 1px solid #dee2e6;
         }
         .stat-value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #3498db;
         }
@@ -294,14 +409,14 @@ export class CertificateService {
             text-transform: uppercase;
         }
         .footer {
-            margin-top: 40px;
+            margin-top: 14px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 18px;
         }
         .signature-section {
             text-align: center;
-            padding: 20px;
+            padding: 12px;
             border-top: 1px solid #dee2e6;
         }
         .signature-line {
@@ -322,14 +437,14 @@ export class CertificateService {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 120px;
+            font-size: 80px;
             color: rgba(52, 152, 219, 0.1);
             z-index: -1;
             font-weight: bold;
         }
         .badges-section {
-            margin: 20px 0;
-            padding: 15px;
+            margin: 12px 0;
+            padding: 12px;
             background: #fff3cd;
             border: 1px solid #ffeaa7;
             border-radius: 8px;
@@ -337,13 +452,13 @@ export class CertificateService {
         .badge-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
         }
         .badge-item {
             background: #3498db;
             color: white;
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 15px;
             font-size: 12px;
             font-weight: bold;
@@ -379,7 +494,7 @@ export class CertificateService {
             </div>
             
             <div class="certificate-text">
-                avec un score final de <strong>${certification.score_final.toFixed(1)}%</strong>
+                avec un score final de <strong>${Number(certification.score_final ?? 0).toFixed(1)}%</strong>
             </div>
         </div>
 
@@ -512,11 +627,11 @@ export class CertificateService {
    * Génère des commentaires personnalisés
    */
   private generateCommentaires(score: number, details: any): string {
-    if (score >= 90) {
+    if (score >= 95) {
       return `Excellente performance ! L'utilisateur a démontré une maîtrise exceptionnelle des concepts de cybersécurité.`;
-    } else if (score >= 80) {
+    } else if (score >= 90) {
       return `Très bonne performance. L'utilisateur a bien assimilé les concepts de cybersécurité.`;
-    } else if (score >= 70) {
+    } else if (score >= 85) {
       return `Bonne performance. L'utilisateur a atteint le niveau requis en cybersécurité.`;
     } else {
       return `Performance satisfaisante. L'utilisateur a validé les compétences de base en cybersécurité.`;
@@ -537,6 +652,42 @@ export class CertificateService {
     }
 
     return certification;
+  }
+
+  /**
+   * Supprime une certification et son fichier PDF associé
+   */
+  async deleteCertificationAndFile(userId: number, certificationId: number): Promise<boolean> {
+    const certification = await this.certificationRepository.findOne({
+      where: { certification_id: certificationId },
+      relations: ['utilisateur'],
+    });
+
+    if (!certification) {
+      throw new Error('Certification non trouvée');
+    }
+    if (certification.utilisateur.users_id !== userId) {
+      throw new Error('Accès non autorisé à cette certification');
+    }
+
+    // Supprimer le fichier PDF si présent
+    if (certification.url_certification) {
+      try {
+        const absPath = path.join(process.cwd(), certification.url_certification);
+        if (fs.existsSync(absPath)) {
+          fs.unlinkSync(absPath);
+        }
+        const htmlFallback = absPath.replace(/\.pdf$/i, '.html');
+        if (fs.existsSync(htmlFallback)) {
+          fs.unlinkSync(htmlFallback);
+        }
+      } catch (e) {
+        this.logger.warn(`Impossible de supprimer le fichier du certificat: ${e.message}`);
+      }
+    }
+
+    await this.certificationRepository.remove(certification);
+    return true;
   }
 
   /**

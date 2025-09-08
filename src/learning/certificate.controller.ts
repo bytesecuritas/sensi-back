@@ -9,6 +9,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Res,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -47,6 +48,8 @@ export class CertificateController {
   async generateCertification(
     @Request() req,
     @Param('parcoursId', ParseIntPipe) parcoursId: number,
+    @Query('stream') stream: string,
+    @Res() res?: Response,
   ) {
     const userId = req.user?.users_id;
     if (!userId) {
@@ -55,6 +58,19 @@ export class CertificateController {
 
     try {
       const certification = await this.certificateService.generateCertification(userId, parcoursId);
+      // Si stream=1, renvoyer directement le PDF en inline
+      if (stream === '1' && res) {
+        const filePath = path.join(process.cwd(), certification.url_certification);
+        if (!fs.existsSync(filePath)) {
+          throw new BadRequestException('Fichier de certificat non trouvé');
+        }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="certificat_${certification.numero_certification}.pdf"`);
+        const fileStream = fs.createReadStream(filePath);
+        return fileStream.pipe(res);
+      }
+
+      // Par défaut, renvoyer l'objet JSON avec l'URL
       return {
         message: 'Certification générée avec succès',
         certification: {
@@ -64,6 +80,30 @@ export class CertificateController {
           date_emission: certification.date_emission,
           url: certification.url_certification,
         },
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post('delete/:certificationId')
+  @ApiOperation({ summary: 'Supprimer une certification et son fichier PDF' })
+  @ApiParam({ name: 'certificationId', type: String })
+  @ApiResponse({ status: 200, description: 'Certification supprimée' })
+  async deleteCertification(
+    @Request() req,
+    @Param('certificationId', ParseIntPipe) certificationId: number,
+  ) {
+    const userId = req.user?.users_id;
+    if (!userId) {
+      throw new ForbiddenException('Utilisateur non authentifié');
+    }
+
+    try {
+      const result = await this.certificateService.deleteCertificationAndFile(userId, certificationId);
+      return {
+        message: 'Certification supprimée avec succès',
+        deleted: result,
       };
     } catch (error) {
       throw new BadRequestException(error.message);

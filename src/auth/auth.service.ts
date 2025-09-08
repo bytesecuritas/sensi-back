@@ -10,7 +10,7 @@ import { CreateUserDto } from '../users/dto';
 import { randomBytes } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserLevel } from '../learning/entities/user-level.entity';
+import { UserLevel, UserLevelEnum } from '../learning/entities/user-level.entity';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +44,6 @@ export class AuthService {
     const payload = { email: user.email, sub: user.users_id, role: user.role };
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
     const refresh_token = this.generateRefreshToken(payload);
-    // Optionally, persist refresh token hash if you want server-side revocation (not implemented here)
     return {
       access_token,
       refresh_token,
@@ -53,18 +52,6 @@ export class AuthService {
 
   generateRefreshToken(payload: any): string {
     return this.jwtService.sign(payload, { expiresIn: '7d' });
-  }
-
-  async refresh(refreshToken: string) {
-    try {
-      const decoded = this.jwtService.verify(refreshToken);
-      const payload = { email: decoded.email, sub: decoded.sub, role: decoded.role };
-      const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
-      const new_refresh_token = this.generateRefreshToken(payload);
-      return { access_token, refresh_token: new_refresh_token };
-    } catch (e) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
   }
 
   async logout(userId: number) {
@@ -90,7 +77,7 @@ export class AuthService {
         niveau_actuel: 'debutant' as any,
         points_totaux: 0,
         points_niveau_actuel: 0,
-        points_pour_niveau_suivant: 100,
+        points_pour_niveau_suivant: 200,
         quiz_reussis: 0,
         modules_completes: 0,
         simulations_reussies: 0,

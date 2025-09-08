@@ -166,21 +166,60 @@ export class OrganisationsService {
       relations: ['parcours', 'utilisateur'],
     });
 
-    // Calculer les statistiques de progression par parcours
+    // Calculer les statistiques de progression par parcours (modules complétés basés sur les quiz de module)
     const parcoursStats = new Map<number, any>();
-    
     for (const orgPath of organisationParcours) {
       const parcoursId = orgPath.parcours.parcours_id;
-      const parcoursProgressions = progressions.filter(p => 
-        p.parcours?.parcours_id === parcoursId
-      );
+      const parcoursProgressions = progressions.filter(p => p.parcours?.parcours_id === parcoursId);
 
       const usersInParcours = new Set(parcoursProgressions.map(p => p.utilisateur.users_id));
       const totalUsersInParcours = usersInParcours.size;
-      
-      const completedModules = parcoursProgressions.filter(p => p.statut === ProgressStatus.TERMINE).length;
       const totalModulesInParcours = orgPath.parcours.modules?.length || 0;
-      
+
+      // Récupérer les quiz de type module pour ce parcours et toutes les réponses de ces utilisateurs
+      const quizRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz.entity').Quiz);
+      const quizResponseRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz-response.entity').QuizResponse);
+      const allModuleQuizzes = await quizRepo.find({
+        where: { module: { parcours: { parcours_id: parcoursId } }, type_quiz: 'module' as any },
+        relations: ['questions', 'module']
+      });
+      const quizIds = allModuleQuizzes.map(q => q.quiz_id);
+      const allResponses = quizIds.length ? await quizResponseRepo.find({
+        where: {
+          utilisateur: { organisation: { organisation_id: organisationId } },
+          quiz: { quiz_id: In(quizIds) }
+        },
+        relations: ['quiz', 'quiz.questions', 'utilisateur']
+      }) : [];
+
+      // Calculer le nombre moyen de modules complétés par utilisateur (un module est complété si tous ses quiz de type module sont à 100%)
+      const userIdToModulesCompleted = new Map<number, number>();
+      for (const userId of usersInParcours) {
+        let completedForUser = 0;
+        for (const module of orgPath.parcours.modules || []) {
+          const moduleQuizzes = allModuleQuizzes.filter(q => q.module?.module_id === module.module_id);
+          if (moduleQuizzes.length === 0) continue;
+          let moduleReussi = true;
+          for (const q of moduleQuizzes) {
+            const reps = allResponses.filter(r => r.utilisateur.users_id === userId && r.quiz.quiz_id === q.quiz_id);
+            if (reps.length === 0) { moduleReussi = false; break; }
+            const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+            const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+            const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+            if (pct < 100) { moduleReussi = false; break; }
+          }
+          if (moduleReussi) completedForUser++;
+        }
+        userIdToModulesCompleted.set(userId, completedForUser);
+      }
+
+      const totalModulesCompletedAllUsers = Array.from(userIdToModulesCompleted.values()).reduce((a, b) => a + b, 0);
+      const avgModulesCompletedPerUser = totalUsersInParcours > 0 ? totalModulesCompletedAllUsers / totalUsersInParcours : 0;
+
+      // Taux de complétion du parcours basé sur les progressions terminées
+      const usersTermines = parcoursProgressions.filter(p => p.statut === ProgressStatus.TERMINE).length;
+      const tauxCompletionParcours = totalUsersInParcours > 0 ? (usersTermines / totalUsersInParcours) * 100 : 0;
+
       const avgScore = parcoursProgressions.length > 0 
         ? parcoursProgressions.reduce((sum, p) => sum + (p.score || 0), 0) / parcoursProgressions.length
         : 0;
@@ -196,8 +235,8 @@ export class OrganisationsService {
         duree_estimee_heures: orgPath.parcours.duree_estimee_heures,
         total_modules: totalModulesInParcours,
         users_inscrits: totalUsersInParcours,
-        modules_completes: completedModules,
-        taux_completion: totalModulesInParcours > 0 ? (completedModules / totalModulesInParcours) * 100 : 0,
+        modules_completes_moyenne: Math.round(avgModulesCompletedPerUser * 100) / 100,
+        taux_completion_parcours: Math.round(tauxCompletionParcours * 100) / 100,
         score_moyen: Math.round(avgScore * 100) / 100,
         temps_moyen_heures: Math.round(avgTimeSpent * 100) / 100,
         date_ajout: orgPath.date_ajout
@@ -269,9 +308,36 @@ export class OrganisationsService {
       }
       
       const userData = userActivity.get(userId)!;
-      if (prog.statut === ProgressStatus.TERMINE) {
-        userData.modules_completes++;
+      // Recalculer les modules complétés par utilisateur via les quiz (tous les quiz de module à 100%)
+      // Limiter au parcours de cette progression
+      const quizRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz.entity').Quiz);
+      const quizResponseRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz-response.entity').QuizResponse);
+      const moduleQuizzes = await quizRepo.find({
+        where: { module: { parcours: { parcours_id: prog.parcours.parcours_id } }, type_quiz: 'module' as any },
+        relations: ['questions', 'module']
+      });
+      const quizIds = moduleQuizzes.map(q => q.quiz_id);
+      const responses = quizIds.length ? await quizResponseRepo.find({
+        where: { utilisateur: { users_id: userId }, quiz: { quiz_id: In(quizIds) } },
+        relations: ['quiz', 'quiz.questions']
+      }) : [];
+      let modulesCompletedForParcours = 0;
+      const modulesOfParcours = Array.from(new Set(moduleQuizzes.map(q => q.module?.module_id).filter(Boolean))) as number[];
+      for (const moduleId of modulesOfParcours) {
+        const quizzesForModule = moduleQuizzes.filter(q => q.module?.module_id === moduleId);
+        if (quizzesForModule.length === 0) continue;
+        let ok = true;
+        for (const q of quizzesForModule) {
+          const reps = responses.filter(r => r.quiz.quiz_id === q.quiz_id);
+          if (reps.length === 0) { ok = false; break; }
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+          const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+          if (pct < 100) { ok = false; break; }
+        }
+        if (ok) modulesCompletedForParcours++;
       }
+      userData.modules_completes += modulesCompletedForParcours;
       userData.temps_total += prog.temps_passe || 0;
     }
 
@@ -390,38 +456,56 @@ export class OrganisationsService {
     // Progressions récentes
     const progressionsRecentes = progressions.filter(p => p.date_creation >= dateLimite);
 
-    // Statistiques par module (basées sur les quiz de module)
+    // Statistiques par module (basées sur les quiz de module à 100%)
     const modulesStats = new Map<number, any>();
+    const quizRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz.entity').Quiz);
+    const quizResponseRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz-response.entity').QuizResponse);
+    const allModuleQuizzes = await quizRepo.find({
+      where: { module: { parcours: { parcours_id: parcoursId } }, type_quiz: 'module' as any },
+      relations: ['questions', 'module']
+    });
+    const quizIdsAll = allModuleQuizzes.map(q => q.quiz_id);
+    const allResponses = quizIdsAll.length ? await quizResponseRepo.find({
+      where: { utilisateur: { organisation: { organisation_id: organisationId } }, quiz: { quiz_id: In(quizIdsAll) } },
+      relations: ['quiz', 'quiz.questions', 'utilisateur']
+    }) : [];
+
     for (const module of orgParcours.parcours.modules || []) {
-      // Pour les statistiques par module, on utilise les quiz de module
-      // La progression est maintenant liée au parcours, mais on peut calculer les stats par module
-      // en analysant les quiz de chaque module
-      
-      const moduleProgressions = progressions.filter(p => p.parcours.parcours_id === parcoursId);
-      const moduleProgressionsRecentes = progressionsRecentes.filter(p => p.parcours.parcours_id === parcoursId);
+      const moduleQuizzes = allModuleQuizzes.filter(q => q.module?.module_id === module.module_id);
+      if (moduleQuizzes.length === 0) {
+        modulesStats.set(module.module_id, {
+          module_id: module.module_id,
+          titre: module.titre,
+          utilisateurs_ayant_termine: 0,
+          taux_completion_module: 0
+        });
+        continue;
+      }
 
-      // Calculer les statistiques basées sur la progression du parcours
-      const completedCount = moduleProgressions.filter(p => p.statut === ProgressStatus.TERMINE).length;
-      const recentCompletedCount = moduleProgressionsRecentes.filter(p => p.statut === ProgressStatus.TERMINE).length;
+      // Utilisateurs uniques
+      const userIds = new Set(progressions.map(p => p.utilisateur.users_id));
+      let usersCompleted = 0;
+      for (const uid of userIds) {
+        let ok = true;
+        for (const q of moduleQuizzes) {
+          const reps = allResponses.filter(r => r.utilisateur.users_id === uid && r.quiz.quiz_id === q.quiz_id);
+          if (reps.length === 0) { ok = false; break; }
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+          const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+          if (pct < 100) { ok = false; break; }
+        }
+        if (ok) usersCompleted++;
+      }
 
-      const avgScore = moduleProgressions.length > 0 
-        ? moduleProgressions.reduce((sum, p) => sum + (p.score || 0), 0) / moduleProgressions.length
-        : 0;
-
-      const avgTimeSpent = moduleProgressions.length > 0
-        ? moduleProgressions.reduce((sum, p) => sum + (p.temps_passe || 0), 0) / moduleProgressions.length
-        : 0;
+      const totalUsersInParcours = userIds.size;
+      const tauxCompletionModule = totalUsersInParcours > 0 ? (usersCompleted / totalUsersInParcours) * 100 : 0;
 
       modulesStats.set(module.module_id, {
         module_id: module.module_id,
         titre: module.titre,
-        total_progressions: moduleProgressions.length,
-        progressions_recentes: moduleProgressionsRecentes.length,
-        modules_completes: completedCount,
-        modules_completes_recentes: recentCompletedCount,
-        taux_completion: moduleProgressions.length > 0 ? (completedCount / moduleProgressions.length) * 100 : 0,
-        score_moyen: Math.round(avgScore * 100) / 100,
-        temps_moyen_heures: Math.round(avgTimeSpent * 100) / 100
+        utilisateurs_ayant_termine: usersCompleted,
+        taux_completion_module: Math.round(tauxCompletionModule * 100) / 100
       });
     }
 
@@ -445,9 +529,25 @@ export class OrganisationsService {
       }
 
       const userData = usersStats.get(userId)!;
-      if (prog.statut === ProgressStatus.TERMINE) {
-        userData.modules_completes++;
+      // Recalculer les modules complétés pour cet utilisateur (parcours cible), via quiz
+      const moduleQuizzes = allModuleQuizzes; // déjà filtrés par parcours
+      let modulesCompletedForUser = 0;
+      const modulesOfParcours = Array.from(new Set(moduleQuizzes.map(q => q.module?.module_id).filter(Boolean))) as number[];
+      for (const moduleId of modulesOfParcours) {
+        const quizzesForModule = moduleQuizzes.filter(q => q.module?.module_id === moduleId);
+        if (quizzesForModule.length === 0) continue;
+        let ok = true;
+        for (const q of quizzesForModule) {
+          const reps = allResponses.filter(r => r.utilisateur.users_id === userId && r.quiz.quiz_id === q.quiz_id);
+          if (reps.length === 0) { ok = false; break; }
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+          const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+          if (pct < 100) { ok = false; break; }
+        }
+        if (ok) modulesCompletedForUser++;
       }
+      userData.modules_completes += modulesCompletedForUser;
       userData.temps_total += prog.temps_passe || 0;
       if (prog.date_creation > userData.derniere_activite) {
         userData.derniere_activite = prog.date_creation;

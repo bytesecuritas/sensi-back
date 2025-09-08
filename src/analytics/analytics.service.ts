@@ -82,7 +82,7 @@ export class AnalyticsService {
       totalCertifications,
       activeUsers,
       newUsers,
-      completedModules,
+      completedParcours,
       totalProgress,
     ] = await Promise.all([
       this.userRepository.count(),
@@ -124,9 +124,9 @@ export class AnalyticsService {
         totalCertifications,
         activeUsers,
         newUsers,
-        completedModules,
+        completedParcours,
         totalProgress,
-        completionRate: totalProgress > 0 ? (completedModules / totalProgress * 100).toFixed(2) : 0,
+        completionRate: totalProgress > 0 ? (completedParcours / totalProgress * 100).toFixed(2) : 0,
         gamification: {
           totalPoints,
           avgPointsPerUser: totalUsers > 0 ? (totalPoints / totalUsers).toFixed(2) : '0',

@@ -886,39 +886,9 @@ export class LearningService {
     if (quiz.type_quiz === 'module' && quiz.module && quiz.module.parcours) {
       console.log(`Mise à jour progression pour user ${userId}, parcours ${quiz.module.parcours.parcours_id}, score ${effectiveScoreFinal}, réussi: ${isReussi}`);
       await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, effectiveScoreFinal, isReussi);
-      // Incrémenter le nombre de tentatives de quiz pour ce parcours
-      try {
-        const progression = await this.progressRepository.findOne({
-          where: {
-            utilisateur: { users_id: userId },
-            parcours: { parcours_id: quiz.module.parcours.parcours_id }
-          }
-        });
-        if (progression) {
-          progression.tentatives_quiz = (progression.tentatives_quiz || 0) + 1;
-          await this.progressRepository.save(progression);
-        }
-      } catch (e) {
-        this.logger.warn(`Impossible d'incrémenter tentatives_quiz: ${e.message}`);
-      }
     } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
       console.log(`Mise à jour certification pour user ${userId}, parcours ${quiz.parcours.parcours_id}, score ${effectiveScoreFinal}, réussi: ${isReussi}`);
       await this.updateCertification(userId, quiz.parcours.parcours_id, effectiveScoreFinal, isReussi);
-      // Incrémenter le nombre de tentatives de quiz pour ce parcours
-      try {
-        const progression = await this.progressRepository.findOne({
-          where: {
-            utilisateur: { users_id: userId },
-            parcours: { parcours_id: quiz.parcours.parcours_id }
-          }
-        });
-        if (progression) {
-          progression.tentatives_quiz = (progression.tentatives_quiz || 0) + 1;
-          await this.progressRepository.save(progression);
-        }
-      } catch (e) {
-        this.logger.warn(`Impossible d'incrémenter tentatives_quiz (final): ${e.message}`);
-      }
     } else {
       console.log(`Quiz type: ${quiz.type_quiz}, module: ${quiz.module?.module_id}, parcours: ${quiz.parcours?.parcours_id}`);
     }

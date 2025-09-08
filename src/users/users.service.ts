@@ -161,14 +161,13 @@ export class UsersService {
       console.warn('Progress data not available:', error.message);
     }
 
-    // Calculer les statistiques (avec valeurs numériques)
-    const totalModules = progressions.length;
-    const modulesTermines = progressions.filter(p => p.statut === 'termine').length;
-    const tempsTotal = progressions.reduce((total, p) => total + Number(p.temps_passe || 0), 0);
+    // Calculer les statistiques
+    const totalParcours = progressions.length;
+    const parcoursTerminees = progressions.filter(p => p.statut === 'termine').length;
+    const tempsTotal = progressions.reduce((total, p) => total + (p.temps_passe || 0), 0);
     const scoreMoyen = progressions.length > 0 
-      ? progressions.reduce((total, p) => total + Number(p.score || 0), 0) / progressions.length 
+      ? progressions.reduce((total, p) => total + (p.score || 0), 0) / progressions.length 
       : 0;
-    const tentativesQuizTotal = progressions.reduce((total, p) => total + Number(p.tentatives_quiz || 0), 0);
 
     // Récupérer les certificats
     let certificats: Certification[] = [];
@@ -184,34 +183,61 @@ export class UsersService {
     }
 
     // Statistiques par parcours
-    const statsParcours = {};
+    const statsParcours = {} as Record<number, any>;
     for (const prog of progressions) {
-      if (prog.parcours) {
-        const parcoursId = prog.parcours.parcours_id;
-        if (!statsParcours[parcoursId]) {
-          statsParcours[parcoursId] = {
-            titre: prog.parcours.titre,
-            modules_completes: 0,
-            temps_total: 0,
-            score_moyen: 0,
-            progression: 0
-          };
-        }
-        
-        if (prog.statut === 'termine') {
-          statsParcours[parcoursId].modules_completes++;
-        }
-        statsParcours[parcoursId].temps_total += prog.temps_passe || 0;
-        statsParcours[parcoursId].score_moyen += prog.score || 0;
+      if (!prog.parcours) continue;
+      const parcoursId = prog.parcours.parcours_id;
+      if (!statsParcours[parcoursId]) {
+        statsParcours[parcoursId] = {
+          titre: prog.parcours.titre,
+          modules_completes: 0,
+          temps_total: 0,
+          score_moyen: 0,
+          progression: 0
+        };
       }
-    }
 
-    // Calculer les moyennes par parcours
-    Object.values(statsParcours).forEach((parcours: any) => {
-      if (parcours.modules_completes > 0) {
-        parcours.score_moyen = parcours.score_moyen / parcours.modules_completes;
+      // Charger les modules du parcours avec leurs quiz de type module
+      const moduleRepo = this.usersRepository.manager.getRepository(require('../learning/entities/learning-module.entity').LearningPathModule);
+      const quizRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz.entity').Quiz);
+      const quizResponseRepo = this.usersRepository.manager.getRepository(require('../learning/entities/quiz-response.entity').QuizResponse);
+
+      const modules = await moduleRepo.find({ where: { parcours: { parcours_id: parcoursId } } });
+      let modulesCompletes = 0;
+      for (const module of modules) {
+        // Obtenir les quiz du module
+        const moduleQuizzes = await quizRepo.find({ where: { module: { module_id: module.module_id }, type_quiz: 'module' as any }, relations: ['questions'] });
+        if (moduleQuizzes.length === 0) continue;
+
+        // Récupérer les réponses de l'utilisateur pour ces quiz
+        const quizIds = moduleQuizzes.map(q => q.quiz_id);
+        const responses = await quizResponseRepo.find({
+          where: {
+            utilisateur: { users_id: userId },
+            quiz: { quiz_id: require('typeorm').In(quizIds) }
+          },
+          relations: ['quiz', 'quiz.questions']
+        });
+
+        // Vérifier que chaque quiz de module est à 100%
+        let moduleReussi = true;
+        for (const q of moduleQuizzes) {
+          const reps = responses.filter(r => r.quiz.quiz_id === q.quiz_id);
+          if (reps.length === 0) { moduleReussi = false; break; }
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPoints = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+          const pct = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+          if (pct < 100) { moduleReussi = false; break; }
+        }
+        if (moduleReussi) modulesCompletes++;
       }
-    });
+
+      statsParcours[parcoursId].modules_completes = modulesCompletes;
+      statsParcours[parcoursId].temps_total += prog.temps_passe || 0;
+      // Le score moyen par parcours correspond à la progression du parcours
+      statsParcours[parcoursId].score_moyen = Number(prog.score || 0);
+      statsParcours[parcoursId].progression = Number(prog.score || 0);
+    }
 
     // recuperer les infos de son organisation
     const organisation = user.organisation ? 
@@ -257,12 +283,11 @@ export class UsersService {
         organisation_pays: organisation?.pays ?? null,
       },
       statistiques: {
-        total_modules: totalModules,
-        modules_termines: modulesTermines,
-        taux_completion: totalModules > 0 ? (modulesTermines / totalModules * 100).toFixed(2) : 0,
+        total_parcours: totalParcours,
+        modules_termines: parcoursTerminees,
+        taux_completion: totalParcours > 0 ? (parcoursTerminees / totalParcours * 100).toFixed(2) : 0,
         temps_total: tempsTotal,
         score_moyen: scoreMoyen.toFixed(2),
-        tentatives_quiz: tentativesQuizTotal,
         nombre_certificats: certificats.length,
       },
       gamification: userLevel ? {
@@ -282,15 +307,7 @@ export class UsersService {
           points_gagnes: ub.points_gagnes,
         }))
       } : undefined,
-      parcours: progressions.map(p => ({
-        parcours_id: p.parcours?.parcours_id,
-        titre: p.parcours?.titre,
-        progression: Number(p.score || 0),
-        statut: p.statut,
-        tentatives_quiz: Number(p.tentatives_quiz || 0),
-        quiz_reussi: !!p.quiz_reussi,
-        certificat_obtenu: !!p.certificat_obtenu,
-      })),
+      parcours: statsParcours,
       certificats: certificats.map(cert => ({
         certification_id: cert.certification_id,
         titre: cert.type_certification,
