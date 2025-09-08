@@ -700,16 +700,31 @@ export class LearningService {
     // Vérifier si l'utilisateur peut accéder à ce quiz (ordre et prérequis)
     await this.validateQuizAccess(userId, quiz);
 
-    // Vérifier que l'utilisateur n'a pas déjà répondu à ce quiz
-    const existingResponse = await this.quizResponseRepository.findOne({
-      where: { 
+    // Vérifier s'il existe déjà des réponses et gérer les règles de reprise
+    const previousResponses = await this.quizResponseRepository.find({
+      where: {
         utilisateur: { users_id: userId },
         quiz: { quiz_id: quizId }
-      }
+      },
+      relations: ['quiz', 'question']
     });
 
-    if (existingResponse) {
-      throw new BadRequestException('Vous avez déjà répondu à ce quiz');
+    // Calculer le score précédent si des réponses existent
+    let previousTotalObtained = 0;
+    if (previousResponses.length > 0) {
+      previousTotalObtained = previousResponses.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+    }
+    const totalPointsQuizBefore = (quiz.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+    const previousScoreFinal = totalPointsQuizBefore > 0 ? (previousTotalObtained / totalPointsQuizBefore) * 100 : 0;
+
+    if (quiz.type_quiz === 'module') {
+      // Reprise possible uniquement si le quiz module n'a pas été validé (score < 100)
+      if (previousResponses.length > 0 && previousScoreFinal >= 100) {
+        throw new BadRequestException('Ce quiz de module a déjà été validé à 100%');
+      }
+    } else if (quiz.type_quiz === 'parcours_final') {
+      // Le quiz final peut toujours être repris; la mise à jour se fait seulement si nouveau score > ancien
+      // Pas de blocage ici
     }
 
     let totalScore = 0;
@@ -725,6 +740,7 @@ export class LearningService {
 
       let isCorrect = false;
       let pointsObtenus = 0;
+      const questionPoints = Number(question.points || 0);
 
       // Évaluer la réponse selon le type de question
       switch (question.type_question) {
@@ -732,7 +748,7 @@ export class LearningService {
           if (reponse.reponse_id) {
             const reponseChoisie = question.reponses.find(r => r.reponse_id === reponse.reponse_id);
             isCorrect = reponseChoisie?.est_correcte || false;
-            pointsObtenus = isCorrect ? question.points : 0;
+            pointsObtenus = isCorrect ? questionPoints : 0;
           }
           break;
 
@@ -750,10 +766,10 @@ export class LearningService {
             
             if (incorrectesChoisies === 0 && correctesNonChoisies === 0) {
               isCorrect = true;
-              pointsObtenus = question.points;
+              pointsObtenus = questionPoints;
             } else if (correctesChoisies > 0) {
               // Score partiel
-              const scorePartiel = (correctesChoisies / reponsesCorrectes.length) * question.points;
+              const scorePartiel = (correctesChoisies / reponsesCorrectes.length) * questionPoints;
               pointsObtenus = Math.max(0, scorePartiel - (incorrectesChoisies * 0.5));
             }
           }
@@ -763,7 +779,7 @@ export class LearningService {
           if (reponse.reponse_vrai_faux !== undefined) {
             const reponseCorrecte = question.reponses.find(r => r.est_correcte);
             isCorrect = reponseCorrecte?.texte.toLowerCase() === (reponse.reponse_vrai_faux ? 'vrai' : 'faux');
-            pointsObtenus = isCorrect ? question.points : 0;
+            pointsObtenus = isCorrect ? questionPoints : 0;
           }
           break;
 
@@ -785,11 +801,11 @@ export class LearningService {
           } else {
             isCorrect = false;
           }
-          pointsObtenus = isCorrect ? question.points : 0;
+          pointsObtenus = isCorrect ? questionPoints : 0;
           break;
       }
 
-      // Sauvegarder la réponse de l'utilisateur
+      // Construire la réponse (sauvegarde différée selon règles de reprise)
       const quizResponse = this.quizResponseRepository.create({
         utilisateur: user,
         quiz: quiz,
@@ -800,38 +816,79 @@ export class LearningService {
         points_obtenus: pointsObtenus,
         temps_reponse_secondes: responseData.temps_total_secondes || 0
       } as any);
+      responses.push(quizResponse as any);
 
-      const savedResponse = await this.quizResponseRepository.save(quizResponse);
-      responses.push(savedResponse as any);
-
-      totalScore += pointsObtenus;
-      totalPoints += question.points;
+      totalScore += Number(pointsObtenus || 0);
+      totalPoints += questionPoints;
     }
 
-    // Calculer le score final en pourcentage
-    const scoreFinal = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0;
+    // Calculer le nouveau score final en pourcentage
+    const newScoreFinal = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0;
     
     // Logique de validation selon le type de quiz
     let isReussi = false;
     
     if (quiz.type_quiz === 'module') {
       // Pour les quiz de module : validation 100% obligatoire
-      isReussi = scoreFinal >= 100;
+      isReussi = newScoreFinal >= 100;
     } else if (quiz.type_quiz === 'parcours_final') {
       // Pour les quiz finaux de parcours : validation à 80%
-      isReussi = scoreFinal >= 80;
+      isReussi = newScoreFinal >= 80;
     } else {
       // Fallback sur l'ancienne logique
-      isReussi = scoreFinal >= quiz.score_minimum_pour_reussite;
+      isReussi = newScoreFinal >= quiz.score_minimum_pour_reussite;
     }
 
-    // Mettre à jour la progression selon le type de quiz
+    // Décider de la persistance et du score effectif selon les règles de reprise
+    let scoreUpdated = false;
+    let effectiveScoreFinal = previousScoreFinal;
+
+    if (quiz.type_quiz === 'module') {
+      // Si reprise autorisée, remplacer les réponses existantes
+      if (previousResponses.length > 0) {
+        await this.quizResponseRepository.remove(previousResponses);
+      }
+      for (const r of responses) {
+        await this.quizResponseRepository.save(r);
+      }
+      scoreUpdated = true;
+      effectiveScoreFinal = newScoreFinal;
+    } else if (quiz.type_quiz === 'parcours_final') {
+      // Mettre à jour uniquement si le nouveau score est supérieur
+      if (previousResponses.length === 0 || newScoreFinal > previousScoreFinal) {
+        if (previousResponses.length > 0) {
+          await this.quizResponseRepository.remove(previousResponses);
+        }
+        for (const r of responses) {
+          await this.quizResponseRepository.save(r);
+        }
+        scoreUpdated = true;
+        effectiveScoreFinal = newScoreFinal;
+      } else {
+        scoreUpdated = false;
+        effectiveScoreFinal = previousScoreFinal;
+      }
+    } else {
+      // Fallback: conserver la meilleure des deux tentatives
+      if (previousResponses.length === 0 || newScoreFinal >= previousScoreFinal) {
+        if (previousResponses.length > 0) {
+          await this.quizResponseRepository.remove(previousResponses);
+        }
+        for (const r of responses) {
+          await this.quizResponseRepository.save(r);
+        }
+        scoreUpdated = true;
+        effectiveScoreFinal = newScoreFinal;
+      }
+    }
+
+    // Mettre à jour la progression selon le type de quiz en utilisant le score effectif
     if (quiz.type_quiz === 'module' && quiz.module && quiz.module.parcours) {
-      console.log(`Mise à jour progression pour user ${userId}, parcours ${quiz.module.parcours.parcours_id}, score ${scoreFinal}, réussi: ${isReussi}`);
-      await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, scoreFinal, isReussi);
+      console.log(`Mise à jour progression pour user ${userId}, parcours ${quiz.module.parcours.parcours_id}, score ${effectiveScoreFinal}, réussi: ${isReussi}`);
+      await this.updateParcoursProgressFromModule(userId, quiz.module.parcours.parcours_id, effectiveScoreFinal, isReussi);
     } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
-      console.log(`Mise à jour certification pour user ${userId}, parcours ${quiz.parcours.parcours_id}, score ${scoreFinal}, réussi: ${isReussi}`);
-      await this.updateCertification(userId, quiz.parcours.parcours_id, scoreFinal, isReussi);
+      console.log(`Mise à jour certification pour user ${userId}, parcours ${quiz.parcours.parcours_id}, score ${effectiveScoreFinal}, réussi: ${isReussi}`);
+      await this.updateCertification(userId, quiz.parcours.parcours_id, effectiveScoreFinal, isReussi);
     } else {
       console.log(`Quiz type: ${quiz.type_quiz}, module: ${quiz.module?.module_id}, parcours: ${quiz.parcours?.parcours_id}`);
     }
@@ -839,8 +896,8 @@ export class LearningService {
     // Gamification automatique
     try {
       // Si le quiz de module est réussi, attribuer des points liés au quiz proportionnels au score
-      if (isReussi && quiz.type_quiz === 'module' && quiz.module) {
-        await this.gamificationService.addQuizSuccessPoints(userId, quiz.module.module_id, Math.round(scoreFinal));
+      if (scoreUpdated && isReussi && quiz.type_quiz === 'module' && quiz.module) {
+        await this.gamificationService.addQuizSuccessPoints(userId, quiz.module.module_id, Math.round(effectiveScoreFinal));
       }
 
       // Si c'est un quiz de module, vérifier si tous les quiz du module sont réussis (100%) pour attribuer les points de fin de module
@@ -859,8 +916,8 @@ export class LearningService {
         const scoreByQuiz = new Map<number, number>();
         for (const q of quizzes) {
           const reps = responsesForModule.filter(r => r.quiz.quiz_id === q.quiz_id);
-          const totalObtained = reps.reduce((sum, r) => sum + (r.points_obtenus || 0), 0);
-          const totalPointsQuiz = (q.questions || []).reduce((sum, quest) => sum + (quest.points || 0), 0);
+          const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const totalPointsQuiz = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
           const pct = totalPointsQuiz > 0 ? (totalObtained / totalPointsQuiz) * 100 : 0;
           scoreByQuiz.set(q.quiz_id, pct);
         }
@@ -868,7 +925,7 @@ export class LearningService {
         // Tous les quiz du module doivent être à 100%
         const allQuizzesCompleted = quizzes.length > 0 && quizzes.every(q => (scoreByQuiz.get(q.quiz_id) || 0) >= 100);
         if (allQuizzesCompleted) {
-          await this.gamificationService.addModuleCompletionPoints(userId, moduleId, Math.round(scoreFinal));
+          await this.gamificationService.addModuleCompletionPoints(userId, moduleId, Math.round(effectiveScoreFinal));
         }
       }
     } catch (e) {
@@ -877,7 +934,10 @@ export class LearningService {
 
     return {
       quiz_id: quizId,
-      score_final: scoreFinal,
+      score_final: effectiveScoreFinal,
+      new_score_final: newScoreFinal,
+      previous_score_final: previousResponses.length > 0 ? previousScoreFinal : null,
+      score_updated: scoreUpdated,
       points_obtenus: totalScore,
       points_totaux: totalPoints,
       reussi: isReussi,
@@ -937,8 +997,8 @@ export class LearningService {
           }
 
           // Vérifier si le quiz est réussi (100% pour les quiz de module)
-          const scoreQuiz = reponsesQuiz.reduce((sum, r) => sum + r.points_obtenus, 0);
-          const pointsTotauxQuiz = quiz.questions ? quiz.questions.reduce((sum, q) => sum + q.points, 0) : 0;
+          const scoreQuiz = reponsesQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+          const pointsTotauxQuiz = quiz.questions ? quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
           const pourcentageQuiz = pointsTotauxQuiz > 0 ? (scoreQuiz / pointsTotauxQuiz) * 100 : 0;
           
           if (pourcentageQuiz < 100) {
@@ -1008,7 +1068,7 @@ export class LearningService {
     // 1. Vérifier que tous les modules précédents sont complétés
     const allModules = await this.learningPathRepository.findOne({
       where: { parcours_id: parcours.parcours_id },
-      relations: ['modules', 'modules.quiz']
+      relations: ['modules', 'modules.quiz', 'modules.quiz.questions']
     });
 
     if (!allModules) {
@@ -1019,18 +1079,12 @@ export class LearningService {
     const sortedModules = allModules.modules.sort((a, b) => a.ordre - b.ordre);
     const currentModuleIndex = sortedModules.findIndex(m => m.module_id === module.module_id);
 
-    // Vérifier que tous les modules précédents sont complétés
+    // Vérifier que tous les modules précédents sont complétés (tous leurs quiz de module à 100%)
     for (let i = 0; i < currentModuleIndex; i++) {
       const previousModule = sortedModules[i];
-      const moduleProgress = await this.progressRepository.findOne({
-        where: {
-          utilisateur: { users_id: userId },
-          parcours: { parcours_id: parcours.parcours_id }
-        }
-      });
-
-      if (!moduleProgress || moduleProgress.score < 100) {
-        throw new BadRequestException(`Vous devez compléter le module "${previousModule.titre}" avant d'accéder à ce quiz`);
+      const completed = await this.isModuleCompleted(userId, previousModule.module_id);
+      if (!completed) {
+        throw new BadRequestException(`Vous devez compléter le module "${previousModule.titre}" (tous ses quiz à 100%) avant d'accéder à ce quiz`);
       }
     }
 
@@ -1062,6 +1116,39 @@ export class LearningService {
         throw new BadRequestException(`Vous devez réussir le quiz "${previousQuiz.titre}" à 100% avant d'accéder à ce quiz`);
       }
     }
+  }
+
+  /**
+   * Retourne true si un module est complété pour un utilisateur (tous ses quiz de type module à 100%).
+   */
+  private async isModuleCompleted(userId: number, moduleId: number): Promise<boolean> {
+    const quizzes = await this.getModuleQuizzes(moduleId);
+    if (!quizzes || quizzes.length === 0) {
+      return false;
+    }
+
+    const responsesForModule = await this.quizResponseRepository.find({
+      where: {
+        utilisateur: { users_id: userId },
+        quiz: { module: { module_id: moduleId }, type_quiz: 'module' as any },
+      },
+      relations: ['quiz', 'quiz.questions'],
+    });
+
+    for (const q of quizzes) {
+      const reps = responsesForModule.filter(r => r.quiz.quiz_id === q.quiz_id);
+      if (reps.length === 0) {
+        return false;
+      }
+      const totalObtained = reps.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+      const totalPointsQuiz = (q.questions || []).reduce((sum, quest) => sum + Number(quest.points || 0), 0);
+      const pct = totalPointsQuiz > 0 ? (totalObtained / totalPointsQuiz) * 100 : 0;
+      if (pct < 100) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -1153,7 +1240,7 @@ export class LearningService {
       throw new NotFoundException('Aucune réponse trouvée pour ce quiz');
     }
 
-    const totalScore = reponses.reduce((sum, r) => sum + r.points_obtenus, 0);
+    const totalScore = reponses.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
     
     // Vérifier que le quiz et ses questions sont chargés
     const quiz = reponses[0].quiz;
@@ -1161,7 +1248,7 @@ export class LearningService {
       throw new NotFoundException('Quiz ou questions non trouvés');
     }
     
-    const totalPoints = quiz.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+    const totalPoints = quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0);
     const scoreFinal = totalPoints > 0 ? (totalScore / totalPoints) * 100 : 0;
 
     return {

@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# excure les fichier ressources
+ressources/
+
 # Logs
 logs
 *.log

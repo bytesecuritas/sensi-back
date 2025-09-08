@@ -539,23 +539,41 @@ export class LearningController {
 
   // ==================== ROUTES POUR LES QUIZ ====================
 
-  @Post('modules/:moduleId/quiz')
-  @ApiOperation({ summary: 'Créer un quiz pour un module' })
-  @ApiParam({ name: 'moduleId', type: String })
+  @Post('quizzes/:type/parent/:parentId')
+  @ApiOperation({ summary: 'Créer un quiz en précisant le type et le parent' })
+  @ApiParam({ name: 'type', type: String, description: 'Type de quiz: module | parcours_final' })
+  @ApiParam({ name: 'parentId', type: String, description: 'ID du parent: module_id si type=module, parcours_id si type=parcours_final' })
   @ApiResponse({ status: 201, description: 'Quiz créé' })
   @Roles('superadmin')
-  async createQuiz(
-    @Param('moduleId') moduleId: string,
+  async createQuizUnified(
+    @Param('type') type: string,
+    @Param('parentId') parentId: string,
     @Body() quizData: CreateQuizDto
   ): Promise<any> {
-    return await this.learningService.createQuiz(+moduleId, quizData);
+    if (type === 'module') {
+      return await this.learningService.createQuiz(+parentId, quizData);
+    }
+    if (type === 'parcours_final') {
+      return await this.learningService.createParcoursFinalQuiz(+parentId, quizData);
+    }
+    throw new BadRequestException('Type de quiz invalide. Utilisez "module" ou "parcours_final".');
   }
 
-  @Get('modules/:moduleId/quiz')
-  @ApiOperation({ summary: 'Obtenir tous les quiz d\'un module' })
-  @ApiParam({ name: 'moduleId', type: String })
-  async getModuleQuizzes(@Param('moduleId') moduleId: string): Promise<any[]> {
-    return await this.learningService.getModuleQuizzes(+moduleId);
+  @Get('quizzes/:type/parent/:parentId')
+  @ApiOperation({ summary: 'Obtenir les quiz selon le type et le parent' })
+  @ApiParam({ name: 'type', type: String, description: 'Type de quiz: module | parcours_final' })
+  @ApiParam({ name: 'parentId', type: String, description: 'ID du parent: module_id si type=module, parcours_id si type=parcours_final' })
+  async getQuizzesByTypeAndParent(
+    @Param('type') type: string,
+    @Param('parentId') parentId: string
+  ): Promise<any[]> {
+    if (type === 'module') {
+      return await this.learningService.getModuleQuizzes(+parentId);
+    }
+    if (type === 'parcours_final') {
+      return await this.learningService.getParcoursFinalQuizzes(+parentId);
+    }
+    throw new BadRequestException('Type de quiz invalide. Utilisez "module" ou "parcours_final".');
   }
 
   @Get('quiz/:quizId')
@@ -602,27 +620,6 @@ export class LearningController {
   async deleteQuiz(@Param('quizId') quizId: string): Promise<{ message: string }> {
     await this.learningService.deleteQuiz(+quizId);
     return { message: 'Quiz supprimé avec succès' };
-  }
-
-  // ==================== ROUTES POUR LES QUIZ FINAUX DE PARCOURS ====================
-
-  @Post('parcours/:parcoursId/quiz-final')
-  @ApiOperation({ summary: 'Créer un quiz final pour un parcours' })
-  @ApiParam({ name: 'parcoursId', type: String })
-  @ApiResponse({ status: 201, description: 'Quiz final créé' })
-  @Roles('superadmin')
-  async createParcoursFinalQuiz(
-    @Param('parcoursId') parcoursId: string,
-    @Body() quizData: CreateQuizDto
-  ): Promise<any> {
-    return await this.learningService.createParcoursFinalQuiz(+parcoursId, quizData);
-  }
-
-  @Get('parcours/:parcoursId/quiz-finaux')
-  @ApiOperation({ summary: 'Obtenir tous les quiz finaux d\'un parcours' })
-  @ApiParam({ name: 'parcoursId', type: String })
-  async getParcoursFinalQuizzes(@Param('parcoursId') parcoursId: string): Promise<any[]> {
-    return await this.learningService.getParcoursFinalQuizzes(+parcoursId);
   }
 
 }
