@@ -135,37 +135,7 @@ npm run start:prod
 
 ## API Endpoints
 
-### Inscription d'un utilisateur
-```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "nom": "Doe",
-  "prenom": "John",
-  "age": 25,
-  "code_langue": "FR"
-}
-```
-
-### Connexion
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-### Route protégée
-```http
-POST /auth/protected
-Authorization: Bearer <your-jwt-token>
-```
+Voir `docs/API.md` pour une table complète des routes.
 
 ## Structure de la base de données
 

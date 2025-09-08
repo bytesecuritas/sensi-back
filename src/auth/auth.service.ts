@@ -44,6 +44,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.users_id, role: user.role };
     const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
     const refresh_token = this.generateRefreshToken(payload);
+    // Optionally, persist refresh token hash if you want server-side revocation (not implemented here)
     return {
       access_token,
       refresh_token,
@@ -52,6 +53,18 @@ export class AuthService {
 
   generateRefreshToken(payload: any): string {
     return this.jwtService.sign(payload, { expiresIn: '7d' });
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const decoded = this.jwtService.verify(refreshToken);
+      const payload = { email: decoded.email, sub: decoded.sub, role: decoded.role };
+      const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
+      const new_refresh_token = this.generateRefreshToken(payload);
+      return { access_token, refresh_token: new_refresh_token };
+    } catch (e) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   async logout(userId: number) {

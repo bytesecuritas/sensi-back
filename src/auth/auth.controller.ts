@@ -90,6 +90,12 @@ class ResetPasswordDto {
   newPassword: string;
 }
 
+class RefreshDto {
+  @IsString()
+  @IsNotEmpty()
+  refresh_token: string;
+}
+
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
@@ -138,6 +144,23 @@ export class AuthController {
         throw error;
       }
       throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Obtenir un nouveau access token via refresh token' })
+  @ApiResponse({ status: 200, description: 'Nouveau access token délivré' })
+  async refresh(@Body() body: RefreshDto) {
+    try {
+      if (!body.refresh_token) {
+        throw new HttpException('Refresh token requis', HttpStatus.BAD_REQUEST);
+      }
+      return await this.authService.refresh(body.refresh_token);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException('Refresh failed', HttpStatus.UNAUTHORIZED);
     }
   }
 

@@ -161,13 +161,14 @@ export class UsersService {
       console.warn('Progress data not available:', error.message);
     }
 
-    // Calculer les statistiques
+    // Calculer les statistiques (avec valeurs numériques)
     const totalModules = progressions.length;
     const modulesTermines = progressions.filter(p => p.statut === 'termine').length;
-    const tempsTotal = progressions.reduce((total, p) => total + (p.temps_passe || 0), 0);
+    const tempsTotal = progressions.reduce((total, p) => total + Number(p.temps_passe || 0), 0);
     const scoreMoyen = progressions.length > 0 
-      ? progressions.reduce((total, p) => total + (p.score || 0), 0) / progressions.length 
+      ? progressions.reduce((total, p) => total + Number(p.score || 0), 0) / progressions.length 
       : 0;
+    const tentativesQuizTotal = progressions.reduce((total, p) => total + Number(p.tentatives_quiz || 0), 0);
 
     // Récupérer les certificats
     let certificats: Certification[] = [];
@@ -261,6 +262,7 @@ export class UsersService {
         taux_completion: totalModules > 0 ? (modulesTermines / totalModules * 100).toFixed(2) : 0,
         temps_total: tempsTotal,
         score_moyen: scoreMoyen.toFixed(2),
+        tentatives_quiz: tentativesQuizTotal,
         nombre_certificats: certificats.length,
       },
       gamification: userLevel ? {
@@ -280,7 +282,15 @@ export class UsersService {
           points_gagnes: ub.points_gagnes,
         }))
       } : undefined,
-      parcours: statsParcours,
+      parcours: progressions.map(p => ({
+        parcours_id: p.parcours?.parcours_id,
+        titre: p.parcours?.titre,
+        progression: Number(p.score || 0),
+        statut: p.statut,
+        tentatives_quiz: Number(p.tentatives_quiz || 0),
+        quiz_reussi: !!p.quiz_reussi,
+        certificat_obtenu: !!p.certificat_obtenu,
+      })),
       certificats: certificats.map(cert => ({
         certification_id: cert.certification_id,
         titre: cert.type_certification,
