@@ -81,10 +81,12 @@ export class Progress {
   updateTempsPasseAndDateCompletion() {
     if (this.statut === ProgressStatus.TERMINE && !this.date_completion) {
       this.date_completion = new Date();
-      
-      // Utiliser date_creation au lieu de date_debut
+    }
+    
+    // Calculer le temps passé à chaque mise à jour si pas déjà défini
+    if (!this.temps_passe || this.temps_passe === 0) {
       const debut = new Date(this.date_creation);
-      const fin = new Date(this.date_completion);
+      const fin = this.date_completion ? new Date(this.date_completion) : new Date();
       const diffMilliseconds = fin.getTime() - debut.getTime();
       const diffHeures = diffMilliseconds / (1000 * 60 * 60);
       this.temps_passe = Math.round(diffHeures * 100) / 100;

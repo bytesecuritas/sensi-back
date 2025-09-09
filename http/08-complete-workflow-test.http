@@ -599,7 +599,35 @@ Content-Type: {{contentType}}
 
 ###
 
-### 33. Logout utilisateur
+### 33. Test de sécurité : Vérifier qu'un quiz ne contient plus les réponses correctes
+# Cette requête doit retourner un quiz sans les champs est_correcte dans les réponses
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 34. Test d'administration : Vérifier qu'un admin peut voir les réponses correctes
+# Cette requête doit retourner un quiz avec tous les champs est_correcte
+GET {{baseUrl}}/learning/quiz/1/admin
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 35. Test de correction : Vérifier l'éligibilité avec les bonnes données
+# Cette requête doit maintenant afficher modulesCompletes > 0 et scoreGlobal > 0
+GET {{baseUrl}}/certificates/eligibility/1
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 36. Test de correction : Vérifier le dashboard global avec le bon totalUsers
+# Cette requête doit maintenant afficher totalUsers = 3 dans organisationStats
+GET {{baseUrl}}/auth/dashboard
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 37. Logout utilisateur
 POST {{baseUrl}}/auth/logout
 Authorization: Bearer {{user1_token}}
 

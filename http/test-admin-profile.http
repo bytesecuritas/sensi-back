@@ -12,6 +12,10 @@ Content-Type: {{contentType}}
   "password": "SuperAdmin123!"
 }
 
+### Documentation
+GET {{baseUrl}}/docs
+
+
 ### 2. Créer une organisation
 POST {{baseUrl}}/organisations
 Content-Type: {{contentType}}

@@ -389,7 +389,7 @@ export class OrganisationsService {
         // Statistiques temporelles
         activite_30_jours: {
           progressions_recentes: recentProgressions.length,
-          modules_completes: recentCompletions,
+          parcours_completes: recentCompletions,
           nouveaux_utilisateurs: await this.usersRepository.count({
             where: { 
               organisation: { organisation_id: organisationId },

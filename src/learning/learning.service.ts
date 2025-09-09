@@ -653,8 +653,41 @@ export class LearningService {
     });
   }
 
-  // Obtenir un quiz spécifique avec ses questions
+  // Obtenir un quiz spécifique avec ses questions (pour répondre - sans réponses correctes)
   async getQuizById(quizId: number, userId?: number): Promise<Quiz> {
+    const quiz = await this.quizRepository.findOne({
+      where: { quiz_id: quizId, actif: true },
+      relations: ['questions', 'questions.reponses', 'module', 'module.parcours', 'parcours']
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
+    }
+
+    // Si un userId est fourni, vérifier l'accès au quiz
+    if (userId) {
+      await this.validateQuizAccess(userId, quiz);
+    }
+
+    // Trier les questions et réponses manuellement
+    if (quiz.questions) {
+      quiz.questions.sort((a, b) => a.ordre - b.ordre);
+      quiz.questions.forEach(question => {
+        if (question.reponses) {
+          question.reponses.sort((a, b) => a.ordre - b.ordre);
+          // Exclure les réponses correctes pour éviter la triche
+          question.reponses.forEach(reponse => {
+            (reponse as any).est_correcte = undefined;
+          });
+        }
+      });
+    }
+
+    return quiz;
+  }
+
+  // Obtenir un quiz avec toutes les informations (pour l'administration - avec réponses correctes)
+  async getQuizByIdWithAnswers(quizId: number, userId?: number): Promise<Quiz> {
     const quiz = await this.quizRepository.findOne({
       where: { quiz_id: quizId, actif: true },
       relations: ['questions', 'questions.reponses', 'module', 'module.parcours', 'parcours']
@@ -692,7 +725,7 @@ export class LearningService {
       throw new NotFoundException('Utilisateur non trouvé');
     }
 
-    const quiz = await this.getQuizById(quizId);
+    const quiz = await this.getQuizByIdWithAnswers(quizId);
     if (!quiz) {
       throw new NotFoundException('Quiz non trouvé');
     }
@@ -880,6 +913,11 @@ export class LearningService {
         scoreUpdated = true;
         effectiveScoreFinal = newScoreFinal;
       }
+    }
+
+    // Mettre à jour le temps passé dans la progression
+    if (responseData.temps_total_secondes && responseData.temps_total_secondes > 0) {
+      await this.updateProgressTime(userId, quiz, responseData.temps_total_secondes);
     }
 
     // Mettre à jour la progression selon le type de quiz en utilisant le score effectif
@@ -1191,6 +1229,42 @@ export class LearningService {
     });
 
     return responses.reduce((sum, r) => sum + (r.points_obtenus || 0), 0);
+  }
+
+  // Mettre à jour le temps passé dans la progression
+  private async updateProgressTime(userId: number, quiz: Quiz, tempsSecondes: number): Promise<void> {
+    let parcoursId: number;
+    
+    if (quiz.type_quiz === 'module' && quiz.module && quiz.module.parcours) {
+      parcoursId = quiz.module.parcours.parcours_id;
+    } else if (quiz.type_quiz === 'parcours_final' && quiz.parcours) {
+      parcoursId = quiz.parcours.parcours_id;
+    } else {
+      return; // Pas de parcours associé
+    }
+
+    // Récupérer ou créer la progression
+    let progression = await this.progressRepository.findOne({
+      where: { 
+        utilisateur: { users_id: userId },
+        parcours: { parcours_id: parcoursId }
+      }
+    });
+
+    if (!progression) {
+      progression = this.progressRepository.create({
+        utilisateur: { users_id: userId } as User,
+        parcours: { parcours_id: parcoursId } as LearningPath,
+        score: 0,
+        statut: ProgressStatus.EN_COURS
+      });
+    }
+
+    // Ajouter le temps passé (convertir les secondes en heures)
+    const tempsHeures = tempsSecondes / 3600;
+    progression.temps_passe = (progression.temps_passe || 0) + tempsHeures;
+    
+    await this.progressRepository.save(progression);
   }
 
   // Mettre à jour la certification basée sur le quiz final

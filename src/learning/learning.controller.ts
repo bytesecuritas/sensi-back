@@ -577,11 +577,20 @@ export class LearningController {
   }
 
   @Get('quiz/:quizId')
-  @ApiOperation({ summary: 'Obtenir un quiz spécifique avec ses questions' })
+  @ApiOperation({ summary: 'Obtenir un quiz spécifique avec ses questions (pour répondre - sans réponses correctes)' })
   @ApiParam({ name: 'quizId', type: String })
   async getQuizById(@Param('quizId') quizId: string, @Request() req): Promise<any> {
     const userId = req.user?.users_id;
     return await this.learningService.getQuizById(+quizId, userId);
+  }
+
+  @Get('quiz/:quizId/admin')
+  @ApiOperation({ summary: 'Obtenir un quiz avec toutes les informations (pour administration - avec réponses correctes)' })
+  @ApiParam({ name: 'quizId', type: String })
+  @Roles('superadmin', 'admin')
+  async getQuizByIdWithAnswers(@Param('quizId') quizId: string, @Request() req): Promise<any> {
+    const userId = req.user?.users_id;
+    return await this.learningService.getQuizByIdWithAnswers(+quizId, userId);
   }
 
   @Post('quiz/:quizId/submit')

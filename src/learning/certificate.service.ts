@@ -58,7 +58,7 @@ export class CertificateService {
     // Récupérer le parcours avec ses modules
     const parcours = await this.learningPathRepository.findOne({
       where: { parcours_id: parcoursId },
-      relations: ['modules', 'modules.quiz'],
+      relations: ['modules', 'modules.quiz', 'modules.quiz.questions'],
     });
 
     if (!parcours) {
@@ -550,13 +550,16 @@ export class CertificateService {
    * Récupère les détails complets pour la certification
    */
   private async getCertificationDetails(userId: number, parcoursId: number): Promise<any> {
-    // Récupérer les réponses aux quiz
+    // Récupérer les réponses aux quiz de module uniquement (pas les quiz finaux)
     const quizResponses = await this.quizResponseRepository.find({
       where: {
         utilisateur: { users_id: userId },
-        quiz: { module: { parcours: { parcours_id: parcoursId } } },
+        quiz: { 
+          module: { parcours: { parcours_id: parcoursId } },
+          type_quiz: 'module' as any
+        },
       },
-      relations: ['quiz', 'quiz.module'],
+      relations: ['quiz', 'quiz.module', 'quiz.questions'],
     });
 
     // Récupérer les réponses aux simulations
@@ -567,8 +570,54 @@ export class CertificateService {
       relations: ['simulation'],
     });
 
-    // Calculer les statistiques
-    const quizReussis = quizResponses.filter(qr => qr.est_correcte).length;
+    // Récupérer aussi les réponses aux quiz finaux
+    const finalQuizResponses = await this.quizResponseRepository.find({
+      where: {
+        utilisateur: { users_id: userId },
+        quiz: { 
+          parcours: { parcours_id: parcoursId },
+          type_quiz: 'parcours_final' as any
+        },
+      },
+      relations: ['quiz', 'quiz.questions', 'quiz.parcours'],
+    });
+
+    // Calculer les statistiques - compter les quiz réussis (100% pour modules, 80% pour finaux)
+    let quizReussis = 0;
+    
+    // Compter les quiz de module (100% requis)
+    const moduleQuizIds = [...new Set(quizResponses.map(qr => qr.quiz.quiz_id))];
+    for (const quizId of moduleQuizIds) {
+      const responsesForQuiz = quizResponses.filter(qr => qr.quiz.quiz_id === quizId);
+      if (responsesForQuiz.length > 0) {
+        const totalObtained = responsesForQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+        const totalPoints = responsesForQuiz[0].quiz.questions ? 
+          responsesForQuiz[0].quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
+        const percentage = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+        
+        if (percentage >= 100) {
+          quizReussis++;
+        }
+      }
+    }
+    
+    // Compter les quiz finaux (80% requis)
+    const finalQuizIds = [...new Set(finalQuizResponses.map(qr => qr.quiz.quiz_id))];
+    for (const quizId of finalQuizIds) {
+      const responsesForQuiz = finalQuizResponses.filter(qr => qr.quiz.quiz_id === quizId);
+      if (responsesForQuiz.length > 0) {
+        const totalObtained = responsesForQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+        const totalPoints = responsesForQuiz[0].quiz.questions ? 
+          responsesForQuiz[0].quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
+        const percentage = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+        const threshold = Number(responsesForQuiz[0].quiz.score_minimum_pour_reussite ?? 80);
+        
+        if (percentage >= threshold) {
+          quizReussis++;
+        }
+      }
+    }
+
     const simulationsReussies = simulationResponses.filter(sr => sr.statut === SimulationResponseStatus.REUSSIE).length;
     
     // Calculer le temps total
@@ -585,7 +634,7 @@ export class CertificateService {
       quizReussis,
       simulationsReussies,
       tempsTotal: Math.round(tempsTotal * 100) / 100,
-      totalQuiz: quizResponses.length,
+      totalQuiz: moduleQuizIds.length + finalQuizIds.length,
       totalSimulations: simulationResponses.length,
     };
   }

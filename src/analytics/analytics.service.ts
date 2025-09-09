@@ -171,8 +171,7 @@ export class AnalyticsService {
       .addSelect('COUNT(DISTINCT CASE WHEN progress.certificat_obtenu = true THEN progress.progression_id END)', 'certificationsObtenues')
       .addSelect('AVG(progress.score)', 'avgScore')
       .leftJoin('org.utilisateurs', 'user')
-      .leftJoin('user.progressions', 'progress')
-      .where('progress.date_creation BETWEEN :start AND :end', { start, end })
+      .leftJoin('user.progressions', 'progress', 'progress.date_creation BETWEEN :start AND :end', { start, end })
       .groupBy('org.organisation_id')
       .getRawMany();
 

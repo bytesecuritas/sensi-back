@@ -262,18 +262,12 @@ export class GamificationService {
    * Calcule les statistiques d'un utilisateur
    */
   private async calculateUserStats(userId: number): Promise<any> {
-    const [modulesCompletes, quizReussis, simulationsReussies] = await Promise.all([
+    const [modulesCompletes, simulationsReussies] = await Promise.all([
       this.progressRepository.count({
         where: {
           utilisateur: { users_id: userId },
           statut: ProgressStatus.TERMINE,
         },
-      }),
-      this.quizResponseRepository.count({
-        where: {
-          utilisateur: { users_id: userId },
-          score: { $gte: 70 },
-        } as any,
       }),
       this.simulationResponseRepository.count({
         where: {
@@ -282,6 +276,59 @@ export class GamificationService {
         },
       }),
     ]);
+
+    // Calculer les quiz réussis correctement (100% pour modules, 80% pour finaux)
+    const [moduleQuizResponses, finalQuizResponses] = await Promise.all([
+      this.quizResponseRepository.find({
+        where: {
+          utilisateur: { users_id: userId },
+          quiz: { type_quiz: 'module' as any }
+        },
+        relations: ['quiz', 'quiz.questions'],
+      }),
+      this.quizResponseRepository.find({
+        where: {
+          utilisateur: { users_id: userId },
+          quiz: { type_quiz: 'parcours_final' as any }
+        },
+        relations: ['quiz', 'quiz.questions'],
+      })
+    ]);
+
+    let quizReussis = 0;
+    
+    // Compter les quiz de module (100% requis)
+    const moduleQuizIds = [...new Set(moduleQuizResponses.map(qr => qr.quiz.quiz_id))];
+    for (const quizId of moduleQuizIds) {
+      const responsesForQuiz = moduleQuizResponses.filter(qr => qr.quiz.quiz_id === quizId);
+      if (responsesForQuiz.length > 0) {
+        const totalObtained = responsesForQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+        const totalPoints = responsesForQuiz[0].quiz.questions ? 
+          responsesForQuiz[0].quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
+        const percentage = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+        
+        if (percentage >= 100) {
+          quizReussis++;
+        }
+      }
+    }
+    
+    // Compter les quiz finaux (80% requis)
+    const finalQuizIds = [...new Set(finalQuizResponses.map(qr => qr.quiz.quiz_id))];
+    for (const quizId of finalQuizIds) {
+      const responsesForQuiz = finalQuizResponses.filter(qr => qr.quiz.quiz_id === quizId);
+      if (responsesForQuiz.length > 0) {
+        const totalObtained = responsesForQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+        const totalPoints = responsesForQuiz[0].quiz.questions ? 
+          responsesForQuiz[0].quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
+        const percentage = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+        const threshold = Number(responsesForQuiz[0].quiz.score_minimum_pour_reussite ?? 80);
+        
+        if (percentage >= threshold) {
+          quizReussis++;
+        }
+      }
+    }
 
     // Calculer la progression globale (basée sur les modules complétés)
     const totalModules = await this.progressRepository.count({

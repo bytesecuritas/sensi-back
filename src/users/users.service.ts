@@ -284,7 +284,7 @@ export class UsersService {
       },
       statistiques: {
         total_parcours: totalParcours,
-        modules_termines: parcoursTerminees,
+        parours_termines: parcoursTerminees,
         taux_completion: totalParcours > 0 ? (parcoursTerminees / totalParcours * 100).toFixed(2) : 0,
         temps_total: tempsTotal,
         score_moyen: scoreMoyen.toFixed(2),
