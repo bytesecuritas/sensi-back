@@ -47,31 +47,31 @@ export class User {
   date_maj: Date;
 
   // Relations avec les entités d'apprentissage
-  @OneToMany(() => Certification, certification => certification.utilisateur)
+  @OneToMany(() => Certification, certification => certification.utilisateur, { onDelete: 'CASCADE' })
   certifications: Certification[];
 
-  @OneToMany(() => Progress, progression => progression.utilisateur)
+  @OneToMany(() => Progress, progression => progression.utilisateur, { onDelete: 'CASCADE' })
   progressions: Progress[];
 
-  @OneToMany(() => QuizResponse, reponse => reponse.utilisateur)
+  @OneToMany(() => QuizResponse, reponse => reponse.utilisateur, { onDelete: 'CASCADE' })
   reponses_quiz: QuizResponse[];
 
   // Relations avec les nouvelles entités de gamification
-  @OneToMany(() => UserBadge, userBadge => userBadge.utilisateur)
+  @OneToMany(() => UserBadge, userBadge => userBadge.utilisateur, { onDelete: 'CASCADE' })
   userBadges: UserBadge[];
 
-  @OneToOne(() => UserLevel, userLevel => userLevel.utilisateur)
+  @OneToOne(() => UserLevel, userLevel => userLevel.utilisateur, { onDelete: 'CASCADE' })
   userLevel: UserLevel | null;
 
-  @OneToMany(() => SimulationResponse, response => response.utilisateur)
+  @OneToMany(() => SimulationResponse, response => response.utilisateur, { onDelete: 'CASCADE' })
   simulationResponses: SimulationResponse[];
 
-  @OneToMany(() => ChallengeParticipation, participation => participation.utilisateur)
+  @OneToMany(() => ChallengeParticipation, participation => participation.utilisateur, { onDelete: 'CASCADE' })
   challengeParticipations: ChallengeParticipation[];
 
-  @OneToMany(() => AlertShare, share => share.utilisateur)
+  @OneToMany(() => AlertShare, share => share.utilisateur, { onDelete: 'CASCADE' })
   alertShares: AlertShare[];
 
-  @OneToMany(() => ChatbotConversation, conversation => conversation.utilisateur)
+  @OneToMany(() => ChatbotConversation, conversation => conversation.utilisateur, { onDelete: 'CASCADE' })
   chatbotConversations: ChatbotConversation[];
 }

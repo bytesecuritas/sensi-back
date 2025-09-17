@@ -63,20 +63,43 @@ export class OrganisationsService {
   }
 
   async remove(id: number): Promise<void> {
-    const organisation = await this.findOne(id);
-    
-    // Vérifier qu'il n'y a pas d'utilisateurs dans l'organisation
-    const userCount = await this.usersRepository.count({
-      where: { organisation: { organisation_id: id } }
-    });
+    // Vérifier l'existence
+    await this.findOne(id);
 
-    if (userCount > 0) {
-      throw new BadRequestException(
-        `Impossible de supprimer l'organisation ${id} car elle contient ${userCount} utilisateur(s)`
-      );
+    // 1) Supprimer les utilisateurs de l'organisation avec leurs dépendances
+    const users = await this.usersRepository.find({ where: { organisation: { organisation_id: id } }, relations: ['organisation'] });
+    if (users.length > 0) {
+      // Supprimer en lot via repositories enfants, pour éviter boucles lourdes
+      const manager = this.usersRepository.manager;
+      const userIds = users.map(u => u.users_id);
+
+      // Dépendances directes aux users
+      await manager.getRepository(Progress).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any });
+      await manager.getRepository(Certification).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any });
+      try { await manager.getRepository(UserLevel).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+      try { await manager.getRepository(UserBadge).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+
+      // QuizResponse
+      try {
+        const QuizResponse = require('../learning/entities/quiz-response.entity').QuizResponse;
+        await manager.getRepository(QuizResponse).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any });
+      } catch {}
+
+      // Autres entités liées utilisateur
+      try { const SimulationResponse = require('../learning/entities/simulation-response.entity').SimulationResponse; await manager.getRepository(SimulationResponse).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+      try { const ChallengeParticipation = require('../learning/entities/challenge-participation.entity').ChallengeParticipation; await manager.getRepository(ChallengeParticipation).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+      try { const AlertShare = require('../learning/entities/alert-share.entity').AlertShare; await manager.getRepository(AlertShare).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+      try { const ChatbotConversation = require('../learning/entities/chatbot-conversation.entity').ChatbotConversation; await manager.getRepository(ChatbotConversation).delete({ utilisateur: { users_id: require('typeorm').In(userIds) } as any }); } catch {}
+
+      // Supprimer les users
+      await this.usersRepository.delete({ users_id: require('typeorm').In(userIds) } as any);
     }
 
-    await this.organisationsRepository.remove(organisation);
+    // 2) Supprimer les associations organisation_parcours
+    await this.organisationLearningPathRepository.delete({ organisation: { organisation_id: id } as any });
+
+    // 3) Supprimer l'organisation
+    await this.organisationsRepository.delete({ organisation_id: id } as any);
   }
 
 

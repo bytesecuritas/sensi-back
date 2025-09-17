@@ -44,22 +44,22 @@ export class LearningPath {
   
 
   // Relation avec les modules d'apprentissage
-  @OneToMany(() => LearningPathModule, module => module.parcours)
+  @OneToMany(() => LearningPathModule, module => module.parcours, { onDelete: 'CASCADE' })
   modules: LearningPathModule[];
 
   // Relation avec les certifications
-  @OneToMany(() => Certification, certification => certification.parcours)
+  @OneToMany(() => Certification, certification => certification.parcours, { onDelete: 'CASCADE' })
   certifications: Certification[];
 
   // Relation avec les quiz finaux du parcours
-  @OneToMany(() => Quiz, quiz => quiz.parcours)
+  @OneToMany(() => Quiz, quiz => quiz.parcours, { onDelete: 'CASCADE' })
   quiz_finaux: Quiz[];
 
   // Relation avec les progressions des utilisateurs
-  @OneToMany(() => Progress, progression => progression.parcours)
+  @OneToMany(() => Progress, progression => progression.parcours, { onDelete: 'CASCADE' })
   progressions: Progress[];
 
   // Relation many-to-many avec les organisations via la table de liaison
-  @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.parcours)
+  @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.parcours, { onDelete: 'CASCADE' })
   organisationParcours: OrganisationLearningPath[];
 }

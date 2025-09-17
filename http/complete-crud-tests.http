@@ -1,0 +1,1279 @@
+### Tests CRUD Complets - Application de Sensibilisation Cybersécurité
+### Base URL: http://localhost:3000/api
+
+### ========================================
+### PRÉREQUIS - COMMANDES CLI À EXÉCUTER
+### ========================================
+### Avant de lancer ces tests, exécuter les commandes suivantes dans le terminal :
+
+### 1. Initialiser les badges par défaut
+### npm run init-badges
+### Cette commande initialise automatiquement les 6 badges par défaut :
+### - Premier Pas (bronze, premier_pas) - 25 points
+### - Vigilant (bronze, vigilance) - 25 points  
+### - Quiz Parfait (bronze, quiz) - 50 points
+### - Assidu (argent, assiduite) - 75 points
+### - Expert Phishing (or, expert) - 100 points
+### - Défenseur Cyber (or, defenseur) - 150 points
+
+### 2. Vérifier que l'application est démarrée
+### npm run start:dev
+
+### 3. Obtenir un token admin valide (remplacer le token ci-dessous)
+### POST /api/auth/login avec les identifiants superadmin
+
+@baseUrl = http://localhost:3000/api
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1ODEyMzU3MiwiZXhwIjoxNzU4MTI3MTcyfQ.yewPfhZeSPKaldc0DlBsa5oCsl0C3m-WUDDUtApu-OU
+
+### ========================================
+### 1. GESTION DES ORGANISATIONS
+### ========================================
+
+### Créer une organisation
+POST {{baseUrl}}/organisations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Entreprise Test CRUD",
+  "type": "entreprise_privee",
+  "code_pays": "FR",
+  "email": "test@entreprise.com",
+  "telephone": "+33123456789",
+  "adresse": "123 Rue de la Test",
+  "ville": "Paris",
+  "code_postal": "75001"
+}
+
+### Récupérer toutes les organisations
+GET {{baseUrl}}/organisations
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une organisation par ID
+GET {{baseUrl}}/organisations/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une organisation
+PATCH {{baseUrl}}/organisations/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Entreprise Test CRUD Modifiée",
+  "type": "entreprise_privee",
+  "code_pays": "FR",
+  "email": "test.modifie@entreprise.com",
+  "telephone": "+33123456789",
+  "adresse": "123 Rue de la Test Modifiée",
+  "ville": "Paris",
+  "code_postal": "75001"
+}
+
+### ========================================
+### 2. GESTION DES UTILISATEURS
+### ========================================
+
+### Créer un utilisateur
+POST {{baseUrl}}/auth/register
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "email": "testuser@crud.com",
+  "password": "Password123@",
+  "nom": "TestUser",
+  "prenom": "CRUD",
+  "age": 25,
+  "role": "admin",
+  "organisation_id": "1"
+}
+
+### Récupérer tous les utilisateurs
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un utilisateur par ID
+GET {{baseUrl}}/users/2
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un utilisateur
+PUT {{baseUrl}}/users/2
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "TestUser Modifié",
+  "prenom": "CRUD Modifié",
+  "age": 26
+}
+
+### ========================================
+### 3. GESTION DES PARCOURS D'APPRENTISSAGE
+### ========================================
+
+### Créer un parcours d'apprentissage
+POST {{baseUrl}}/learning/parcours
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Parcours Test CRUD",
+  "description": "Parcours pour tester les opérations CRUD",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 3.5
+}
+
+### Récupérer tous les parcours
+GET {{baseUrl}}/learning/parcours
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un parcours par ID
+GET {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un parcours
+PUT {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Parcours Test CRUD Modifié",
+  "description": "Parcours modifié pour tester les opérations CRUD",
+  "duree_estimee_heures": 4.0
+}
+
+### ========================================
+### 4. GESTION DES MODULES D'APPRENTISSAGE
+### ========================================
+
+### Créer un module d'apprentissage
+POST {{baseUrl}}/learning/modules
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test CRUD",
+  "description": "Module pour tester les opérations CRUD",
+  "parcours_id": 1,
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "phishing",
+  "code_langue": "fr"
+}
+
+### Récupérer tous les modules
+GET {{baseUrl}}/learning/modules
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un module par ID
+GET {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un module
+PUT {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test CRUD Modifié",
+  "description": "Module modifié pour tester les opérations CRUD"
+}
+
+### ========================================
+### 5. GESTION DES QUIZ
+### ========================================
+
+### Créer un quiz
+POST {{baseUrl}}/learning/quizzes/module/parent/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz Test CRUD",
+  "description": "Quiz pour tester les opérations CRUD",
+  "questions": [
+    {
+      "enonce": "Qu'est-ce que le phishing ?",
+      "type_question": "choix_unique",
+      "points": 1,
+      "reponses": [
+        {
+          "texte": "Une technique d'hameçonnage",
+          "est_correcte": true
+        },
+        {
+          "texte": "Un type de virus",
+          "est_correcte": false
+        },
+        {
+          "texte": "Un protocole de sécurité",
+          "est_correcte": false
+        }
+      ]
+    }
+  ]
+}
+
+### Récupérer tous les quiz
+GET {{baseUrl}}/learning/quizzes/module/parent/1
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un quiz par ID
+GET {{baseUrl}}/learning/quiz/1/admin
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un quiz
+PUT {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Quiz Test CRUD Modifié",
+  "description": "Quiz modifié pour tester les opérations CRUD"
+}
+
+### ========================================
+### 6. GESTION DES QUESTIONS
+### ========================================
+
+### Créer une question
+POST {{baseUrl}}/learning/questions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "enonce": "Quelle est la meilleure pratique pour se protéger du phishing ?",
+  "type_question": "choix_multiple",
+  "points": 2,
+  "quiz_id": 1,
+  "reponses": [
+    {
+      "texte": "Vérifier l'expéditeur",
+      "est_correcte": true
+    },
+    {
+      "texte": "Ne pas cliquer sur les liens suspects",
+      "est_correcte": true
+    },
+    {
+      "texte": "Partager ses mots de passe",
+      "est_correcte": false
+    }
+  ]
+}
+
+### Récupérer toutes les questions
+GET {{baseUrl}}/learning/questions
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une question par ID
+GET {{baseUrl}}/learning/questions/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une question
+PUT {{baseUrl}}/learning/questions/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "enonce": "Quelle est la meilleure pratique pour se protéger du phishing ? (Modifié)",
+  "points": 3
+}
+
+### ========================================
+### 7. GESTION DES CONTENUS MÉDIAS
+### ========================================
+
+### Créer un contenu média
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Test CRUD",
+  "description": "Vidéo pour tester les opérations CRUD",
+  "type_media": "video",
+  "url": "https://example.com/video.mp4",
+  "duree_secondes": 300,
+  "module_id": 1,
+  "ordre": 1
+}
+
+### Récupérer tous les contenus médias
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média par ID
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média par ID (test de la nouvelle route)
+GET {{baseUrl}}/learning/media/2
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un contenu média
+PUT {{baseUrl}}/learning/media/1/upload
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Test CRUD Modifiée 2",
+  "description": "Vidéo modifiée pour tester les opérations CRUD",
+  "duree_secondes": 350
+}
+
+### ========================================
+### 8. GESTION DES BADGES ET GAMIFICATION
+### ========================================
+
+### NOTE: Les badges par défaut sont initialisés via CLI
+### Commande à exécuter dans le terminal avant les tests :
+### npm run init-badges
+### Cette commande initialise automatiquement les 6 badges par défaut :
+### - Premier Pas (bronze, premier_pas)
+### - Vigilant (bronze, vigilance) 
+### - Quiz Parfait (bronze, quiz)
+### - Assidu (argent, assiduite)
+### - Expert Phishing (or, expert)
+### - Défenseur Cyber (or, defenseur)
+
+### Récupérer tous les badges (après initialisation CLI)
+GET {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+
+### Créer un badge personnalisé
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Badge Test CRUD",
+  "description": "Badge pour tester les opérations CRUD",
+  "type": "bronze",
+  "categorie": "quiz",
+  "points_requis": 50,
+  "points_attribues": 25,
+  "est_secret": false,
+  "conditions_obtention": "Compléter le parcours Test CRUD"
+}
+
+### Récupérer un badge par ID
+GET {{baseUrl}}/gamification/badges/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un badge
+PUT {{baseUrl}}/gamification/badges/7
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Badge Test CRUD Modifié",
+  "description": "Badge modifié pour tester les opérations CRUD",
+  "points_attribues": 30
+}
+
+### Créer un badge secret
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Badge Secret",
+  "description": "Badge secret pour les utilisateurs avancés",
+  "type": "or",
+  "categorie": "expert",
+  "points_requis": 500,
+  "points_attribues": 100,
+  "est_secret": true,
+  "conditions_obtention": "Découvrir les secrets de la cybersécurité"
+}
+
+### Récupérer les badges d'un utilisateur spécifique
+GET {{baseUrl}}/gamification/users/1/badges
+Authorization: Bearer {{adminToken}}
+
+### Obtenir le dashboard de gamification d'un utilisateur
+GET {{baseUrl}}/gamification/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Enregistrer une connexion quotidienne (pour tester les badges d'assiduité)
+POST {{baseUrl}}/gamification/daily-login
+Authorization: Bearer {{adminToken}}
+
+### Créer un badge avec différents types et catégories
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Badge Argent Simulation",
+  "description": "Réussir 5 simulations de phishing",
+  "type": "argent",
+  "categorie": "simulation",
+  "points_requis": 200,
+  "points_attribues": 75,
+  "est_secret": false,
+  "conditions_obtention": "Réussir 5 simulations de phishing avec un score >= 80%"
+}
+
+### Créer un badge de certification
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Certifié Cybersécurité",
+  "description": "Obtenir une certification en cybersécurité",
+  "type": "platine",
+  "categorie": "certification",
+  "points_requis": 1000,
+  "points_attribues": 200,
+  "est_secret": false,
+  "conditions_obtention": "Obtenir une certification officielle"
+}
+
+### ========================================
+### 9. GESTION DES DÉFIS
+### ========================================
+
+### Créer un défi
+POST {{baseUrl}}/learning/challenges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Défi Test CRUD",
+  "description": "Défi pour tester les opérations CRUD",
+  "type": "hebdomadaire",
+  "points_recompense": 100,
+  "objectifs": {"quiz_reussis": 5, "score_minimum": 100},
+  "duree_jours": 7,
+  "date_debut": "2024-01-01T00:00:00Z",
+  "date_fin": "2024-12-31T23:59:59Z"
+}
+
+### Récupérer tous les défis
+GET {{baseUrl}}/learning/challenges
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un défi par ID
+GET {{baseUrl}}/learning/challenges/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un défi
+PUT {{baseUrl}}/learning/challenges/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Défi Test CRUD Modifié",
+  "description": "Défi modifié pour tester les opérations CRUD",
+  "points_recompense": 150
+}
+
+### ========================================
+### 10. GESTION DES ALERTES CYBERSÉCURITÉ
+### ========================================
+
+### Créer une alerte cybersécurité
+POST {{baseUrl}}/learning/alerts
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Alerte Test CRUD",
+  "description": "Alerte pour tester les opérations CRUD",
+  "niveau": "moyen",
+  "type": "phishing",
+  "contenu_detaille": "Nouvelle technique de phishing détectée",
+  "date_decouverte": "2024-01-15T10:00:00Z"
+}
+
+### Récupérer toutes les alertes
+GET {{baseUrl}}/learning/alerts
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une alerte par ID
+GET {{baseUrl}}/learning/alerts/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une alerte
+PUT {{baseUrl}}/learning/alerts/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Alerte Test CRUD Modifiée",
+  "description": "Alerte modifiée pour tester les opérations CRUD",
+  "niveau": "eleve"
+}
+
+### ========================================
+### 11. GESTION DES SIMULATIONS ET GAMIFICATION
+### ========================================
+
+### Créer une simulation de phishing
+POST {{baseUrl}}/learning/simulations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Simulation Phishing Test CRUD",
+  "description": "Simulation de phishing pour tester les opérations CRUD",
+  "type": "phishing_email",
+  "contenu_simulation": "Email de phishing avec pièce jointe suspecte",
+  "duree_estimee": 30,
+  "points_reussite": 50
+}
+
+### Récupérer toutes les simulations
+GET {{baseUrl}}/learning/simulations
+Authorization: Bearer {{adminToken}}
+
+### Récupérer les simulations actives
+GET {{baseUrl}}/learning/gamification/simulations
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une simulation par ID
+GET {{baseUrl}}/learning/simulations/1
+Authorization: Bearer {{adminToken}}
+
+### Envoyer une simulation à l'utilisateur
+POST {{baseUrl}}/learning/gamification/simulations/1/send
+Authorization: Bearer {{adminToken}}
+
+### Répondre à une simulation
+POST {{baseUrl}}/learning/gamification/simulations/respond
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "simulation_id": 1,
+  "reponse": "J'ai identifié cet email comme suspect et je ne vais pas cliquer sur les liens",
+  "temps_reponse_secondes": 45,
+  "actions_effectuees": ["identifier_email_suspect", "ne_pas_cliquer_liens"]
+}
+
+### Récupérer l'historique des simulations de l'utilisateur
+GET {{baseUrl}}/learning/gamification/simulations/history
+Authorization: Bearer {{adminToken}}
+
+### Récupérer les statistiques des simulations
+GET {{baseUrl}}/learning/gamification/stats/simulations
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une simulation
+PUT {{baseUrl}}/learning/simulations/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Simulation Phishing Test CRUD Modifiée",
+  "description": "Simulation modifiée pour tester les opérations CRUD",
+  "duree_estimee": 35,
+  "points_reussite": 75
+}
+
+### ========================================
+### 12. GESTION DES CONVERSATIONS CHATBOT ET GAMIFICATION
+### ========================================
+
+### Créer une conversation chatbot
+POST {{baseUrl}}/learning/gamification/chatbot/conversations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "sujet": "Support cybersécurité - Test CRUD"
+}
+
+### Récupérer toutes les conversations de l'utilisateur
+GET {{baseUrl}}/learning/gamification/chatbot/conversations
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une conversation par ID
+GET {{baseUrl}}/learning/chatbot/conversations/1
+Authorization: Bearer {{adminToken}}
+
+### Envoyer un message au chatbot
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/1/messages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Bonjour, j'ai une question sur la sécurité des mots de passe. Comment créer un mot de passe sécurisé ?",
+  "type": "utilisateur"
+}
+
+### Récupérer l'historique d'une conversation
+GET {{baseUrl}}/learning/gamification/chatbot/conversations/1/history
+Authorization: Bearer {{adminToken}}
+
+### Envoyer un autre message
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/1/messages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Merci pour ces conseils ! Que pensez-vous de l'authentification à deux facteurs ?",
+  "type": "utilisateur"
+}
+
+### Évaluer la satisfaction de la conversation
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/1/rate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "satisfaction": 5,
+  "feedback": "Très utile, le chatbot a bien répondu à mes questions"
+}
+
+### Terminer la conversation
+PUT {{baseUrl}}/learning/gamification/chatbot/conversations/1/end
+Authorization: Bearer {{adminToken}}
+
+### Récupérer les statistiques du chatbot
+GET {{baseUrl}}/learning/gamification/stats/chatbot
+Authorization: Bearer {{adminToken}}
+
+### Récupérer les intentions les plus fréquentes
+GET {{baseUrl}}/learning/gamification/stats/chatbot/intents
+Authorization: Bearer {{adminToken}}
+
+### Créer une autre conversation pour tester différents sujets
+POST {{baseUrl}}/learning/gamification/chatbot/conversations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "sujet": "Formation phishing - Test CRUD"
+}
+
+### Envoyer un message sur le phishing
+POST {{baseUrl}}/learning/gamification/chatbot/conversations/2/messages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Comment puis-je reconnaître un email de phishing ?",
+  "type": "utilisateur"
+}
+
+### ========================================
+### 13. GESTION DES MESSAGES CHATBOT
+### ========================================
+
+### Créer un message chatbot
+POST {{baseUrl}}/learning/chatbot/messages
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Message de test CRUD",
+  "type": "utilisateur",
+  "conversation_id": 1
+}
+
+### Récupérer tous les messages
+GET {{baseUrl}}/learning/chatbot/messages
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un message par ID
+GET {{baseUrl}}/learning/chatbot/messages/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un message
+PUT {{baseUrl}}/learning/chatbot/messages/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "contenu": "Message de test CRUD modifié"
+}
+
+### ========================================
+### 14. GESTION DES PROGRESSIONS
+### ========================================
+
+### Créer une progression
+POST {{baseUrl}}/learning/progress
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "pourcentage_completion": 25,
+  "statut": "en_cours",
+  "date_debut": "2024-01-15T10:00:00Z",
+  "date_derniere_activite": "2024-01-15T10:30:00Z"
+}
+
+### Récupérer toutes les progressions
+GET {{baseUrl}}/learning/progress
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une progression par ID
+GET {{baseUrl}}/learning/progress/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une progression
+PUT {{baseUrl}}/learning/progress/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "pourcentage_completion": 50,
+  "date_derniere_activite": "2024-01-15T11:00:00Z"
+}
+
+### ========================================
+### 15. GESTION DES CERTIFICATIONS
+### ========================================
+
+### Créer une certification
+POST {{baseUrl}}/learning/certifications
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "parcours_id": 1,
+  "date_obtention": "2024-01-15T12:00:00Z",
+  "score_final": 85,
+  "statut": "obtenue"
+}
+
+### Récupérer toutes les certifications
+GET {{baseUrl}}/learning/certifications
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une certification par ID
+GET {{baseUrl}}/learning/certifications/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une certification
+PUT {{baseUrl}}/learning/certifications/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "score_final": 90,
+  "statut": "obtenue"
+}
+
+### ========================================
+### 16. GESTION DES RÉPONSES QUIZ
+### ========================================
+
+### Créer une réponse quiz
+POST {{baseUrl}}/learning/quiz-responses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "quiz_id": 1,
+  "question_id": 1,
+  "reponse_id": 1,
+  "est_correcte": true,
+  "temps_reponse_secondes": 30
+}
+
+### Récupérer toutes les réponses quiz
+GET {{baseUrl}}/learning/quiz-responses
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une réponse quiz par ID
+GET {{baseUrl}}/learning/quiz-responses/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une réponse quiz
+PUT {{baseUrl}}/learning/quiz-responses/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "temps_reponse_secondes": 25
+}
+
+### ========================================
+### 17. TESTS AVANCÉS DE GAMIFICATION
+### ========================================
+
+### Obtenir le dashboard complet de gamification
+GET {{baseUrl}}/gamification/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Enregistrer plusieurs connexions quotidiennes (pour tester les badges d'assiduité)
+POST {{baseUrl}}/gamification/daily-login
+Authorization: Bearer {{adminToken}}
+
+### Vérifier les badges après connexions quotidiennes
+GET {{baseUrl}}/gamification/users/1/badges
+Authorization: Bearer {{adminToken}}
+
+### Créer un badge avec upload d'icône (test multipart/form-data)
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nom"
+
+Badge avec Icône
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Badge avec icône personnalisée uploadée
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+or
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="categorie"
+
+expert
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="points_requis"
+
+300
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="points_attribues"
+
+50
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="est_secret"
+
+false
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="conditions_obtention"
+
+Tester l'upload d'icône personnalisée
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="icone_file"; filename="badge-custom-test.png"
+Content-Type: image/png
+
+< C:\Users\Mossoko\Pictures\logo_centre2.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Tester la récupération d'un badge inexistant (doit retourner 404)
+GET {{baseUrl}}/gamification/badges/999
+Authorization: Bearer {{adminToken}}
+
+### Tester la mise à jour d'un badge inexistant (doit retourner 404)
+PUT {{baseUrl}}/gamification/badges/7
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Badge Inexistant"
+}
+
+### Créer un badge avec des données invalides (doit retourner 400)
+POST {{baseUrl}}/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "",
+  "description": "Badge avec nom vide",
+  "type": "invalid_type",
+  "categorie": "invalid_category"
+}
+
+### Mettre à jour un badge avec nouvelle icône (test multipart/form-data)
+PUT {{baseUrl}}/learning/gamification/badges/1
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nom"
+
+Badge Test CRUD Modifié avec Nouvelle Icône
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Badge modifié avec nouvelle icône uploadée
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="points_attribues"
+
+35
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="icone_file"; filename="badge-updated-icon.png"
+Content-Type: image/png
+
+< ./ressources/badges/vigilant.jpeg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Tester la création d'un badge avec un nom déjà existant (doit retourner 400)
+POST {{baseUrl}}/learning/gamification/badges
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nom": "Premier Pas",
+  "description": "Tentative de créer un badge avec un nom existant",
+  "type": "bronze",
+  "categorie": "premier_pas",
+  "points_requis": 0,
+  "points_attribues": 25,
+  "est_secret": false,
+  "conditions_obtention": "Test de duplication"
+}
+
+### ========================================
+### 18. GESTION DES NIVEAUX UTILISATEUR
+### ========================================
+
+### Créer un niveau utilisateur
+POST {{baseUrl}}/learning/user-levels
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "niveau": 1,
+  "points_experience": 100,
+  "date_obtention": "2024-01-15T12:00:00Z"
+}
+
+### Récupérer tous les niveaux utilisateur
+GET {{baseUrl}}/learning/user-levels
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un niveau utilisateur par ID
+GET {{baseUrl}}/learning/user-levels/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un niveau utilisateur
+PUT {{baseUrl}}/learning/user-levels/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "points_experience": 150
+}
+
+### ========================================
+### 19. GESTION DES RÉPONSES SIMULATION
+### ========================================
+
+### Créer une réponse simulation
+POST {{baseUrl}}/learning/simulation-responses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "simulation_id": 1,
+  "reponse": "Réponse de test CRUD",
+  "est_correcte": true,
+  "temps_reponse_secondes": 45
+}
+
+### Récupérer toutes les réponses simulation
+GET {{baseUrl}}/learning/simulation-responses
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une réponse simulation par ID
+GET {{baseUrl}}/learning/simulation-responses/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une réponse simulation
+PUT {{baseUrl}}/learning/simulation-responses/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reponse": "Réponse de test CRUD modifiée",
+  "temps_reponse_secondes": 40
+}
+
+### ========================================
+### 20. GESTION DES PARTICIPATIONS DÉFI
+### ========================================
+
+### Créer une participation défi
+POST {{baseUrl}}/learning/challenge-participations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "challenge_id": 1,
+  "date_participation": "2024-01-15T10:00:00Z",
+  "statut": "en_cours",
+  "score": 0
+}
+
+### Récupérer toutes les participations défi
+GET {{baseUrl}}/learning/challenge-participations
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une participation défi par ID
+GET {{baseUrl}}/learning/challenge-participations/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une participation défi
+PUT {{baseUrl}}/learning/challenge-participations/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "statut": "termine",
+  "score": 85
+}
+
+### ========================================
+### 21. GESTION DES PARTAGES ALERTE
+### ========================================
+
+### Créer un partage alerte
+POST {{baseUrl}}/learning/alert-shares
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "utilisateur_id": 1,
+  "alert_id": 1,
+  "date_partage": "2024-01-15T10:00:00Z",
+  "plateforme": "email"
+}
+
+### Récupérer tous les partages alerte
+GET {{baseUrl}}/learning/alert-shares
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un partage alerte par ID
+GET {{baseUrl}}/learning/alert-shares/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour un partage alerte
+PUT {{baseUrl}}/learning/alert-shares/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "plateforme": "linkedin"
+}
+
+### ========================================
+### 22. GESTION DES ASSOCIATIONS ORGANISATION-PARCOURS
+### ========================================
+
+### Créer une association organisation-parcours
+POST {{baseUrl}}/learning/organisations/1/parcours/1
+Authorization: Bearer {{adminToken}}
+
+### Récupérer toutes les associations
+GET {{baseUrl}}/learning/organisation-parcours
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une association par ID
+GET {{baseUrl}}/learning/organisation-parcours/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une association
+PUT {{baseUrl}}/learning/organisation-parcours/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "date_association": "2024-01-15T10:00:00Z"
+}
+
+### ========================================
+### 23. GESTION DES RÉPONSES
+### ========================================
+
+### Créer une réponse
+POST {{baseUrl}}/learning/reponses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "question_id": 1,
+  "texte": "Réponse de test CRUD",
+  "est_correcte": true,
+  "ordre": 1
+}
+
+### Récupérer toutes les réponses
+GET {{baseUrl}}/learning/reponses
+Authorization: Bearer {{adminToken}}
+
+### Récupérer une réponse par ID
+GET {{baseUrl}}/learning/reponses/1
+Authorization: Bearer {{adminToken}}
+
+### Mettre à jour une réponse
+PUT {{baseUrl}}/learning/reponses/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "texte": "Réponse de test CRUD modifiée",
+  "est_correcte": false
+}
+
+### ========================================
+### 24. SUPPRESSION EN CASCADE - TESTS
+### ========================================
+
+### Supprimer une organisation (devrait supprimer tous les utilisateurs associés)
+DELETE {{baseUrl}}/organisations/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un utilisateur (devrait supprimer toutes ses relations)
+DELETE {{baseUrl}}/users/2
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un parcours (devrait supprimer tous les modules et relations associés)
+DELETE {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un module (devrait supprimer tous les contenus médias et quiz associés)
+DELETE {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un quiz (devrait supprimer toutes les questions et réponses associées)
+DELETE {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une question (devrait supprimer toutes les réponses associées)
+DELETE {{baseUrl}}/learning/questions/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un contenu média
+DELETE {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un badge (devrait supprimer tous les badges utilisateur associés)
+DELETE {{baseUrl}}/learning/badges/7
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un défi (devrait supprimer toutes les participations associées)
+DELETE {{baseUrl}}/learning/challenges/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une alerte (devrait supprimer tous les partages associés)
+DELETE {{baseUrl}}/learning/alerts/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une simulation (devrait supprimer toutes les réponses associées)
+DELETE {{baseUrl}}/learning/simulations/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une conversation chatbot (devrait supprimer tous les messages associés)
+DELETE {{baseUrl}}/learning/chatbot/conversations/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un message chatbot
+DELETE {{baseUrl}}/learning/chatbot/messages/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une progression
+DELETE {{baseUrl}}/learning/progress/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une certification
+DELETE {{baseUrl}}/learning/certifications/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une réponse quiz
+DELETE {{baseUrl}}/learning/quiz-responses/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un badge utilisateur
+DELETE {{baseUrl}}/learning/user-badges/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un niveau utilisateur
+DELETE {{baseUrl}}/learning/user-levels/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une réponse simulation
+DELETE {{baseUrl}}/learning/simulation-responses/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une participation défi
+DELETE {{baseUrl}}/learning/challenge-participations/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer un partage alerte
+DELETE {{baseUrl}}/learning/alert-shares/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une association organisation-parcours
+DELETE {{baseUrl}}/learning/organisation-parcours/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer une réponse
+DELETE {{baseUrl}}/learning/reponses/1
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 25. TESTS DE RÉCUPÉRATION DE CONTENUS MÉDIAS
+### ========================================
+
+### Tester la récupération d'un contenu média avec URL complète
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Tester la récupération de tous les contenus médias
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+
+### Tester la récupération des contenus médias d'un module
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 26. TESTS DE VALIDATION DES URLS MÉDIAS
+### ========================================
+
+### Créer un contenu média avec URL absolue
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Test URL Absolue",
+  "description": "Vidéo avec URL absolue pour test",
+  "type_media": "video",
+  "url": "https://example.com/videos/test-video.mp4",
+  "duree_secondes": 300,
+  "module_id": 1,
+  "ordre": 1
+}
+
+### Créer un contenu média avec URL relative
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Test URL Relative",
+  "description": "Vidéo avec URL relative pour test",
+  "type_media": "video",
+  "url": "/uploads/videos/test-video.mp4",
+  "duree_secondes": 300,
+  "module_id": 1,
+  "ordre": 2
+}
+
+### Créer un contenu média avec URL de base
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Test URL Base",
+  "description": "Vidéo avec URL de base pour test",
+  "type_media": "video",
+  "url": "uploads/videos/test-video.mp4",
+  "duree_secondes": 300,
+  "module_id": 1,
+  "ordre": 3
+}

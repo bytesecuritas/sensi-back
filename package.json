@@ -27,6 +27,7 @@
     "create-superadmin": "npm run build && node scripts/create-superadmin.js",
     "check-superadmin": "npm run build && node scripts/check-superadmin.js",
     "init-gamification": "npm run build && node scripts/init-gamification-data.js",
+    "init-badges": "npm run build && node scripts/init-badges.js",
     "test-gamification": "node test-gamification-integration.js"
   },
   "dependencies": {

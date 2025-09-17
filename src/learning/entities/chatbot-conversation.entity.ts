@@ -48,6 +48,6 @@ export class ChatbotConversation {
   date_maj: Date;
 
   // Relations
-  @OneToMany(() => ChatbotMessage, message => message.conversation)
+  @OneToMany(() => ChatbotMessage, message => message.conversation, { onDelete: 'CASCADE' })
   messages: ChatbotMessage[];
 }

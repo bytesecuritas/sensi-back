@@ -62,10 +62,10 @@ export class Organisation {
   date_maj: Date;
 
   // Relation avec les utilisateurs
-  @OneToMany(() => User, user => user.organisation)
+  @OneToMany(() => User, user => user.organisation, { onDelete: 'CASCADE' })
   utilisateurs: User[];
 
   // Relation many-to-many avec les parcours d'apprentissage via la table de liaison
-  @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.organisation)
+  @OneToMany(() => OrganisationLearningPath, orgPath => orgPath.organisation, { onDelete: 'CASCADE' })
   parcoursApprentissage: OrganisationLearningPath[];
 }

@@ -3,9 +3,10 @@
 ### ========================================
 ### Tests pour le système d'analytics et reporting du superadmin
 ### Tous les endpoints nécessitent un token superadmin
+@base_url = http://localhost:3000/api
 
 ### Variables globales pour les tests
-@superadmin_token = {{login_superadmin.response.body.access_token}}
+@superadmin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NzUzNjkxNiwiZXhwIjoxNzU3NTQwNTE2fQ.a7c4KpAmQ3njVOIZqhQkVmZQYAX_wVJ3PTZDpDGufaY
 @organisation_id = 1
 @learning_path_id = 1
 
@@ -28,7 +29,7 @@ Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
 ### Obtenir le tableau de bord avec période personnalisée
-GET {{base_url}}/analytics/dashboard?startDate=2024-01-01&endDate=2024-12-31
+GET {{base_url}}/analytics/dashboard?startDate=2025-09-10&endDate=2025-09-15
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
@@ -140,12 +141,12 @@ Content-Type: application/json
 ### ========================================
 
 ### Comparer les performances entre deux périodes
-GET {{base_url}}/analytics/comparative/periods?period1=2024-01-01/2024-03-31&period2=2024-04-01/2024-06-30
+GET {{base_url}}/analytics/comparative/periods?period1=2025-08-01/2025-08-30&period2=2025-09-01/2025-09-30
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 
 ### Comparaison trimestrielle
-GET {{base_url}}/analytics/comparative/periods?period1=2024-Q1&period2=2024-Q2
+GET {{base_url}}/analytics/comparative/periods?period1=2025-Q1&period2=2025-Q2
 Authorization: Bearer {{superadmin_token}}
 Content-Type: application/json
 

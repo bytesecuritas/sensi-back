@@ -80,6 +80,6 @@ export class Simulation {
   date_maj: Date;
 
   // Relations
-  @OneToMany(() => SimulationResponse, response => response.simulation)
+  @OneToMany(() => SimulationResponse, response => response.simulation, { onDelete: 'CASCADE' })
   reponses: SimulationResponse[];
 }

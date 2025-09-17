@@ -56,6 +56,24 @@ export class LearningService {
     private gamificationService: GamificationService,
   ) {}
 
+  // ===== Associations Organisation-Parcours =====
+  async getAllOrganisationLearningPaths(): Promise<OrganisationLearningPath[]> {
+    return await this.organisationLearningPathRepository.find({
+      relations: ['organisation', 'parcours']
+    });
+  }
+
+  async getOrganisationLearningPathById(id: number): Promise<OrganisationLearningPath> {
+    const assoc = await this.organisationLearningPathRepository.findOne({
+      where: { id },
+      relations: ['organisation', 'parcours']
+    });
+    if (!assoc) {
+      throw new NotFoundException(`Association organisation-parcours avec l'ID ${id} non trouvée`);
+    }
+    return assoc;
+  }
+
   // Méthodes pour les parcours d'apprentissage
   async createLearningPath(learningPathData: Partial<LearningPath>): Promise<LearningPath> {
     const learningPath = this.learningPathRepository.create(learningPathData);
@@ -79,22 +97,77 @@ export class LearningService {
     return learningPath;
   }
 
+  // Mettre à jour un parcours d'apprentissage
+  async updateLearningPath(id: number, updateData: Partial<LearningPath>): Promise<LearningPath> {
+    const parcours = await this.learningPathRepository.findOne({
+      where: { parcours_id: id }
+    });
+    if (!parcours) throw new NotFoundException(`Parcours avec l'ID ${id} non trouvé`);
+
+    // Mettre à jour les propriétés
+    Object.assign(parcours, updateData);
+    return await this.learningPathRepository.save(parcours);
+  }
+
   // Supprimer un parcours (et ses modules + médias associés)
   async deleteLearningPath(id: number): Promise<void> {
     const parcours = await this.learningPathRepository.findOne({
       where: { parcours_id: id },
-      relations: ['modules', 'modules.contenus_media'],
+      relations: ['modules', 'modules.contenus_media', 'modules.quiz', 'modules.quiz.questions', 'modules.quiz.questions.reponses', 'quiz_finaux', 'organisationParcours']
     });
     if (!parcours) throw new NotFoundException(`Parcours avec l'ID ${id} non trouvé`);
 
-    // Supprimer les médias associés à chaque module
-    for (const module of parcours.modules) {
-      for (const media of module.contenus_media) {
-        await this.deleteMediaContent(media.media_id);
+    // 1) Supprimer les quiz finaux du parcours (questions -> réponses -> quiz)
+    if (parcours.quiz_finaux && parcours.quiz_finaux.length > 0) {
+      for (const qz of parcours.quiz_finaux) {
+        // Supprimer d'abord les réponses utilisateurs liées à ce quiz
+        await this.quizResponseRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+        // Supprimer les réponses des questions
+        const questions = await this.questionRepository.find({ where: { quiz: { quiz_id: qz.quiz_id } as any } });
+        if (questions.length > 0) {
+          const questionIds = questions.map(q => q.question_id);
+          await this.reponseRepository.delete({ question: { question_id: (null as any) } as any }); // safeguard no-op
+          for (const questionId of questionIds) {
+            await this.reponseRepository.delete({ question: { question_id: questionId } as any });
+          }
+          await this.questionRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+        }
+        await this.quizRepository.delete({ quiz_id: qz.quiz_id } as any);
       }
-      await this.deleteLearningModule(module.module_id, false); // false: ne pas supprimer les médias (déjà fait)
     }
-    await this.learningPathRepository.remove(parcours);
+
+    // 2) Supprimer les modules et leurs contenus/quiz
+    if (parcours.modules && parcours.modules.length > 0) {
+      for (const mod of parcours.modules) {
+        // Supprimer les média du module
+        await this.mediaContentRepository.delete({ module: { module_id: mod.module_id } as any });
+
+        // Supprimer les quiz du module et leurs dépendances
+        const quizzes = await this.quizRepository.find({ where: { module: { module_id: mod.module_id } as any } });
+        for (const qz of quizzes) {
+          await this.quizResponseRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+          const questions = await this.questionRepository.find({ where: { quiz: { quiz_id: qz.quiz_id } as any } });
+          for (const question of questions) {
+            await this.reponseRepository.delete({ question: { question_id: question.question_id } as any });
+          }
+          await this.questionRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+          await this.quizRepository.delete({ quiz_id: qz.quiz_id } as any);
+        }
+
+        // Supprimer le module
+        await this.learningModuleRepository.delete({ module_id: mod.module_id } as any);
+      }
+    }
+
+    // 3) Supprimer les associations organisation_parcours
+    await this.organisationLearningPathRepository.delete({ parcours: { parcours_id: id } as any });
+
+    // 4) Supprimer les progressions et certifications liées à ce parcours
+    await this.progressRepository.delete({ parcours: { parcours_id: id } as any });
+    await this.certificationRepository.delete({ parcours: { parcours_id: id } as any });
+
+    // 5) Enfin, supprimer le parcours
+    await this.learningPathRepository.delete({ parcours_id: id } as any);
   }
 
   // Méthodes pour les modules d'apprentissage
@@ -148,15 +221,29 @@ export class LearningService {
   async deleteLearningModule(id: number, deleteMedia = true): Promise<void> {
     const module = await this.learningModuleRepository.findOne({
       where: { module_id: id },
-      relations: ['contenus_media'],
+      relations: ['contenus_media', 'quiz', 'quiz.questions', 'quiz.questions.reponses']
     });
     if (!module) throw new NotFoundException(`Module avec l'ID ${id} non trouvé`);
+
+    // 1) Supprimer les médias du module (et fichiers si besoin)
     if (deleteMedia) {
-      for (const media of module.contenus_media) {
-        await this.deleteMediaContent(media.media_id);
-      }
+      await this.mediaContentRepository.delete({ module: { module_id: id } as any });
     }
-    await this.learningModuleRepository.remove(module);
+
+    // 2) Supprimer les quiz du module et leurs dépendances
+    const quizzes = await this.quizRepository.find({ where: { module: { module_id: id } as any } });
+    for (const qz of quizzes) {
+      await this.quizResponseRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+      const questions = await this.questionRepository.find({ where: { quiz: { quiz_id: qz.quiz_id } as any } });
+      for (const question of questions) {
+        await this.reponseRepository.delete({ question: { question_id: question.question_id } as any });
+      }
+      await this.questionRepository.delete({ quiz: { quiz_id: qz.quiz_id } as any });
+      await this.quizRepository.delete({ quiz_id: qz.quiz_id } as any);
+    }
+
+    // 3) Supprimer le module
+    await this.learningModuleRepository.delete({ module_id: id } as any);
   }
 
   async getModulesByLearningPath(parcoursId: number): Promise<LearningPathModule[]> {
@@ -194,18 +281,49 @@ export class LearningService {
     }
     const module = await this.getModuleById(mediaData.module_id);
     const { module_id, ...mediaDataWithoutModuleId } = mediaData;
+    
     const mediaToCreate = {
       ...mediaDataWithoutModuleId,
       module,
     };
     const media = this.mediaContentRepository.create(mediaToCreate);
-    return await this.mediaContentRepository.save(media);
+    const savedMedia = await this.mediaContentRepository.save(media);
+    
+    // Construire l'URL complète après avoir sauvegardé le média (pour avoir l'ID)
+    if (savedMedia.chemin_stockage && !savedMedia.url_fichier) {
+      savedMedia.url_fichier = this.buildMediaUrl(savedMedia.media_id);
+      await this.mediaContentRepository.save(savedMedia);
+    }
+    
+    return savedMedia;
   }
 
   async getMediaContentByModule(moduleId: number): Promise<MediaContent[]> {
-    return await this.mediaContentRepository.find({
+    const mediaList = await this.mediaContentRepository.find({
       where: { module: { module_id: moduleId } },
       relations: ['module'],
+    });
+    
+    // Construire les URLs complètes pour tous les médias
+    return mediaList.map(media => {
+      if (media.chemin_stockage && !media.url_fichier) {
+        media.url_fichier = this.buildMediaUrl(media.media_id);
+      }
+      return media;
+    });
+  }
+
+  async getAllMediaContent(): Promise<MediaContent[]> {
+    const mediaList = await this.mediaContentRepository.find({
+      relations: ['module'],
+    });
+    
+    // Construire les URLs complètes pour tous les médias
+    return mediaList.map(media => {
+      if (media.chemin_stockage && !media.url_fichier) {
+        media.url_fichier = this.buildMediaUrl(media.media_id);
+      }
+      return media;
     });
   }
 
@@ -217,6 +335,12 @@ export class LearningService {
     if (!media) {
       throw new NotFoundException(`Contenu média avec l'ID ${mediaId} non trouvé`);
     }
+    
+    // Construire l'URL complète si nécessaire
+    if (media.chemin_stockage && !media.url_fichier) {
+      media.url_fichier = this.buildMediaUrl(media.media_id);
+    }
+    
     return media;
   }
 
@@ -229,6 +353,11 @@ export class LearningService {
     if (mediaData.module_id && mediaData.module_id !== media.module.module_id) {
       const module = await this.getModuleById(mediaData.module_id);
       media.module = module;
+    }
+
+    // Construire l'URL complète si un nouveau chemin de stockage est fourni
+    if (mediaData.chemin_stockage && !mediaData.url_fichier) {
+      mediaData.url_fichier = this.buildMediaUrl(id);
     }
 
     Object.assign(media, mediaData);
@@ -278,6 +407,17 @@ export class LearningService {
     } catch (error) {
       this.logger.error(`Error during temp files cleanup: ${error.message}`);
     }
+  }
+
+  /**
+   * Construit l'URL complète pour accéder à un fichier média
+   * @param mediaId L'ID du média
+   * @returns L'URL complète pour accéder au fichier
+   */
+  private buildMediaUrl(mediaId: number): string {
+    // Construire l'URL complète en utilisant l'ID du média
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+    return `${baseUrl}/api/learning/media/${mediaId}/stream`;
   }
 
   // Méthodes pour les progressions
@@ -1343,6 +1483,21 @@ export class LearningService {
     };
   }
 
+  // Mettre à jour un quiz
+  async updateQuiz(quizId: number, updateData: Partial<Quiz>): Promise<Quiz> {
+    const quiz = await this.quizRepository.findOne({
+      where: { quiz_id: quizId }
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
+    }
+
+    // Mettre à jour les propriétés
+    Object.assign(quiz, updateData);
+    return await this.quizRepository.save(quiz);
+  }
+
   // Supprimer un quiz
   async deleteQuiz(quizId: number): Promise<void> {
     const quiz = await this.quizRepository.findOne({
@@ -1353,8 +1508,165 @@ export class LearningService {
       throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
     }
 
-    // Supprimer le quiz (les questions, réponses et réponses utilisateurs seront supprimées en cascade)
-    await this.quizRepository.remove(quiz);
+    // Supprimer manuellement dans l'ordre: réponses utilisateurs -> réponses -> questions -> quiz
+    await this.quizResponseRepository.delete({ quiz: { quiz_id: quizId } as any });
+    const questions = await this.questionRepository.find({ where: { quiz: { quiz_id: quizId } as any } });
+    for (const question of questions) {
+      await this.reponseRepository.delete({ question: { question_id: question.question_id } as any });
+    }
+    await this.questionRepository.delete({ quiz: { quiz_id: quizId } as any });
+    await this.quizRepository.delete({ quiz_id: quizId } as any);
+  }
+
+  // ==================== MÉTHODES POUR LES QUESTIONS ====================
+
+  // Créer une question
+  async createQuestion(questionData: Partial<Question>): Promise<Question> {
+    // Exiger un quiz associé
+    let quizId: number | undefined;
+    if ((questionData as any).quiz_id && typeof (questionData as any).quiz_id === 'number') {
+      quizId = (questionData as any).quiz_id;
+    } else if (questionData.quiz && typeof (questionData.quiz as any) === 'number') {
+      quizId = questionData.quiz as unknown as number;
+    } else if (questionData.quiz && (questionData.quiz as any).quiz_id) {
+      quizId = (questionData.quiz as any).quiz_id;
+    }
+
+    if (!quizId) {
+      throw new BadRequestException('quiz_id est requis pour créer une question');
+    }
+
+    const quiz = await this.quizRepository.findOne({ where: { quiz_id: quizId } });
+    if (!quiz) {
+      throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
+    }
+
+    const { quiz_id, quiz: _quizField, ...rest } = questionData as any;
+    const questionEntity = this.questionRepository.create({ ...rest, quiz }) as unknown as Question;
+    return await this.questionRepository.save(questionEntity as Question);
+  }
+
+  // Récupérer toutes les questions
+  async getAllQuestions(): Promise<Question[]> {
+    return await this.questionRepository.find({
+      relations: ['quiz', 'reponses'],
+    });
+  }
+
+  // Récupérer une question par ID
+  async getQuestionById(id: number): Promise<Question> {
+    const question = await this.questionRepository.findOne({
+      where: { question_id: id },
+      relations: ['quiz', 'reponses'],
+    });
+    if (!question) {
+      throw new NotFoundException(`Question avec l'ID ${id} non trouvée`);
+    }
+    return question;
+  }
+
+  // Mettre à jour une question
+  async updateQuestion(id: number, updateData: Partial<Question>): Promise<Question> {
+    const question = await this.questionRepository.findOne({
+      where: { question_id: id }
+    });
+    if (!question) {
+      throw new NotFoundException(`Question avec l'ID ${id} non trouvée`);
+    }
+
+    // Mettre à jour les propriétés
+    Object.assign(question, updateData);
+    return await this.questionRepository.save(question);
+  }
+
+  // Supprimer une question
+  async deleteQuestion(id: number): Promise<void> {
+    const question = await this.questionRepository.findOne({
+      where: { question_id: id }
+    });
+    if (!question) {
+      throw new NotFoundException(`Question avec l'ID ${id} non trouvée`);
+    }
+
+    // Supprimer d'abord les réponses utilisateurs liées à cette question
+    await this.quizResponseRepository.delete({ question: { question_id: id } as any });
+    // Puis les réponses de la question
+    await this.reponseRepository.delete({ question: { question_id: id } as any });
+    // Enfin la question
+    await this.questionRepository.delete({ question_id: id } as any);
+  }
+
+  // ==================== MÉTHODES POUR LES RÉPONSES ====================
+
+  // Créer une réponse
+  async createReponse(reponseData: Partial<Reponse>): Promise<Reponse> {
+    // Exiger une question associée
+    let questionId: number | undefined;
+    if ((reponseData as any).question_id && typeof (reponseData as any).question_id === 'number') {
+      questionId = (reponseData as any).question_id;
+    } else if (reponseData.question && typeof (reponseData.question as any) === 'number') {
+      questionId = reponseData.question as unknown as number;
+    } else if (reponseData.question && (reponseData.question as any).question_id) {
+      questionId = (reponseData.question as any).question_id;
+    }
+
+    if (!questionId) {
+      throw new BadRequestException('question_id est requis pour créer une réponse');
+    }
+
+    const question = await this.questionRepository.findOne({ where: { question_id: questionId } });
+    if (!question) {
+      throw new NotFoundException(`Question avec l'ID ${questionId} non trouvée`);
+    }
+
+    const { question_id, question: _questionField, ...rest } = reponseData as any;
+    const reponseEntity = this.reponseRepository.create({ ...rest, question }) as unknown as Reponse;
+    return await this.reponseRepository.save(reponseEntity as Reponse);
+  }
+
+  // Récupérer toutes les réponses
+  async getAllReponses(): Promise<Reponse[]> {
+    return await this.reponseRepository.find({
+      relations: ['question'],
+    });
+  }
+
+  // Récupérer une réponse par ID
+  async getReponseById(id: number): Promise<Reponse> {
+    const reponse = await this.reponseRepository.findOne({
+      where: { reponse_id: id },
+      relations: ['question'],
+    });
+    if (!reponse) {
+      throw new NotFoundException(`Réponse avec l'ID ${id} non trouvée`);
+    }
+    return reponse;
+  }
+
+  // Mettre à jour une réponse
+  async updateReponse(id: number, updateData: Partial<Reponse>): Promise<Reponse> {
+    const reponse = await this.reponseRepository.findOne({
+      where: { reponse_id: id }
+    });
+    if (!reponse) {
+      throw new NotFoundException(`Réponse avec l'ID ${id} non trouvée`);
+    }
+
+    // Mettre à jour les propriétés
+    Object.assign(reponse, updateData);
+    return await this.reponseRepository.save(reponse);
+  }
+
+  // Supprimer une réponse
+  async deleteReponse(id: number): Promise<void> {
+    const reponse = await this.reponseRepository.findOne({
+      where: { reponse_id: id }
+    });
+    if (!reponse) {
+      throw new NotFoundException(`Réponse avec l'ID ${id} non trouvée`);
+    }
+
+    await this.reponseRepository.remove(reponse);
   }
 
 }

@@ -10,7 +10,18 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### 2. Obtenir le tableau de bord personnalisé
+### 2a. Initialiser les badges
+POST http://localhost:3000/learning/gamification/badges/init
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{}
+
+### 2b. Récupérer les badges d'un utilisateur
+GET http://localhost:3000/learning/gamification/badges
+Authorization: Bearer {{authToken}}
+
+### 2c. Obtenir le tableau de bord personnalisé
 GET http://localhost:3000/learning/gamification/dashboard
 Authorization: Bearer {{authToken}}
 

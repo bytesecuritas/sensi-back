@@ -93,10 +93,10 @@ export class LearningPathModule {
   parcours: LearningPath;
 
   // Relation avec les contenus médias
-  @OneToMany(() => MediaContent, media => media.module)
+  @OneToMany(() => MediaContent, media => media.module, { onDelete: 'CASCADE' })
   contenus_media: MediaContent[];
 
   // Relation avec les quiz
-  @OneToMany(() => Quiz, quiz => quiz.module)
+  @OneToMany(() => Quiz, quiz => quiz.module, { onDelete: 'CASCADE' })
   quiz: Quiz[];
 }

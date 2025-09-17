@@ -1,0 +1,283 @@
+### Tests de Récupération des Contenus Médias avec URLs Complètes
+### Base URL: http://localhost:3000/api
+### Token Admin: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1Nzk4MTU3OSwiZXhwIjoxNzU3OTg1MTc5fQ.LaRG6QGQM7zK2Y6_QGkeGo_M3DiwGcYQFplD_X8Dx-0
+
+@baseUrl = http://localhost:3000/api
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1Nzk4MTU3OSwiZXhwIjoxNzU3OTg1MTc5fQ.LaRG6QGQM7zK2Y6_QGkeGo_M3DiwGcYQFplD_X8Dx-0
+
+### ========================================
+### 1. CRÉATION D'UN PARCOURS ET MODULE POUR TEST
+### ========================================
+
+### Créer un parcours de test
+POST {{baseUrl}}/learning/parcours
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Parcours Test URLs Médias",
+  "description": "Parcours pour tester les URLs des contenus médias",
+  "public_cible": "entreprise",
+  "duree_estimee_heures": 2.0,
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "phishing",
+  "objectifs": ["Tester les URLs des médias"],
+  "prerequis": ["Connaissances de base"],
+  "langue": "fr"
+}
+
+### Créer un module de test
+POST {{baseUrl}}/learning/modules
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Module Test URLs Médias",
+  "description": "Module pour tester les URLs des contenus médias",
+  "parcours_id": 1,
+  "niveau_difficulte": "moyen",
+  "thematique_cyber": "phishing",
+  "duree_estimee_minutes": 30,
+  "objectifs": ["Tester les URLs des médias"],
+  "prerequis": ["Connaissances de base"],
+  "langue": "fr"
+}
+
+### ========================================
+### 2. UPLOAD DE FICHIERS MÉDIAS
+### ========================================
+
+### Upload d'une vidéo de test
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+Vidéo Test URL
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Vidéo pour tester les URLs complètes
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+video
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="duree_minutes"
+
+5
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-video.mp4"
+Content-Type: video/mp4
+
+< ./test-video.mp4
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload d'un PDF de test
+POST {{baseUrl}}/learning/media/upload?module_id=1
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="titre"
+
+PDF Test URL
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+PDF pour tester les URLs complètes
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_contenu"
+
+pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="duree_minutes"
+
+10
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-document.pdf"
+Content-Type: application/pdf
+
+< ./test-document.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ========================================
+### 3. CRÉATION DE CONTENUS MÉDIAS AVEC URLS EXTERNES
+### ========================================
+
+### Créer un contenu média avec URL externe
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Externe Test",
+  "description": "Vidéo hébergée sur un serveur externe",
+  "type_contenu": "video",
+  "duree_minutes": 8,
+  "url_fichier": "https://example.com/videos/external-video.mp4",
+  "nom_fichier": "external-video.mp4",
+  "taille_fichier": 15728640,
+  "module_id": 1
+}
+
+### Créer un contenu média avec URL relative
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Relative Test",
+  "description": "Vidéo avec URL relative",
+  "type_contenu": "video",
+  "duree_minutes": 6,
+  "url_fichier": "/uploads/videos/relative-video.mp4",
+  "nom_fichier": "relative-video.mp4",
+  "taille_fichier": 10485760,
+  "module_id": 1
+}
+
+### Créer un contenu média avec chemin de stockage
+POST {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Stockage Test",
+  "description": "Vidéo avec chemin de stockage local",
+  "type_contenu": "video",
+  "duree_minutes": 7,
+  "chemin_stockage": "ressources/phishing/module-test-urls-medias/video-stockage.mp4",
+  "nom_fichier": "video-stockage.mp4",
+  "taille_fichier": 12582912,
+  "module_id": 1
+}
+
+### ========================================
+### 4. TESTS DE RÉCUPÉRATION DES CONTENUS MÉDIAS
+### ========================================
+
+### Récupérer tous les contenus médias
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+
+### Récupérer les contenus médias d'un module spécifique
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média spécifique par ID
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média spécifique par ID (autre)
+GET {{baseUrl}}/learning/media/2
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média spécifique par ID (autre)
+GET {{baseUrl}}/learning/media/3
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média avec URL complète (test de la nouvelle route)
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Récupérer un contenu média inexistant (test d'erreur 404)
+GET {{baseUrl}}/learning/media/999
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 5. TESTS DE STREAMING DES FICHIERS
+### ========================================
+
+### Tester le streaming d'un fichier par ID
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{adminToken}}
+Range: bytes=0-1023
+
+### Tester le streaming d'un fichier par ID (méthode corrigée)
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{adminToken}}
+Range: bytes=0-1023
+
+### Tester le streaming d'un fichier uploadé par ID
+GET {{baseUrl}}/learning/media/2/stream
+Authorization: Bearer {{adminToken}}
+Range: bytes=0-1023
+
+### ========================================
+### 6. TESTS DE VALIDATION DES URLs
+### ========================================
+
+### Vérifier que les URLs sont complètes et accessibles
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+
+### Vérifier la structure des URLs retournées
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 7. TESTS DE MISE À JOUR DES CONTENUS MÉDIAS
+### ========================================
+
+### Mettre à jour un contenu média
+PUT {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "titre": "Vidéo Externe Test Modifiée",
+  "description": "Vidéo hébergée sur un serveur externe (modifiée)",
+  "duree_minutes": 9
+}
+
+### Vérifier que l'URL est toujours correcte après mise à jour
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 8. TESTS DE SUPPRESSION
+### ========================================
+
+### Supprimer un contenu média
+DELETE {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### Vérifier que le contenu a été supprimé
+GET {{baseUrl}}/learning/media/1
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 9. NETTOYAGE - SUPPRESSION DES ÉLÉMENTS DE TEST
+### ========================================
+
+### Supprimer le module de test (supprimera aussi les médias associés)
+DELETE {{baseUrl}}/learning/modules/1
+Authorization: Bearer {{adminToken}}
+
+### Supprimer le parcours de test
+DELETE {{baseUrl}}/learning/parcours/1
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 10. TESTS DE PERFORMANCE ET VALIDATION
+### ========================================
+
+### Test de récupération rapide de tous les médias
+GET {{baseUrl}}/learning/media
+Authorization: Bearer {{adminToken}}
+
+### Test de récupération avec relations
+GET {{baseUrl}}/learning/modules/1/media
+Authorization: Bearer {{adminToken}}
+
+### Test de streaming avec Range header
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{adminToken}}
+Range: bytes=0-2047
+
+### Test de streaming sans Range header
+GET {{baseUrl}}/learning/media/1/stream
+Authorization: Bearer {{adminToken}}

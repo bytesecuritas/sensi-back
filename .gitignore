@@ -5,6 +5,9 @@
 
 # excure les fichier ressources
 ressources/
+# ressources/certicats
+# ressources/medias
+# ressources/temp
 
 # Logs
 logs

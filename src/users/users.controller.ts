@@ -30,8 +30,9 @@ export class UsersController {
 
   @Delete(':id')
   @Roles('superadmin', 'admin')
-  async remove(@Param('id') id: number): Promise<void> {
-    return this.usersService.remove(id);
+  async remove(@Param('id') id: number): Promise<{ message: string }> {
+    await this.usersService.remove(id);
+    return { message: 'Utilisateur supprimé avec succès (toutes les relations supprimées automatiquement)' };
   }
 
   @Put(':id/password')

@@ -36,6 +36,9 @@ import { LearningPath } from './entities/learning-path.entity';
 import { MediaContent } from './entities/media-content.entity';
 import { OrganisationLearningPath } from './entities/organisation-learning-path.entity';
 import { Progress } from './entities/progress.entity';
+import { Quiz } from './entities/quiz.entity';
+import { Question } from './entities/question.entity';
+import { Reponse } from './entities/reponse.entity';
 import { LearningService } from './learning.service';
 import { UpdateOrganisationLearningPathDto } from './dto/update-organisation-learning-path.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
@@ -84,13 +87,22 @@ export class LearningController {
 
     // ===== SUPPRESSION ET MISE À JOUR PARCOURS =====
 
+  @Put('parcours/:id')
+  @ApiOperation({ summary: 'Mettre à jour un parcours' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'Parcours mis à jour', type: LearningPath })
+  @Roles('superadmin')
+  async updateLearningPath(@Param('id') id: string, @Body() updateData: Partial<LearningPath>): Promise<LearningPath> {
+    return await this.learningService.updateLearningPath(+id, updateData);
+  }
+
   @Delete('parcours/:id')
-  @ApiOperation({ summary: 'Supprimer un parcours (cascade modules et médias)' })
+  @ApiOperation({ summary: 'Supprimer un parcours (cascade automatique)' })
   @ApiParam({ name: 'id', type: String })
   @Roles('superadmin')
   async deleteLearningPath(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningPath(+id);
-    return { message: 'Parcours supprimé avec succès (modules et médias associés également supprimés)' };
+    return { message: 'Parcours supprimé avec succès (toutes les relations supprimées automatiquement)' };
   }
 
   // ===== MODULES D'APPRENTISSAGE =====
@@ -146,7 +158,7 @@ export class LearningController {
   @Roles('superadmin')
   async deleteLearningModule(@Param('id') id: string): Promise<{ message: string }> {
     await this.learningService.deleteLearningModule(+id, true);
-    return { message: 'Module supprimé avec succès (médias associés également supprimés)' };
+    return { message: 'Module supprimé avec succès (toutes les relations supprimées automatiquement)' };
   }
 
   // Les méthodes pour les contenus médias
@@ -231,7 +243,7 @@ export class LearningController {
 
     const thematique = (module.thematique_cyber || 'INCONNU').replace(/[^a-zA-Z0-9-_]/g, '_');
     const nomModule = module.titre.replace(/[^a-zA-Z0-9-_]/g, '_');
-    const destDir = path.join(process.cwd(), `ressources/${thematique}/${nomModule}`);
+    const destDir = path.join(process.cwd(), `ressources/medias/${thematique}/${nomModule}`);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
@@ -244,13 +256,14 @@ export class LearningController {
       
       // Créer l'objet complet pour le service
       const { module_id, ...mediaDataWithoutModuleId } = mediaData as any;
+      const cheminStockage = `ressources/medias/${thematique}/${nomModule}/${file.filename}`;
       const completeMediaData: CreateMediaContentDto = {
         ...mediaDataWithoutModuleId,
         module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
-        chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
+        chemin_stockage: cheminStockage,
         nom_fichier: file.originalname,
         taille_fichier: file.size,
-        url_fichier: '', // À implémenter si nécessaire
+        url_fichier: '', // Sera construite automatiquement par le service
       };
 
       return await this.learningService.createMediaContent(completeMediaData);
@@ -330,7 +343,7 @@ export class LearningController {
 
     const thematique = (module.thematique_cyber || 'INCONNU').replace(/[^a-zA-Z0-9-_]/g, '_');
     const nomModule = module.titre.replace(/[^a-zA-Z0-9-_]/g, '_');
-    const destDir = path.join(process.cwd(), `ressources/${thematique}/${nomModule}`);
+    const destDir = path.join(process.cwd(), `ressources/medias/${thematique}/${nomModule}`);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
@@ -343,13 +356,14 @@ export class LearningController {
       
       // Créer l'objet complet pour le service
       const { module_id, ...mediaDataWithoutModuleId } = mediaData as any;
+      const cheminStockage = `ressources/medias/${thematique}/${nomModule}/${file.filename}`;
       const completeMediaData: CreateMediaContentDto = {
         ...mediaDataWithoutModuleId,
         module_id: moduleId, // Utiliser le moduleId extrait par ParseIntPipe
-        chemin_stockage: `ressources/${thematique}/${nomModule}/${file.filename}`,
+        chemin_stockage: cheminStockage,
         nom_fichier: file.originalname,
         taille_fichier: file.size,
-        url_fichier: '', // À implémenter si nécessaire
+        url_fichier: '', // Sera construite automatiquement par le service
       };
 
       return await this.learningService.updateMediaContent(+id, completeMediaData);
@@ -373,52 +387,105 @@ export class LearningController {
   }
 
   @Get('modules/:moduleId/media')
-  @ApiOperation({ summary: 'Lister les médias d’un module' })
+  @ApiOperation({ summary: 'Lister les médias d\'un module' })
   @ApiParam({ name: 'moduleId', type: String })
   async getMediaContentByModule(@Param('moduleId') moduleId: string): Promise<MediaContent[]> {
     return await this.learningService.getMediaContentByModule(+moduleId);
+  }
+
+  @Get('media')
+  @ApiOperation({ summary: 'Lister tous les contenus médias' })
+  async getAllMediaContent(): Promise<MediaContent[]> {
+    return await this.learningService.getAllMediaContent();
+  }
+
+  @Get('media/:mediaId')
+  @ApiOperation({ summary: 'Récupérer un contenu média par ID' })
+  @ApiParam({ name: 'mediaId', type: String })
+  @ApiResponse({ status: 200, description: 'Contenu média récupéré avec succès', type: MediaContent })
+  @ApiResponse({ status: 404, description: 'Contenu média non trouvé' })
+  async getMediaContentById(@Param('mediaId') mediaId: string): Promise<MediaContent> {
+    return await this.learningService.getMediaContentById(+mediaId);
   }
 
   @Get('media/:mediaId/stream')
   @ApiOperation({ summary: 'Streamer un média (supporte HTTP Range)' })
   @ApiParam({ name: 'mediaId', type: String })
   async streamMediaContent(@Param('mediaId') mediaId: string, @Request() req, @Response() res) {
-    const media = await this.learningService.getMediaContentById(+mediaId);
-    if (!media) {
-      throw new BadRequestException('Media not found');
-    }
+    try {
+      const media = await this.learningService.getMediaContentById(+mediaId);
+      if (!media) {
+        throw new BadRequestException('Media not found');
+      }
 
-    const filePath = path.join(process.cwd(), media.chemin_stockage);
-    
-    if (!fs.existsSync(filePath)) {
-      throw new BadRequestException('File not found');
-    }
+      // Vérifier si c'est un fichier local ou une URL externe
+      if (media.url_fichier && !media.chemin_stockage) {
+        // Rediriger vers l'URL externe
+        return res.redirect(media.url_fichier);
+      }
 
-    const stat = fs.statSync(filePath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
+      if (!media.chemin_stockage) {
+        throw new BadRequestException('No file path available for this media');
+      }
 
-    if (range) {
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-      const chunksize = (end - start) + 1;
-      const file = fs.createReadStream(filePath, { start, end });
-      const head = {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunksize,
-        'Content-Type': 'video/mp4',
+      const filePath = path.join(process.cwd(), media.chemin_stockage);
+      
+      if (!fs.existsSync(filePath)) {
+        throw new BadRequestException('File not found on server');
+      }
+
+      const stat = fs.statSync(filePath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      // Déterminer le type MIME basé sur l'extension du fichier
+      const ext = path.extname(media.nom_fichier || filePath).toLowerCase();
+      const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.ogg': 'video/ogg',
+        '.avi': 'video/x-msvideo',
+        '.mov': 'video/quicktime',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.pdf': 'application/pdf',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.txt': 'text/plain',
+        '.html': 'text/html'
       };
-      res.writeHead(206, head);
-      file.pipe(res);
-    } else {
-      const head = {
-        'Content-Length': fileSize,
-        'Content-Type': 'video/mp4',
-      };
-      res.writeHead(200, head);
-      fs.createReadStream(filePath).pipe(res);
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = (end - start) + 1;
+        const file = fs.createReadStream(filePath, { start, end });
+        const head = {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': contentType,
+        };
+        res.writeHead(206, head);
+        file.pipe(res);
+      } else {
+        const head = {
+          'Content-Length': fileSize,
+          'Content-Type': contentType,
+          'Accept-Ranges': 'bytes',
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(filePath).pipe(res);
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Error streaming media: ${error.message}`);
     }
   }
 
@@ -511,6 +578,19 @@ export class LearningController {
     @Body() updateData: UpdateOrganisationLearningPathDto
   ): Promise<OrganisationLearningPath> {
     return await this.learningService.updateOrganisationLearningPath(+organisationId, +parcoursId, updateData);
+  }
+
+  @Get('organisations-parcours')
+  @ApiOperation({ summary: 'Lister toutes les associations organisation-parcours' })
+  async getAllOrganisationLearningPaths(): Promise<OrganisationLearningPath[]> {
+    return await this.learningService.getAllOrganisationLearningPaths();
+  }
+
+  @Get('organisations-parcours/:id')
+  @ApiOperation({ summary: 'Récupérer une association organisation-parcours par ID' })
+  @ApiParam({ name: 'id', type: String })
+  async getOrganisationLearningPathById(@Param('id') id: string): Promise<OrganisationLearningPath> {
+    return await this.learningService.getOrganisationLearningPathById(+id);
   }
 
   @Get('organisations/:organisationId/parcours')
@@ -622,13 +702,106 @@ export class LearningController {
     return await this.learningService.getQuizResults(userId, +quizId);
   }
 
+  @Put('quiz/:quizId')
+  @ApiOperation({ summary: 'Mettre à jour un quiz' })
+  @ApiParam({ name: 'quizId', type: String })
+  @ApiResponse({ status: 200, description: 'Quiz mis à jour' })
+  @Roles('superadmin')
+  async updateQuiz(@Param('quizId') quizId: string, @Body() updateData: Partial<Quiz>): Promise<Quiz> {
+    return await this.learningService.updateQuiz(+quizId, updateData);
+  }
+
   @Delete('quiz/:quizId')
-  @ApiOperation({ summary: 'Supprimer un quiz' })
+  @ApiOperation({ summary: 'Supprimer un quiz (cascade automatique)' })
   @ApiParam({ name: 'quizId', type: String })
   @Roles('superadmin')
   async deleteQuiz(@Param('quizId') quizId: string): Promise<{ message: string }> {
     await this.learningService.deleteQuiz(+quizId);
-    return { message: 'Quiz supprimé avec succès' };
+    return { message: 'Quiz supprimé avec succès (toutes les relations supprimées automatiquement)' };
+  }
+
+  // ===== QUESTIONS =====
+
+  @Post('questions')
+  @ApiOperation({ summary: 'Créer une question' })
+  @ApiResponse({ status: 201, description: 'Question créée' })
+  @Roles('superadmin')
+  async createQuestion(@Body() questionData: Partial<Question>): Promise<Question> {
+    return await this.learningService.createQuestion(questionData);
+  }
+
+  @Get('questions')
+  @ApiOperation({ summary: 'Lister toutes les questions' })
+  @ApiResponse({ status: 200, description: 'Liste des questions' })
+  async getAllQuestions(): Promise<Question[]> {
+    return await this.learningService.getAllQuestions();
+  }
+
+  @Get('questions/:id')
+  @ApiOperation({ summary: 'Détail d\'une question' })
+  @ApiParam({ name: 'id', type: String })
+  async getQuestionById(@Param('id') id: string): Promise<Question> {
+    return await this.learningService.getQuestionById(+id);
+  }
+
+  @Put('questions/:id')
+  @ApiOperation({ summary: 'Mettre à jour une question' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'Question mise à jour' })
+  @Roles('superadmin')
+  async updateQuestion(@Param('id') id: string, @Body() updateData: Partial<Question>): Promise<Question> {
+    return await this.learningService.updateQuestion(+id, updateData);
+  }
+
+  @Delete('questions/:id')
+  @ApiOperation({ summary: 'Supprimer une question (cascade automatique)' })
+  @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
+  async deleteQuestion(@Param('id') id: string): Promise<{ message: string }> {
+    await this.learningService.deleteQuestion(+id);
+    return { message: 'Question supprimée avec succès (toutes les relations supprimées automatiquement)' };
+  }
+
+  // ===== RÉPONSES =====
+
+  @Post('reponses')
+  @ApiOperation({ summary: 'Créer une réponse' })
+  @ApiResponse({ status: 201, description: 'Réponse créée' })
+  @Roles('superadmin')
+  async createReponse(@Body() reponseData: Partial<Reponse>): Promise<Reponse> {
+    return await this.learningService.createReponse(reponseData);
+  }
+
+  @Get('reponses')
+  @ApiOperation({ summary: 'Lister toutes les réponses' })
+  @ApiResponse({ status: 200, description: 'Liste des réponses' })
+  async getAllReponses(): Promise<Reponse[]> {
+    return await this.learningService.getAllReponses();
+  }
+
+  @Get('reponses/:id')
+  @ApiOperation({ summary: 'Détail d\'une réponse' })
+  @ApiParam({ name: 'id', type: String })
+  async getReponseById(@Param('id') id: string): Promise<Reponse> {
+    return await this.learningService.getReponseById(+id);
+  }
+
+  @Put('reponses/:id')
+  @ApiOperation({ summary: 'Mettre à jour une réponse' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'Réponse mise à jour' })
+  @Roles('superadmin')
+  async updateReponse(@Param('id') id: string, @Body() updateData: Partial<Reponse>): Promise<Reponse> {
+    return await this.learningService.updateReponse(+id, updateData);
+  }
+
+  @Delete('reponses/:id')
+  @ApiOperation({ summary: 'Supprimer une réponse' })
+  @ApiParam({ name: 'id', type: String })
+  @Roles('superadmin')
+  async deleteReponse(@Param('id') id: string): Promise<{ message: string }> {
+    await this.learningService.deleteReponse(+id);
+    return { message: 'Réponse supprimée avec succès' };
   }
 
 }

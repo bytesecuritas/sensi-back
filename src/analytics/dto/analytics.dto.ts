@@ -1,5 +1,6 @@
 import { IsOptional, IsEnum, IsNumber, IsString, IsDateString, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export enum TimeRange {
   DAY = 'day',
@@ -35,6 +36,7 @@ export class AnalyticsQueryDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   @Max(100)

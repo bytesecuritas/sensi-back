@@ -59,6 +59,6 @@ export class Badge {
   date_maj: Date;
 
   // Relations
-  @OneToMany(() => UserBadge, userBadge => userBadge.badge)
+  @OneToMany(() => UserBadge, userBadge => userBadge.badge, { onDelete: 'CASCADE' })
   userBadges: UserBadge[];
 }

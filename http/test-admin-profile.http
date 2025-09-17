@@ -61,3 +61,7 @@ Authorization: Bearer {{login_superadmin.response.body.access_token}}
 ### 6. Tester le dashboard admin
 GET {{baseUrl}}/auth/dashboard
 Authorization: Bearer {{login_superadmin.response.body.access_token}}
+
+### testé les routes users
+GET {{baseUrl}}/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AY3liZXJzZWMuY29tIiwic3ViIjoxLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc1NzUzNjkxNiwiZXhwIjoxNzU3NTQwNTE2fQ.a7c4KpAmQ3njVOIZqhQkVmZQYAX_wVJ3PTZDpDGufaY

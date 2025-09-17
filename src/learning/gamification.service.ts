@@ -9,14 +9,97 @@ import { SimulationResponse, SimulationResponseStatus } from './entities/simulat
 import { ChallengeParticipation } from './entities/challenge-participation.entity';
 import { Progress, ProgressStatus } from './entities/progress.entity';
 import { QuizResponse } from './entities/quiz-response.entity';
-import { DashboardDto, UserLevelDto } from './dto/gamification.dto';
+import { DashboardDto, UserLevelDto, InitBadgesDto, CreateBadgeDto, UpdateBadgeDto } from './dto/gamification.dto';
 import { LearningPathModule } from './entities/learning-module.entity';
 import { Simulation } from './entities/simulation.entity';
 import { CertificateService } from './certificate.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class GamificationService {
   private readonly logger = new Logger(GamificationService.name);
+
+  // Configuration des points pour différentes actions
+  private readonly POINTS_CONFIG = {
+    MODULE_COMPLETE: 50,
+    QUIZ_SUCCESS: 25,
+    SIMULATION_SUCCESS: 150,
+    BADGE_OBTAINED: 25,
+    CHALLENGE_COMPLETE: 100,
+    DAILY_LOGIN: 5,
+    CONSECUTIVE_DAYS: 10,
+  };
+
+  // Définition des badges par défaut
+  private readonly DEFAULT_BADGES = [
+    {
+      nom: 'Premier Pas',
+      description: 'Vous avez complété votre premier module de formation',
+      type: BadgeType.BRONZE,
+      categorie: BadgeCategory.PREMIER_PAS,
+      points_requis: 0,
+      points_attribues: 25,
+      est_secret: false,
+      conditions_obtention: 'Compléter un module de formation',
+      icone_filename: 'premier_pas.svg'
+    },
+    {
+      nom: 'Vigilant',
+      description: 'Vous avez réussi votre première simulation de phishing',
+      type: BadgeType.BRONZE,
+      categorie: BadgeCategory.VIGILANCE,
+      points_requis: 0,
+      points_attribues: 25,
+      est_secret: false,
+      conditions_obtention: 'Réussir une simulation de phishing',
+      icone_filename: 'vigilant.svg'
+    },
+    {
+      nom: 'Quiz Parfait',
+      description: 'Vous avez obtenu un score parfait à un quiz de parcours final',
+      type: BadgeType.BRONZE,
+      categorie: BadgeCategory.QUIZ,
+      points_requis: 0,
+      points_attribues: 50,
+      est_secret: false,
+      conditions_obtention: 'Obtenir 100% à un quiz de parcours final',
+      icone_filename: 'quiz_parfait.svg'
+    },
+    {
+      nom: 'Assidu',
+      description: 'Vous vous êtes connecté 7 jours consécutifs',
+      type: BadgeType.ARGENT,
+      categorie: BadgeCategory.ASSIDUITE,
+      points_requis: 100,
+      points_attribues: 75,
+      est_secret: false,
+      conditions_obtention: 'Se connecter 7 jours consécutifs',
+      icone_filename: 'assidu.svg'
+    },
+    {
+      nom: 'Expert Phishing',
+      description: 'Vous avez complété tous les modules sur le phishing',
+      type: BadgeType.OR,
+      categorie: BadgeCategory.EXPERT,
+      points_requis: 300,
+      points_attribues: 100,
+      est_secret: false,
+      conditions_obtention: 'Compléter tous les modules sur le phishing',
+      icone_filename: 'expert_phishing.svg'
+    },
+    {
+      nom: 'Défenseur Cyber',
+      description: 'Vous avez réussi 10 simulations',
+      type: BadgeType.OR,
+      categorie: BadgeCategory.DEFENSEUR,
+      points_requis: 500,
+      points_attribues: 150,
+      est_secret: false,
+      conditions_obtention: 'Réussir 10 simulations',
+      icone_filename: 'defenseur_cyber.svg'
+    },
+  ];
 
   constructor(
     @InjectRepository(User)
@@ -50,17 +133,6 @@ export class GamificationService {
     [UserLevelEnum.AVANCE]: 500,
     [UserLevelEnum.EXPERT]: 1000,
     [UserLevelEnum.MAITRE]: 2000,
-  };
-
-  // Points attribués pour différentes actions
-  private readonly POINTS_CONFIG = {
-    MODULE_COMPLETE: 50,
-    QUIZ_SUCCESS: 25,
-    SIMULATION_SUCCESS: 150,
-    BADGE_OBTAINED: 25,
-    CHALLENGE_COMPLETE: 100,
-    DAILY_LOGIN: 5,
-    CONSECUTIVE_DAYS: 10,
   };
 
   /**
@@ -376,7 +448,7 @@ export class GamificationService {
   /**
    * Obtient les badges d'un utilisateur
    */
-  private async getUserBadges(userId: number): Promise<{ obtenus: any[]; disponibles: any[] }> {
+  async getUserBadges(userId: number): Promise<{ obtenus: any[]; disponibles: any[] }> {
     const [obtenus, disponibles] = await Promise.all([
       this.userBadgeRepository.find({
         where: { utilisateur: { users_id: userId } },
@@ -495,6 +567,43 @@ export class GamificationService {
         });
         return userLevel?.jours_consecutifs ? userLevel.jours_consecutifs >= 7 : false;
       
+      case BadgeCategory.EXPERT:
+        // Vérifier si l'utilisateur a complété tous les modules de phishing
+        if (badge.nom === 'Expert Phishing') {
+          const phishingModules = await this.learningModuleRepository.find({
+            where: { titre: { $like: '%phishing%' } } as any,
+          });
+          
+          if (phishingModules.length === 0) return false;
+          
+          const phishingModuleIds = phishingModules.map(m => m.module_id);
+          
+          const completedModules = await this.progressRepository.count({
+            where: {
+              utilisateur: { users_id: userId },
+              module: { module_id: { $in: phishingModuleIds } } as any,
+              statut: ProgressStatus.TERMINE,
+            } as any,
+          });
+          
+          return completedModules === phishingModules.length;
+        }
+        return false;
+      
+      case BadgeCategory.DEFENSEUR:
+        // Vérifier si l'utilisateur a réussi 10 simulations
+        if (badge.nom === 'Défenseur Cyber') {
+          const simulationsReussies = await this.simulationResponseRepository.count({
+            where: {
+              utilisateur: { users_id: userId },
+              statut: SimulationResponseStatus.REUSSIE,
+            },
+          });
+          
+          return simulationsReussies >= 10;
+        }
+        return false;
+      
       default:
         return true;
     }
@@ -522,6 +631,11 @@ export class GamificationService {
         // Connexion consécutive
         userLevel.jours_consecutifs += 1;
         await this.awardPoints(userId, this.POINTS_CONFIG.CONSECUTIVE_DAYS, 'Connexion consécutive');
+        
+        // Vérifier si l'utilisateur a atteint 7 jours consécutifs pour le badge "Assidu"
+        if (userLevel.jours_consecutifs >= 7) {
+          await this.attribuerBadge(userId, 'Assidu', '7 jours de connexion consécutifs');
+        }
       } else if (daysDiff > 1) {
         // Rupture de la série
         userLevel.jours_consecutifs = 1;
@@ -585,6 +699,207 @@ export class GamificationService {
     await this.awardPoints(userId, badge.points_attribues, `Badge obtenu: ${badge.nom}`);
   }
 
+  /**
+   * Initialise les badges par défaut dans le système
+   */
+  async initBadges(initBadgesDto: InitBadgesDto): Promise<{ created: number; updated: number; errors: string[] }> {
+    const { icones_path, force = false } = initBadgesDto;
+    const result = { created: 0, updated: 0, errors: [] as string[] };
+
+    // Vérifier si le chemin des icônes existe
+    if (!fs.existsSync(icones_path)) {
+      throw new BadRequestException(`Le chemin des icônes n'existe pas: ${icones_path}`);
+    }
+
+    // Parcourir les badges par défaut
+    for (const badgeData of this.DEFAULT_BADGES) {
+      try {
+        // Vérifier si le badge existe déjà
+        const existingBadge = await this.badgeRepository.findOne({
+          where: { nom: badgeData.nom },
+        });
+
+        // Construire le chemin complet de l'icône
+        const iconePath = path.join(icones_path, badgeData.icone_filename);
+        const iconeExists = fs.existsSync(iconePath);
+
+        if (!iconeExists) {
+          result.errors.push(`L'icône ${badgeData.icone_filename} n'existe pas dans le chemin spécifié`);
+          continue;
+        }
+
+        // Créer ou mettre à jour le badge
+        if (!existingBadge) {
+          // Créer un nouveau badge
+          const newBadge = this.badgeRepository.create({
+            ...badgeData,
+            icone_url: iconePath,
+            date_creation: new Date(),
+            date_maj: new Date(),
+          });
+
+          await this.badgeRepository.save(newBadge);
+          result.created++;
+          this.logger.log(`Badge créé: ${badgeData.nom}`);
+        } else if (force) {
+          // Mettre à jour le badge existant si force=true
+          existingBadge.description = badgeData.description;
+          existingBadge.type = badgeData.type;
+          existingBadge.categorie = badgeData.categorie;
+          existingBadge.icone_url = iconePath;
+          existingBadge.points_requis = badgeData.points_requis;
+          existingBadge.points_attribues = badgeData.points_attribues;
+          existingBadge.est_secret = badgeData.est_secret;
+          existingBadge.conditions_obtention = badgeData.conditions_obtention;
+          existingBadge.date_maj = new Date();
+
+          await this.badgeRepository.save(existingBadge);
+          result.updated++;
+          this.logger.log(`Badge mis à jour: ${badgeData.nom}`);
+        }
+      } catch (error) {
+        result.errors.push(`Erreur lors de la création/mise à jour du badge ${badgeData.nom}: ${error.message}`);
+        this.logger.error(`Erreur lors de la création/mise à jour du badge ${badgeData.nom}`, error.stack);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Récupère tous les badges
+   */
+  async getAllBadges(): Promise<Badge[]> {
+    return this.badgeRepository.find();
+  }
+
+  /**
+   * Récupère un badge par son ID
+   */
+  async getBadgeById(badgeId: number): Promise<Badge> {
+    const badge = await this.badgeRepository.findOne({
+      where: { badge_id: badgeId },
+    });
+
+    if (!badge) {
+      throw new NotFoundException(`Badge avec ID ${badgeId} non trouvé`);
+    }
+
+    return badge;
+  }
+  
+  /**
+   * Récupère un badge par son nom
+   */
+  async getBadgeByName(nom: string): Promise<Badge> {
+    const badge = await this.badgeRepository.findOne({
+      where: { nom },
+    });
+
+    if (!badge) {
+      throw new NotFoundException(`Badge avec le nom '${nom}' non trouvé`);
+    }
+
+    return badge;
+  }
+
+  /**
+   * Crée un nouveau badge
+   */
+  async createBadge(createBadgeDto: CreateBadgeDto): Promise<Badge> {
+    // Vérifier si un badge avec le même nom existe déjà
+    const existingBadge = await this.badgeRepository.findOne({
+      where: { nom: createBadgeDto.nom },
+    });
+
+    if (existingBadge) {
+      throw new BadRequestException(`Un badge avec le nom '${createBadgeDto.nom}' existe déjà`);
+    }
+
+    // Gérer l'icône du badge
+    let iconePath = '';
+    if (createBadgeDto.icone_file) {
+      // Assurer que le répertoire existe
+      const badgesDir = path.join(process.cwd(), 'ressources', 'badges');
+      if (!fs.existsSync(badgesDir)) {
+        fs.mkdirSync(badgesDir, { recursive: true });
+      }
+
+      // Générer un nom de fichier unique
+      const fileExt = path.extname(createBadgeDto.icone_file.originalname);
+      const fileName = `${createBadgeDto.nom.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}${fileExt}`;
+      iconePath = path.join(badgesDir, fileName);
+
+      // Écrire le fichier
+      fs.writeFileSync(iconePath, createBadgeDto.icone_file.buffer);
+    }
+
+    // Créer le nouveau badge
+    const newBadge = this.badgeRepository.create({
+      ...createBadgeDto,
+      icone_url: iconePath || createBadgeDto.icone_url,
+      date_creation: new Date(),
+      date_maj: new Date(),
+    });
+
+    return this.badgeRepository.save(newBadge);
+  }
+
+  /**
+   * Met à jour un badge existant
+   */
+  async updateBadge(badgeId: number, updateBadgeDto: UpdateBadgeDto): Promise<Badge> {
+    // Vérifier si le badge existe
+    const badge = await this.getBadgeById(badgeId);
+
+    // Gérer l'icône du badge si une nouvelle est fournie
+    let iconePath = '';
+    if (updateBadgeDto.icone_file) {
+      // Assurer que le répertoire existe
+      const badgesDir = path.join(process.cwd(), 'resources', 'badges');
+      if (!fs.existsSync(badgesDir)) {
+        fs.mkdirSync(badgesDir, { recursive: true });
+      }
+
+      // Générer un nom de fichier unique
+      const fileExt = path.extname(updateBadgeDto.icone_file.originalname);
+      const fileName = `${badge.nom.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}${fileExt}`;
+      iconePath = path.join(badgesDir, fileName);
+
+      // Écrire le fichier
+      fs.writeFileSync(iconePath, updateBadgeDto.icone_file.buffer);
+      
+      // Supprimer l'ancienne icône si elle existe
+      if (badge.icone_url && fs.existsSync(badge.icone_url)) {
+        try {
+          fs.unlinkSync(badge.icone_url);
+        } catch (error) {
+          this.logger.warn(`Impossible de supprimer l'ancienne icône: ${badge.icone_url}`, error);
+        }
+      }
+      
+      // Mettre à jour le chemin de l'icône
+      updateBadgeDto.icone_url = iconePath;
+    }
+
+    // Mettre à jour les propriétés
+    Object.assign(badge, updateBadgeDto);
+    badge.date_maj = new Date();
+
+    return this.badgeRepository.save(badge);
+  }
+
+  /**
+   * Supprime un badge et ses attributions aux utilisateurs
+   */
+  async deleteBadge(badgeId: number): Promise<void> {
+    const badge = await this.getBadgeById(badgeId);
+    // Supprimer les attributions UserBadge liées
+    await this.userBadgeRepository.delete({ badge: { badge_id: badgeId } as any });
+    // Supprimer le badge
+    await this.badgeRepository.delete({ badge_id: badge.badge_id } as any);
+  }
+
   // ===== MÉTHODES D'INTÉGRATION AVEC LES MODULES EXISTANTS =====
 
   /**
@@ -608,7 +923,8 @@ export class GamificationService {
       throw new Error('Module non trouvé');
     }
 
-    let pointsGagnes = module.points_completion || 50;
+    // let pointsGagnes = module.points_completion || 50;
+    let pointsGagnes = this.POINTS_CONFIG.MODULE_COMPLETE;
 
     // Bonus pour un bon score
     if (score >= 90) {
@@ -628,6 +944,10 @@ export class GamificationService {
     await this.userLevelRepository.save(userLevel);
 
     // Vérifier si un badge doit être attribué
+    // Badge "Premier Pas" pour le premier module complété
+    if (userLevel.modules_completes === 1) {
+      await this.attribuerBadge(userId, 'Premier Pas', `Premier module complété: ${module.titre}`);
+    }
     if (module.badge_associe) {
       await this.attribuerBadge(userId, module.badge_associe, `Completion du module: ${module.titre}`);
     }
@@ -668,7 +988,8 @@ export class GamificationService {
     }
 
     // Points proportionnels au score (0-100)
-    const pointsGagnes = Math.max(0, Math.round(score));
+    // const pointsGagnes = Math.max(0, Math.round(score));
+    const pointsGagnes = this.POINTS_CONFIG.QUIZ_SUCCESS;
     console.log(`Ajout de ${pointsGagnes} points pour user ${userId}, score: ${score}`);
 
     userLevel.points_totaux += pointsGagnes;
@@ -716,7 +1037,8 @@ export class GamificationService {
       throw new Error('Simulation non trouvée');
     }
 
-    let pointsGagnes = simulation.points_reussite || 30;
+    // let pointsGagnes = simulation.points_reussite || 30;
+    let pointsGagnes = this.POINTS_CONFIG.SIMULATION_SUCCESS;
 
     // Bonus pour un bon score à la simulation
     if (score >= 90) {
@@ -735,9 +1057,19 @@ export class GamificationService {
 
     await this.userLevelRepository.save(userLevel);
 
+    // Badge "Vigilant" pour la première simulation réussie
+    if (userLevel.simulations_reussies === 1) {
+      await this.attribuerBadge(userId, 'Vigilant', `Première simulation réussie: ${simulation.titre || 'Simulation'}`);
+    }
+
     // Vérifier si un badge "Expert Phishing" doit être attribué pour les simulations de phishing
     if (simulation.type === 'phishing_email' && score >= 85) {
       await this.attribuerBadge(userId, 'Expert Phishing', `Excellente performance dans la simulation de phishing`);
+    }
+    
+    // Vérifier si l'utilisateur a atteint 10 simulations réussies pour le badge "Défenseur Cyber"
+    if (userLevel.simulations_reussies >= 10) {
+      await this.attribuerBadge(userId, 'Défenseur Cyber', `10 simulations réussies`);
     }
 
     return {
@@ -762,7 +1094,8 @@ export class GamificationService {
         const certification = await this.certificateService.generateCertification(userId, parcoursId);
         
         // Ajouter des points bonus pour l'obtention de la certification
-        await this.awardPoints(userId, 200, 'Obtention de certification');
+        const pointsGagnes = this.POINTS_CONFIG.CHALLENGE_COMPLETE;
+        await this.awardPoints(userId, pointsGagnes, 'Obtention de certification');
         
         return {
           certification_generated: true,
@@ -771,7 +1104,7 @@ export class GamificationService {
             numero: certification.numero_certification,
             score: certification.score_final,
           },
-          points_bonus: 200,
+          points_bonus: pointsGagnes,
         };
       }
       

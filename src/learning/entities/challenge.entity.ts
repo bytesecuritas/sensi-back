@@ -76,6 +76,6 @@ export class Challenge {
   date_maj: Date;
 
   // Relations
-  @OneToMany(() => ChallengeParticipation, participation => participation.challenge)
+  @OneToMany(() => ChallengeParticipation, participation => participation.challenge, { onDelete: 'CASCADE' })
   participations: ChallengeParticipation[];
 }

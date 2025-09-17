@@ -41,7 +41,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'bearer')
     .setContact('BytCode', 'https://bytcode.example', 'support@bytcode.example')
-    .addServer('/api', 'API prefix')
+    .addServer('', 'API prefix')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   // Expose UI at /api/docs and JSON at /api/docs-json

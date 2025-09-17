@@ -1,6 +1,22 @@
 ### Test Workflow Complet - Sensibilisation Cybersécurité
 ### Base URL: http://localhost:3000
 
+### ========================================
+### PRÉREQUIS - COMMANDES CLI À EXÉCUTER
+### ========================================
+### Avant de lancer ces tests, exécuter les commandes suivantes dans le terminal :
+
+### 1. Initialiser les badges par défaut
+### npm run init-badges
+### Cette commande :
+### - Crée le répertoire resources/badges/ s'il n'existe pas
+### - Copie l'image source vers resources/badges/ pour chaque badge
+### - Initialise les 6 badges par défaut dans la base de données
+### - Affiche un résumé des badges créés/mis à jour
+
+### 2. Vérifier que l'application est démarrée
+### npm run start:dev
+
 ### Variables globales
 @baseUrl = http://localhost:3000/api
 @contentType = application/json
@@ -161,6 +177,10 @@ Authorization: Bearer {{superadmin_token}}
   "ordre": 2
 }
 
+### Recuperer les modules du parcours 1
+GET {{baseUrl}}/learning/parcours/1/modules
+Authorization: Bearer {{superadmin_token}}
+
 ###
 
 ### PHASE 3: ASSOCIATION PARCOURS-ORGANISATION
@@ -202,21 +222,9 @@ Vidéo explicative sur les fondamentaux de la cybersécurité en entreprise.
 
 ###
 
-### 10. Créer un contenu texte
-POST {{baseUrl}}/learning/media
-Content-Type: {{contentType}}
+### Recuperer les médias du module 1
+GET {{baseUrl}}/learning/modules/1/media
 Authorization: Bearer {{superadmin_token}}
-
-{
-  "module_id": 1,
-  "type_contenu": "texte",
-  "titre": "Guide des Bonnes Pratiques",
-  "description": "Guide complet des bonnes pratiques de cybersécurité",
-  "contenu": "La cybersécurité en entreprise repose sur plusieurs piliers : 1) La formation des employés, 2) La protection des données, 3) La détection des menaces, 4) La réponse aux incidents. Chaque employé a un rôle à jouer dans la protection de l'entreprise.",
-  "ordre": 1
-}
-
-###
 
 ### PHASE 5: FORMATION DES UTILISATEURS
 ### 11. Login utilisateur 1
@@ -225,8 +233,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "employee1@cybersec-enterprise.com",
-  "password": "Employee123!"
+  "email": "employee2@cybersec-enterprise.com",
+  "password": "Employee456!"
 }
 
 ###
@@ -264,6 +272,10 @@ Authorization: Bearer {{superadmin_token}}
   ]
 }
 
+### Recuperer le quiz sans les réponses correctes (doit fonctionner)
+GET {{baseUrl}}/learning/quiz/1
+Authorization: Bearer {{user1_token}}
+
 ###
 ### 14. Créer un quiz de module 2 (choix_multiple + vrai_faux)
 POST {{baseUrl}}/learning/quizzes/module/parent/2
@@ -295,6 +307,14 @@ Authorization: Bearer {{superadmin_token}}
     }
   ]
 }
+
+### Recuperer un quiz avec les réponses correctes (doit fonctionner)
+GET {{baseUrl}}/learning/quiz/1/admin
+Authorization: Bearer {{superadmin_token}}
+
+### Recuperer les quiz d'un module (module 1)
+GET {{baseUrl}}/learning/quizzes/module/parent/1
+Authorization: Bearer {{superadmin_token}}
 
 ### 13. Soumettre les réponses du quiz M1 (100%)
 POST {{baseUrl}}/learning/quiz/1/submit
@@ -521,7 +541,7 @@ Authorization: Bearer {{admin_token}}
 ###
 
 ### 23. Consulter les statistiques de l'utilisateur
-GET {{baseUrl}}/organisations/1/stats/utilisateur/3
+GET {{baseUrl}}/organisations/1/stats/utilisateur/4
 Authorization: Bearer {{admin_token}}
 
 ###
@@ -554,6 +574,136 @@ Authorization: Bearer {{superadmin_token}}
 
 ### 27. Obtenir les certifications de l'utilisateur
 GET {{baseUrl}}/certificates/user
+Authorization: Bearer {{user1_token}}
+
+###
+
+### PHASE 7: SYSTÈME DE BADGES ET GAMIFICATION
+### 27b. NOTE: Les badges par défaut sont initialisés via CLI
+### Commande à exécuter dans le terminal avant les tests :
+### npm run init-badges
+### Cette commande initialise automatiquement les 6 badges par défaut avec leurs icônes
+
+### 27c. Récupérer tous les badges disponibles (après initialisation CLI)
+GET {{baseUrl}}/gamification/badges
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 27d. Récupérer les badges de l'utilisateur (avant activités)
+GET {{baseUrl}}/gamification/user/badges
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27e. Obtenir le dashboard de l'utilisateur (avec progression et badges)
+GET {{baseUrl}}/gamification/dashboard
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27f. Enregistrer une connexion quotidienne (pour badge Assidu)
+POST {{baseUrl}}/gamification/daily-login
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27g. Vérifier les badges après connexion quotidienne
+GET {{baseUrl}}/gamification/user/badges
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27h. Créer un nouveau badge personnalisé (sans icône)
+POST {{baseUrl}}/learning/gamification/badges
+Authorization: Bearer {{superadmin_token}}
+Content-Type: {{contentType}}
+
+{
+  "nom": "Expert Cybersécurité",
+  "description": "Maîtrise complète de la cybersécurité",
+  "type": "platine",
+  "categorie": "expert",
+  "points_requis": 1000,
+  "points_attribues": 200,
+  "est_secret": false,
+  "conditions_obtention": "Atteindre le niveau expert avec 1000+ points"
+}
+
+###
+
+### 27i. Récupérer le badge créé par ID (ID peut varier selon l'ordre d'initialisation)
+GET {{baseUrl}}/learning/gamification/badges/7
+Authorization: Bearer {{superadmin_token}}
+
+###
+
+### 27j. Mettre à jour le badge créé
+PUT {{baseUrl}}/learning/gamification/badges/7
+Authorization: Bearer {{superadmin_token}}
+Content-Type: {{contentType}}
+
+{
+  "description": "Maîtrise complète de la cybersécurité - Niveau Expert",
+  "points_attribues": 250
+}
+
+###
+
+### 27j2. Créer un badge avec upload d'icône (test de l'upload de fichier)
+POST {{baseUrl}}/learning/gamification/badges
+Authorization: Bearer {{superadmin_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nom"
+
+Badge avec Icône
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Badge créé avec upload d'icône personnalisée
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+or
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="categorie"
+
+expert
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="points_requis"
+
+300
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="points_attribues"
+
+50
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="est_secret"
+
+false
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="conditions_obtention"
+
+Tester l'upload d'icône personnalisée
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="icone_file"; filename="badge-custom.png"
+Content-Type: image/png
+
+< ./ressources/badges/premier_pas.jpeg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### 27k. Vérifier les badges après les activités de formation
+GET {{baseUrl}}/learning/gamification/user/badges
+Authorization: Bearer {{user1_token}}
+
+###
+
+### 27l. Obtenir le dashboard final avec tous les badges et statistiques
+GET {{baseUrl}}/learning/gamification/dashboard
 Authorization: Bearer {{user1_token}}
 
 ###

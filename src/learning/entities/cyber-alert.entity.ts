@@ -88,6 +88,6 @@ export class CyberAlert {
   date_maj: Date;
 
   // Relations
-  @OneToMany(() => AlertShare, share => share.alert)
+  @OneToMany(() => AlertShare, share => share.alert, { onDelete: 'CASCADE' })
   partages: AlertShare[];
 }

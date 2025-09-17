@@ -121,12 +121,12 @@ export class OrganisationsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Supprimer une organisation' })
+  @ApiOperation({ summary: 'Supprimer une organisation (cascade automatique)' })
   @ApiParam({ name: 'id', type: Number })
   @Roles('superadmin')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.organisationsService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    await this.organisationsService.remove(id);
+    return { message: 'Organisation supprimée avec succès (toutes les relations supprimées automatiquement)' };
   }
 
   @Delete(':id/users/:userId')

@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean, IsDateString, IsObject } from 'class-validator';
+import { IsString, IsNumber, IsEnum, IsOptional, IsBoolean, IsDateString, IsObject, IsArray } from 'class-validator';
 import { BadgeType, BadgeCategory } from '../entities/badge.entity';
 import { UserLevelEnum } from '../entities/user-level.entity';
 
@@ -18,6 +18,9 @@ export class CreateBadgeDto {
   @IsOptional()
   @IsString()
   icone_url?: string;
+  
+  @IsOptional()
+  icone_file?: Express.Multer.File;
 
   @IsNumber()
   points_requis: number;
@@ -32,6 +35,56 @@ export class CreateBadgeDto {
   @IsOptional()
   @IsString()
   conditions_obtention?: string;
+}
+
+export class UpdateBadgeDto {
+  @IsOptional()
+  @IsString()
+  nom?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsEnum(BadgeType)
+  type?: BadgeType;
+
+  @IsOptional()
+  @IsEnum(BadgeCategory)
+  categorie?: BadgeCategory;
+
+  @IsOptional()
+  @IsString()
+  icone_url?: string;
+  
+  @IsOptional()
+  icone_file?: Express.Multer.File;
+
+  @IsOptional()
+  @IsNumber()
+  points_requis?: number;
+
+  @IsOptional()
+  @IsNumber()
+  points_attribues?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  est_secret?: boolean;
+
+  @IsOptional()
+  @IsString()
+  conditions_obtention?: string;
+}
+
+export class InitBadgesDto {
+  @IsString()
+  icones_path: string;
+
+  @IsOptional()
+  @IsBoolean()
+  force?: boolean;
 }
 
 export class UserLevelDto {

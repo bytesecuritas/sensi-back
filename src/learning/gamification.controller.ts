@@ -9,13 +9,14 @@ import {
   Request,
   HttpStatus,
   HttpException,
+  Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GamificationService } from './gamification.service';
 import { SimulationService } from './simulation.service';
 import { ChatbotService } from './chatbot.service';
-import { DashboardDto } from './dto/gamification.dto';
+import { DashboardDto, InitBadgesDto, CreateBadgeDto, UpdateBadgeDto } from './dto/gamification.dto';
 import { SimulationResponseDto, SimulationResultDto } from './dto/simulation.dto';
 import { ChatbotMessageDto, ChatbotResponseDto, ConversationDto } from './dto/chatbot.dto';
 
@@ -310,6 +311,149 @@ export class GamificationController {
     } catch (error) {
       throw new HttpException(
         'Erreur lors de la récupération des intentions',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ===== GESTION DES BADGES =====
+
+  @Post('badges/init')
+  @ApiOperation({ summary: 'Initialiser les badges par défaut' })
+  @ApiResponse({
+    status: 200,
+    description: 'Badges initialisés avec succès',
+  })
+  async initBadges(@Body() initBadgesDto: InitBadgesDto) {
+    try {
+      return await this.gamificationService.initBadges(initBadgesDto);
+    } catch (error) {
+      throw new HttpException(
+        `Erreur lors de l'initialisation des badges: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('badges')
+  @ApiOperation({ summary: 'Récupérer tous les badges' })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des badges récupérée avec succès',
+  })
+  async getAllBadges() {
+    try {
+      return await this.gamificationService.getAllBadges();
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des badges',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('badges/:id')
+  @ApiOperation({ summary: 'Récupérer un badge par son ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Badge récupéré avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Badge non trouvé',
+  })
+  async getBadgeById(@Param('id') id: number) {
+    try {
+      return await this.gamificationService.getBadgeById(id);
+    } catch (error) {
+      if (error.status === 404) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Erreur lors de la récupération du badge',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('badges')
+  @ApiOperation({ summary: 'Créer un nouveau badge' })
+  @ApiResponse({
+    status: 201,
+    description: 'Badge créé avec succès',
+  })
+  async createBadge(@Body() createBadgeDto: CreateBadgeDto) {
+    try {
+      return await this.gamificationService.createBadge(createBadgeDto);
+    } catch (error) {
+      if (error.status === 400) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException(
+        'Erreur lors de la création du badge',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Put('badges/:id')
+  @ApiOperation({ summary: 'Mettre à jour un badge existant' })
+  @ApiResponse({
+    status: 200,
+    description: 'Badge mis à jour avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Badge non trouvé',
+  })
+  async updateBadge(@Param('id') id: number, @Body() updateBadgeDto: UpdateBadgeDto) {
+    try {
+      return await this.gamificationService.updateBadge(id, updateBadgeDto);
+    } catch (error) {
+      if (error.status === 404) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Erreur lors de la mise à jour du badge',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete('badges/:id')
+  @ApiOperation({ summary: 'Supprimer un badge' })
+  @ApiResponse({
+    status: 200,
+    description: 'Badge supprimé avec succès',
+  })
+  async deleteBadge(@Param('id') id: number) {
+    try {
+      await this.gamificationService.deleteBadge(id);
+      return { message: 'Badge supprimé avec succès' };
+    } catch (error) {
+      if (error.status === 404) {
+        throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Erreur lors de la suppression du badge',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('users/:userId/badges')
+  @ApiOperation({ summary: 'Récupérer les badges d\'un utilisateur' })
+  @ApiResponse({
+    status: 200,
+    description: 'Badges de l\'utilisateur récupérés avec succès',
+  })
+  async getUserBadges(@Param('userId') userId: number) {
+    try {
+      const badgeInfo = await this.gamificationService.getUserBadges(userId);
+      return badgeInfo;
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des badges de l\'utilisateur',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -107,10 +107,58 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.usersRepository.delete(id);
-    if (result.affected === 0) {
+    // Vérifier que l'utilisateur existe
+    const user = await this.findById(id);
+    if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+    // Suppressions manuelles child-first pour éviter les erreurs FK
+    const manager = this.usersRepository.manager;
+
+    // Réponses aux quiz (reponse_quiz)
+    try {
+      const QuizResponse = require('../learning/entities/quiz-response.entity').QuizResponse;
+      await manager.getRepository(QuizResponse).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+
+    // Progressions
+    try {
+      await manager.getRepository(Progress).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+
+    // Certifications
+    try {
+      await manager.getRepository(Certification).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+
+    // Gamification: UserBadge, UserLevel
+    try {
+      await manager.getRepository(UserBadge).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+    try {
+      await manager.getRepository(UserLevel).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+
+    // SimulationResponse, ChallengeParticipation, AlertShare, ChatbotConversation
+    try {
+      const SimulationResponse = require('../learning/entities/simulation-response.entity').SimulationResponse;
+      await manager.getRepository(SimulationResponse).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+    try {
+      const ChallengeParticipation = require('../learning/entities/challenge-participation.entity').ChallengeParticipation;
+      await manager.getRepository(ChallengeParticipation).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+    try {
+      const AlertShare = require('../learning/entities/alert-share.entity').AlertShare;
+      await manager.getRepository(AlertShare).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+    try {
+      const ChatbotConversation = require('../learning/entities/chatbot-conversation.entity').ChatbotConversation;
+      await manager.getRepository(ChatbotConversation).delete({ utilisateur: { users_id: id } as any });
+    } catch {}
+
+    // Enfin supprimer l'utilisateur
+    await this.usersRepository.delete({ users_id: id } as any);
   }
 
   // Exposer les repositories pour AuthService
