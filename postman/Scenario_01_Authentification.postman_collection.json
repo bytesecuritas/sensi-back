@@ -1,0 +1,662 @@
+{
+  "info": {
+    "name": "Scénario 01 - Authentification et Gestion Utilisateurs",
+    "description": "Tests complets de l'authentification : création superadmin, admin, user, login, profil, changement mot de passe, réinitialisation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Créer Superadmin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has user data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('users_id');",
+              "    pm.expect(jsonData.role).to.eql('superadmin');",
+              "    pm.expect(jsonData.email).to.eql('superadmin@cybersec.com');",
+              "    pm.environment.set('superadmin_id', jsonData.users_id);",
+              "});",
+              "",
+              "pm.test(\"Password is not in response\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.not.have.property('password');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"superadmin@cybersec.com\",\n  \"password\": \"SuperAdmin123!@#\",\n  \"nom\": \"Super\",\n  \"prenom\": \"Admin\",\n  \"age\": 35,\n  \"role\": \"superadmin\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "register"]
+        },
+        "description": "Création du premier superadmin de la plateforme"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Tentative Création 2ème Superadmin (Doit Échouer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 409 Conflict\", function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "",
+              "pm.test(\"Error message about existing superadmin\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('superadmin');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"superadmin2@cybersec.com\",\n  \"password\": \"SuperAdmin123!@#\",\n  \"nom\": \"Super2\",\n  \"prenom\": \"Admin2\",\n  \"age\": 35,\n  \"role\": \"superadmin\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "register"]
+        },
+        "description": "Vérification qu'un seul superadmin peut exister"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Login Superadmin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has tokens\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('access_token');",
+              "    pm.expect(jsonData).to.have.property('refresh_token');",
+              "    pm.environment.set('token_superadmin', jsonData.access_token);",
+              "    pm.environment.set('refresh_token_superadmin', jsonData.refresh_token);",
+              "});",
+              "",
+              "pm.test(\"Tokens are valid JWT format\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.access_token).to.match(/^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"superadmin@cybersec.com\",\n  \"password\": \"SuperAdmin123!@#\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "login"]
+        },
+        "description": "Connexion du superadmin et récupération des tokens"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Profil Superadmin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Profile data is correct\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.email).to.eql('superadmin@cybersec.com');",
+              "    pm.expect(jsonData.role).to.eql('superadmin');",
+              "});",
+              "",
+              "pm.test(\"Password not in response\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.not.have.property('password');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "profile"]
+        },
+        "description": "Récupération du profil du superadmin (TEST BUG #2)"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Créer Organisation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Organisation created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('organisation_id');",
+              "    pm.expect(jsonData.nom).to.eql('TechCorp Solutions');",
+              "    pm.environment.set('organisation_id', jsonData.organisation_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nom\": \"TechCorp Solutions\",\n  \"type\": \"entreprise_privee\",\n  \"code_pays\": \"FR\",\n  \"email\": \"contact@techcorp.fr\",\n  \"telephone\": \"+33123456789\",\n  \"adresse\": \"123 Avenue des Champs-Élysées\",\n  \"ville\": \"Paris\",\n  \"code_postal\": \"75008\",\n  \"pays\": \"France\",\n  \"site_web\": \"https://techcorp.fr\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"]
+        },
+        "description": "Création d'une organisation pour les tests"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Créer Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Admin created with organisation\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('users_id');",
+              "    pm.expect(jsonData.role).to.eql('admin');",
+              "    pm.expect(jsonData.email).to.eql('admin@techcorp.fr');",
+              "    pm.environment.set('admin_id', jsonData.users_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@techcorp.fr\",\n  \"password\": \"Admin123!@#\",\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Jean\",\n  \"age\": 30,\n  \"role\": \"admin\",\n  \"organisation_id\": \"{{organisation_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "register"]
+        },
+        "description": "Création d'un administrateur d'organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Login Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Admin tokens received\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('access_token');",
+              "    pm.environment.set('token_admin', jsonData.access_token);",
+              "    pm.environment.set('refresh_token_admin', jsonData.refresh_token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@techcorp.fr\",\n  \"password\": \"Admin123!@#\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "login"]
+        },
+        "description": "Connexion de l'admin"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Créer Utilisateur Normal",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"User created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('users_id');",
+              "    pm.expect(jsonData.role).to.eql('user');",
+              "    pm.expect(jsonData.email).to.eql('marie.dupont@techcorp.fr');",
+              "    pm.environment.set('user_id', jsonData.users_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_admin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"marie.dupont@techcorp.fr\",\n  \"password\": \"User123!@#\",\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Marie\",\n  \"age\": 32,\n  \"role\": \"user\",\n  \"code_langue\": \"FR\",\n  \"organisation_id\": \"{{organisation_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "register"]
+        },
+        "description": "Création d'un utilisateur normal"
+      },
+      "response": []
+    },
+    {
+      "name": "09. Login Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User tokens received\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('access_token');",
+              "    pm.environment.set('token_user', jsonData.access_token);",
+              "    pm.environment.set('refresh_token_user', jsonData.refresh_token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"marie.dupont@techcorp.fr\",\n  \"password\": \"User123!@#\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "login"]
+        },
+        "description": "Connexion de l'utilisateur normal"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Profil Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User can access own profile (BUG #2 FIXED)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.email).to.eql('marie.dupont@techcorp.fr');",
+              "    pm.expect(jsonData.role).to.eql('user');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "profile"]
+        },
+        "description": "Vérification que l'utilisateur peut accéder à son profil (TEST BUG #2 CORRIGÉ)"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Dashboard Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Dashboard has user data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('utilisateur');",
+              "    pm.expect(jsonData).to.have.property('parcours_disponibles');",
+              "    pm.expect(jsonData).to.have.property('progression_globale');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/dashboard",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "dashboard"]
+        },
+        "description": "Récupération du dashboard utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "12. Changement Mot de Passe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Password changed successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"User123!@#\",\n  \"newPassword\": \"NewUser123!@#\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/change-password",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "change-password"]
+        },
+        "description": "Changement du mot de passe utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "13. Login avec Nouveau Mot de Passe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Login successful with new password\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('access_token');",
+              "    pm.environment.set('token_user', jsonData.access_token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"marie.dupont@techcorp.fr\",\n  \"password\": \"NewUser123!@#\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "login"]
+        },
+        "description": "Vérification que le nouveau mot de passe fonctionne"
+      },
+      "response": []
+    },
+    {
+      "name": "14. Demande Réinitialisation Mot de Passe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Reset email sent\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('sent');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"marie.dupont@techcorp.fr\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/reset-password-request",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "reset-password-request"]
+        },
+        "description": "Demande de réinitialisation de mot de passe"
+      },
+      "response": []
+    },
+    {
+      "name": "15. Logout Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Logout successful\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/auth/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "auth", "logout"]
+        },
+        "description": "Déconnexion de l'utilisateur"
+      },
+      "response": []
+    }
+  ]
+}

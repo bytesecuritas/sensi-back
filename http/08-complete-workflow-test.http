@@ -233,8 +233,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "employee2@cybersec-enterprise.com",
-  "password": "Employee456!"
+  "email": "employee1@cybersec-enterprise.com",
+  "password": "Employee123!"
 }
 
 ###

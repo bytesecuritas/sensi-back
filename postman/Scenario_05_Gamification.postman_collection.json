@@ -1,0 +1,386 @@
+{
+  "info": {
+    "name": "Scénario 05 - Gamification et Badges",
+    "description": "Tests de gamification : badges, niveaux, points, dashboard (TEST BUGS #1 et #3 CORRIGÉS)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Initialiser les Badges",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Badges initialized\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "    pm.expect(jsonData.badges_crees).to.be.at.least(6);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"force\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/badges/init",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "badges", "init"]
+        },
+        "description": "Initialisation des badges par défaut"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Liste des Badges",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Badges list returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(6);",
+              "    ",
+              "    // Sauvegarder un badge_id pour les tests",
+              "    if (jsonData.length > 0) {",
+              "        pm.environment.set('badge_id', jsonData[0].badge_id);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/badges",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "badges"]
+        },
+        "description": "Liste de tous les badges disponibles"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Dashboard Initial (TEST BUG #1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 (NO TIMEOUT - BUG #1 FIXED)\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Dashboard has correct initial state\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('userLevel');",
+              "    pm.expect(jsonData.userLevel.niveau_actuel).to.eql('debutant');",
+              "    pm.expect(jsonData.userLevel.points_totaux).to.be.at.least(0);",
+              "    pm.expect(jsonData.userLevel.points_pour_niveau_suivant).to.be.at.most(200);",
+              "});",
+              "",
+              "pm.test(\"No infinite loop (BUG #1 FIXED)\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/dashboard",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "dashboard"]
+        },
+        "description": "Dashboard initial - TEST CRITIQUE pour BUG #1 (boucle infinie)"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Enregistrer Connexion Quotidienne",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Daily login recorded\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('jours_consecutifs');",
+              "    pm.expect(jsonData.jours_consecutifs).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/daily-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "daily-login"]
+        },
+        "description": "Enregistrement de la connexion quotidienne"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Dashboard Après Quiz (Points Ajoutés)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Points increased after quiz\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.userLevel.points_totaux).to.be.at.least(30);",
+              "});",
+              "",
+              "pm.test(\"Points for next level calculated correctly (BUG #3 FIXED)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var pointsTotaux = jsonData.userLevel.points_totaux;",
+              "    var pointsPourNiveauSuivant = jsonData.userLevel.points_pour_niveau_suivant;",
+              "    ",
+              "    // Si niveau débutant (< 200 points), points_pour_niveau_suivant doit être (200 - points_totaux)",
+              "    if (jsonData.userLevel.niveau_actuel === 'debutant') {",
+              "        pm.expect(pointsPourNiveauSuivant).to.eql(200 - pointsTotaux);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/dashboard",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "dashboard"]
+        },
+        "description": "Vérification des points après quiz (TEST BUG #3)"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Badges Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User badges returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('obtenus');",
+              "    pm.expect(jsonData).to.have.property('disponibles');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/badges/user",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "badges", "user"]
+        },
+        "description": "Badges obtenus et disponibles pour l'utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Classement Équipe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Team leaderboard returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/leaderboard/team",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "leaderboard", "team"]
+        },
+        "description": "Classement de l'équipe/organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Créer Badge Personnalisé",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Custom badge created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.nom).to.eql('Expert Ransomware');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nom\": \"Expert Ransomware\",\n  \"description\": \"Maîtrise complète de la prévention des ransomwares\",\n  \"type\": \"or\",\n  \"categorie\": \"expertise\",\n  \"icone\": \"🛡️\",\n  \"points_requis\": 500,\n  \"points_attribues\": 100,\n  \"est_secret\": false,\n  \"conditions_obtention\": {\n    \"modules_ransomware_completes\": 3,\n    \"simulations_ransomware_reussies\": 5\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/badges",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "badges"]
+        },
+        "description": "Création d'un badge personnalisé"
+      },
+      "response": []
+    },
+    {
+      "name": "09. Statistiques Gamification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Gamification stats returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_points_distribues');",
+              "    pm.expect(jsonData).to.have.property('total_badges_obtenus');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "stats"]
+        },
+        "description": "Statistiques globales de gamification"
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,465 @@
+{
+  "info": {
+    "name": "Scénario 02 - Gestion des Organisations",
+    "description": "Tests CRUD complets des organisations : création, lecture, mise à jour, suppression, statistiques",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Liste des Organisations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"]
+        },
+        "description": "Récupération de toutes les organisations"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Détails Organisation TechCorp",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Organisation details correct\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.nom).to.eql('TechCorp Solutions');",
+              "    pm.expect(jsonData.type).to.eql('entreprise_privee');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id}}"]
+        },
+        "description": "Récupération des détails d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Créer Organisation SecureBank",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"SecureBank created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.nom).to.eql('SecureBank France');",
+              "    pm.environment.set('organisation_id_2', jsonData.organisation_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nom\": \"SecureBank France\",\n  \"type\": \"institution_financiere\",\n  \"code_pays\": \"FR\",\n  \"email\": \"contact@securebank.fr\",\n  \"telephone\": \"+33987654321\",\n  \"adresse\": \"45 Rue de la Banque\",\n  \"ville\": \"Lyon\",\n  \"code_postal\": \"69002\",\n  \"pays\": \"France\",\n  \"site_web\": \"https://securebank.fr\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"]
+        },
+        "description": "Création d'une deuxième organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Créer Organisation Hôpital",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Hospital created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.nom).to.eql('CHU Marseille');",
+              "    pm.environment.set('organisation_id_3', jsonData.organisation_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nom\": \"CHU Marseille\",\n  \"type\": \"organisme_sante\",\n  \"code_pays\": \"FR\",\n  \"email\": \"contact@chu-marseille.fr\",\n  \"telephone\": \"+33491384000\",\n  \"adresse\": \"264 Rue Saint-Pierre\",\n  \"ville\": \"Marseille\",\n  \"code_postal\": \"13005\",\n  \"pays\": \"France\",\n  \"site_web\": \"https://chu-marseille.fr\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"]
+        },
+        "description": "Création d'une organisation de santé"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Mise à Jour Organisation TechCorp",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Organisation updated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.telephone).to.eql('+33199887766');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telephone\": \"+33199887766\",\n  \"site_web\": \"https://www.techcorp-solutions.fr\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id}}"]
+        },
+        "description": "Mise à jour des informations d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Statistiques Organisation TechCorp",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Statistics have required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_utilisateurs');",
+              "    pm.expect(jsonData).to.have.property('utilisateurs_actifs');",
+              "    pm.expect(jsonData).to.have.property('parcours_assignes');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id}}/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id}}", "stats"]
+        },
+        "description": "Récupération des statistiques d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Liste Utilisateurs de l'Organisation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Users list returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(2);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_admin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id}}/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id}}", "users"]
+        },
+        "description": "Liste des utilisateurs d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Recherche Organisations par Type",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Filtered by type\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    jsonData.forEach(function(org) {",
+              "        pm.expect(org.type).to.eql('entreprise_privee');",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations?type=entreprise_privee",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"],
+          "query": [
+            {
+              "key": "type",
+              "value": "entreprise_privee"
+            }
+          ]
+        },
+        "description": "Filtrage des organisations par type"
+      },
+      "response": []
+    },
+    {
+      "name": "09. Recherche Organisations par Pays",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Filtered by country\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    jsonData.forEach(function(org) {",
+              "        pm.expect(org.code_pays).to.eql('FR');",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations?code_pays=FR",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations"],
+          "query": [
+            {
+              "key": "code_pays",
+              "value": "FR"
+            }
+          ]
+        },
+        "description": "Filtrage des organisations par pays"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Suppression Organisation Hôpital",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Organisation deleted\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id_3}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id_3}}"]
+        },
+        "description": "Suppression d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Vérification Suppression",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Organisation not found\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/organisations/{{organisation_id_3}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "organisations", "{{organisation_id_3}}"]
+        },
+        "description": "Vérification que l'organisation a bien été supprimée"
+      },
+      "response": []
+    }
+  ]
+}

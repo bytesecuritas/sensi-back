@@ -1,0 +1,567 @@
+{
+  "info": {
+    "name": "Scénario 09 - Analytics et Rapports",
+    "description": "Tests des analytics : dashboard global, rapports organisations, tendances, exports",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Dashboard Global",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Dashboard data returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_utilisateurs');",
+              "    pm.expect(jsonData).to.have.property('total_organisations');",
+              "    pm.expect(jsonData).to.have.property('total_parcours');",
+              "    pm.expect(jsonData).to.have.property('total_certifications');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/dashboard?timeRange=MONTH",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "dashboard"],
+          "query": [
+            {
+              "key": "timeRange",
+              "value": "MONTH"
+            }
+          ]
+        },
+        "description": "Dashboard global des analytics (superadmin)"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Rapport Organisation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Organisation report returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('organisation');",
+              "    pm.expect(jsonData).to.have.property('utilisateurs');",
+              "    pm.expect(jsonData).to.have.property('parcours');",
+              "    pm.expect(jsonData).to.have.property('progression_globale');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/organisations/{{organisation_id}}/report",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "organisations", "{{organisation_id}}", "report"]
+        },
+        "description": "Rapport détaillé d'une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Santé du Système",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"System health returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData).to.have.property('database');",
+              "    pm.expect(jsonData).to.have.property('uptime');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/system/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "system", "health"]
+        },
+        "description": "État de santé du système"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Tendances Utilisateurs",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User trends returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/trends/users?period=30",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "trends", "users"],
+          "query": [
+            {
+              "key": "period",
+              "value": "30"
+            }
+          ]
+        },
+        "description": "Tendances d'inscription des utilisateurs"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Tendances Organisations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Organisation trends returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/trends/organisations?period=30",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "trends", "organisations"],
+          "query": [
+            {
+              "key": "period",
+              "value": "30"
+            }
+          ]
+        },
+        "description": "Tendances de création d'organisations"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Tendances Parcours",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Parcours trends returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/trends/parcours?period=30",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "trends", "parcours"],
+          "query": [
+            {
+              "key": "period",
+              "value": "30"
+            }
+          ]
+        },
+        "description": "Tendances de complétion des parcours"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Tendances Certifications",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Certification trends returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/trends/certifications?period=30",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "trends", "certifications"],
+          "query": [
+            {
+              "key": "period",
+              "value": "30"
+            }
+          ]
+        },
+        "description": "Tendances d'obtention de certifications"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Top Organisations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Top organisations returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.most(10);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/top/organisations?limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "top", "organisations"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Top 10 des organisations les plus performantes"
+      },
+      "response": []
+    },
+    {
+      "name": "09. Top Parcours",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Top parcours returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/top/parcours?limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "top", "parcours"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Top 10 des parcours les plus suivis"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Export Rapport CSV",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"CSV content type\", function () {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/export?format=csv&type=organisations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "export"],
+          "query": [
+            {
+              "key": "format",
+              "value": "csv"
+            },
+            {
+              "key": "type",
+              "value": "organisations"
+            }
+          ]
+        },
+        "description": "Export de rapport au format CSV"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Export Rapport Excel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Excel content type\", function () {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('spreadsheet');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/export?format=excel&type=users",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "export"],
+          "query": [
+            {
+              "key": "format",
+              "value": "excel"
+            },
+            {
+              "key": "type",
+              "value": "users"
+            }
+          ]
+        },
+        "description": "Export de rapport au format Excel"
+      },
+      "response": []
+    },
+    {
+      "name": "12. Activité en Temps Réel",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Real-time activity returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('utilisateurs_actifs');",
+              "    pm.expect(jsonData).to.have.property('activites_recentes');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/realtime",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "realtime"]
+        },
+        "description": "Activité en temps réel sur la plateforme"
+      },
+      "response": []
+    },
+    {
+      "name": "13. Prédictions Engagement",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Predictions returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('predictions');",
+              "    pm.expect(jsonData.predictions).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/analytics/predictions/engagement?days=30",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "analytics", "predictions", "engagement"],
+          "query": [
+            {
+              "key": "days",
+              "value": "30"
+            }
+          ]
+        },
+        "description": "Prédictions d'engagement pour les 30 prochains jours"
+      },
+      "response": []
+    }
+  ]
+}

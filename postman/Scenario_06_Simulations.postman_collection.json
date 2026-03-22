@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "Scénario 06 - Simulations d'Attaques",
+    "description": "Tests des simulations de cyberattaques : phishing, vishing, smishing, ransomware",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Créer Simulation Phishing Email",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Simulation created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('simulation_id');",
+              "    pm.expect(jsonData.type).to.eql('phishing');",
+              "    pm.environment.set('simulation_id', jsonData.simulation_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Simulation Phishing - Fausse Facture\",\n  \"description\": \"Email frauduleux simulant une facture impayée\",\n  \"type\": \"phishing\",\n  \"statut\": \"actif\",\n  \"contenu_simulation\": {\n    \"expediteur\": \"facturation@amaz0n-services.com\",\n    \"sujet\": \"URGENT: Facture impayée - Action requise\",\n    \"corps\": \"Votre compte sera suspendu si vous ne réglez pas la facture de 299€ dans les 24h. Cliquez ici pour payer.\",\n    \"lien_piege\": \"https://amaz0n-verify.suspicious-domain.com/login\",\n    \"indicateurs\": [\"Urgence injustifiée\", \"Faute dans le domaine (0 au lieu de o)\", \"Demande de paiement suspect\"]\n  },\n  \"parametres\": {\n    \"difficulte\": \"facile\",\n    \"indices_disponibles\": true,\n    \"temps_limite_minutes\": 10\n  },\n  \"points_reussite\": 150,\n  \"points_echec\": -50,\n  \"duree_estimee_minutes\": 5,\n  \"feedback_reussite\": \"Excellent! Vous avez identifié tous les indicateurs de phishing.\",\n  \"feedback_echec\": \"Attention! Cet email contenait plusieurs signaux d'alerte.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations"]
+        },
+        "description": "Création d'une simulation de phishing"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Liste des Simulations Actives",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Active simulations returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations?statut=actif",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations"],
+          "query": [
+            {
+              "key": "statut",
+              "value": "actif"
+            }
+          ]
+        },
+        "description": "Liste des simulations actives"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Détails Simulation Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Simulation details returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.type).to.eql('phishing');",
+              "    pm.expect(jsonData.contenu_simulation).to.have.property('expediteur');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations/{{simulation_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations", "{{simulation_id}}"]
+        },
+        "description": "Détails d'une simulation"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Envoyer Simulation à Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Simulation sent\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_admin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"utilisateur_id\": {{user_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations/{{simulation_id}}/send",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations", "{{simulation_id}}", "send"]
+        },
+        "description": "Envoi d'une simulation à un utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Répondre à Simulation - Succès",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Simulation response successful\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.reussi).to.be.true;",
+              "    pm.expect(jsonData.points_gagnes).to.eql(150);",
+              "    pm.expect(jsonData.feedback).to.include('Excellent');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"simulation_id\": {{simulation_id}},\n  \"action_utilisateur\": \"signale_comme_spam\",\n  \"temps_reponse_secondes\": 120,\n  \"details_reponse\": {\n    \"indicateurs_identifies\": [\n      \"Urgence injustifiée\",\n      \"Faute dans le domaine\",\n      \"Demande de paiement suspect\"\n    ],\n    \"confiance_niveau\": \"certain\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations/respond",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations", "respond"]
+        },
+        "description": "Réponse correcte à une simulation"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Historique Simulations Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Simulation history returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations/history",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations", "history"]
+        },
+        "description": "Historique des simulations de l'utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Statistiques Simulations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Simulation stats returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_simulations');",
+              "    pm.expect(jsonData).to.have.property('taux_reussite');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/simulations/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "simulations", "stats"]
+        },
+        "description": "Statistiques globales des simulations"
+      },
+      "response": []
+    }
+  ]
+}

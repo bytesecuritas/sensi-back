@@ -1,0 +1,377 @@
+{
+  "info": {
+    "name": "Scénario 04 - Quiz et Évaluations",
+    "description": "Tests des quiz : création, soumission de réponses, calcul de scores, progression",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Créer Quiz Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Quiz created with questions\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('quiz_id');",
+              "    pm.expect(jsonData.titre).to.eql('Quiz Phishing - Niveau 1');",
+              "    pm.environment.set('quiz_id', jsonData.quiz_id);",
+              "    if (jsonData.questions && jsonData.questions.length > 0) {",
+              "        pm.environment.set('question_id', jsonData.questions[0].question_id);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Quiz Phishing - Niveau 1\",\n  \"description\": \"Testez vos connaissances sur le phishing\",\n  \"module_id\": {{module_id}},\n  \"type_quiz\": \"module\",\n  \"ordre\": 1,\n  \"actif\": true,\n  \"temps_limite_minutes\": 15,\n  \"score_minimum_pour_reussite\": 70,\n  \"validation_100_pourcent_requise\": false,\n  \"questions\": [\n    {\n      \"texte_question\": \"Quel est le principal indicateur d'un email de phishing ?\",\n      \"type_question\": \"choix_multiple\",\n      \"points\": 10,\n      \"ordre\": 1,\n      \"reponses\": [\n        {\"texte_reponse\": \"Urgence injustifiée et demande d'action immédiate\", \"est_correcte\": true, \"ordre\": 1},\n        {\"texte_reponse\": \"Email bien écrit sans fautes\", \"est_correcte\": false, \"ordre\": 2},\n        {\"texte_reponse\": \"Présence d'un logo officiel\", \"est_correcte\": false, \"ordre\": 3},\n        {\"texte_reponse\": \"Email envoyé en journée\", \"est_correcte\": false, \"ordre\": 4}\n      ]\n    },\n    {\n      \"texte_question\": \"Que devez-vous faire si vous recevez un email suspect ?\",\n      \"type_question\": \"choix_multiple\",\n      \"points\": 10,\n      \"ordre\": 2,\n      \"reponses\": [\n        {\"texte_reponse\": \"Le signaler au service IT et le supprimer\", \"est_correcte\": true, \"ordre\": 1},\n        {\"texte_reponse\": \"Cliquer sur le lien pour vérifier\", \"est_correcte\": false, \"ordre\": 2},\n        {\"texte_reponse\": \"Répondre pour demander des précisions\", \"est_correcte\": false, \"ordre\": 3},\n        {\"texte_reponse\": \"Le transférer à vos collègues\", \"est_correcte\": false, \"ordre\": 4}\n      ]\n    },\n    {\n      \"texte_question\": \"Quels éléments peuvent indiquer un lien malveillant ?\",\n      \"type_question\": \"choix_multiples\",\n      \"points\": 10,\n      \"ordre\": 3,\n      \"reponses\": [\n        {\"texte_reponse\": \"URL raccourcie (bit.ly, tinyurl)\", \"est_correcte\": true, \"ordre\": 1},\n        {\"texte_reponse\": \"Fautes d'orthographe dans le nom de domaine\", \"est_correcte\": true, \"ordre\": 2},\n        {\"texte_reponse\": \"Protocole HTTPS\", \"est_correcte\": false, \"ordre\": 3},\n        {\"texte_reponse\": \"Domaine différent de l'expéditeur\", \"est_correcte\": true, \"ordre\": 4}\n      ]\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/quiz",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "quiz"]
+        },
+        "description": "Création d'un quiz avec questions"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Liste des Quiz du Module",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Quiz list returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules/{{module_id}}/quiz",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules", "{{module_id}}", "quiz"]
+        },
+        "description": "Liste des quiz d'un module"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Détails Quiz avec Questions",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Quiz has questions\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.questions).to.be.an('array');",
+              "    pm.expect(jsonData.questions.length).to.eql(3);",
+              "    ",
+              "    // Sauvegarder les IDs des questions et réponses pour la soumission",
+              "    if (jsonData.questions.length > 0) {",
+              "        pm.environment.set('question_1_id', jsonData.questions[0].question_id);",
+              "        pm.environment.set('reponse_1_correcte_id', jsonData.questions[0].reponses.find(r => r.est_correcte).reponse_id);",
+              "        ",
+              "        pm.environment.set('question_2_id', jsonData.questions[1].question_id);",
+              "        pm.environment.set('reponse_2_correcte_id', jsonData.questions[1].reponses.find(r => r.est_correcte).reponse_id);",
+              "        ",
+              "        pm.environment.set('question_3_id', jsonData.questions[2].question_id);",
+              "        var correctAnswers = jsonData.questions[2].reponses.filter(r => r.est_correcte);",
+              "        pm.environment.set('reponse_3_correcte_ids', JSON.stringify(correctAnswers.map(r => r.reponse_id)));",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/quiz/{{quiz_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "quiz", "{{quiz_id}}"]
+        },
+        "description": "Détails d'un quiz avec ses questions"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Soumettre Quiz - Score Parfait (100%)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Perfect score achieved\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.score_final).to.eql(100);",
+              "    pm.expect(jsonData.points_obtenus).to.eql(30);",
+              "    pm.expect(jsonData.reussi).to.be.true;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Préparer les réponses correctes",
+              "var reponse3Ids = JSON.parse(pm.environment.get('reponse_3_correcte_ids'));",
+              "pm.environment.set('reponse_3_id_1', reponse3Ids[0]);",
+              "pm.environment.set('reponse_3_id_2', reponse3Ids[1]);",
+              "pm.environment.set('reponse_3_id_3', reponse3Ids[2]);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reponses\": [\n    {\n      \"question_id\": {{question_1_id}},\n      \"reponse_ids\": [{{reponse_1_correcte_id}}]\n    },\n    {\n      \"question_id\": {{question_2_id}},\n      \"reponse_ids\": [{{reponse_2_correcte_id}}]\n    },\n    {\n      \"question_id\": {{question_3_id}},\n      \"reponse_ids\": [{{reponse_3_id_1}}, {{reponse_3_id_2}}, {{reponse_3_id_3}}]\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/quiz/{{quiz_id}}/submit",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "quiz", "{{quiz_id}}", "submit"]
+        },
+        "description": "Soumission d'un quiz avec toutes les bonnes réponses"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Historique des Tentatives Quiz",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Quiz history returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "    pm.expect(jsonData[0].score_final).to.eql(100);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/quiz/{{quiz_id}}/history",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "quiz", "{{quiz_id}}", "history"]
+        },
+        "description": "Historique des tentatives de quiz de l'utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Créer Progression Parcours",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Progress created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('progression_id');",
+              "    pm.environment.set('progress_id', jsonData.progression_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"parcours_id\": {{parcours_id}},\n  \"statut\": \"en_cours\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/progress",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "progress"]
+        },
+        "description": "Création d'une progression pour un parcours"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Mise à Jour Progression - Terminé",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Progress updated to completed\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.statut).to.eql('termine');",
+              "    pm.expect(jsonData.score).to.eql(95);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"statut\": \"termine\",\n  \"score\": 95,\n  \"temps_passe_minutes\": 180\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/progress/{{progress_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "progress", "{{progress_id}}"]
+        },
+        "description": "Mise à jour de la progression à terminé"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Progression Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User progress returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/progress",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "progress"]
+        },
+        "description": "Récupération de toutes les progressions de l'utilisateur"
+      },
+      "response": []
+    }
+  ]
+}

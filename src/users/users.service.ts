@@ -30,12 +30,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    // un user peut voir son propre profil
-    if (user.role === 'user') {
-      if (user.users_id !== id) {
-        throw new UnauthorizedException('You cannot view this profile');
-      }
-    }
     return user;
   }
 
@@ -95,13 +89,7 @@ export class UsersService {
   }
 
   async update(id: number, userData: Partial<User>): Promise<User> {
-    // un user peut mettre à jour son propre profil
     const user = await this.findById(id);
-    if (user.role === 'user') {
-      if (user.users_id !== id) {
-        throw new UnauthorizedException('You cannot update this profile');
-      }
-    }
     await this.usersRepository.update(id, userData);
     return this.findById(id);
   }

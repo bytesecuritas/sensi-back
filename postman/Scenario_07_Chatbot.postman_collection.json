@@ -1,0 +1,346 @@
+{
+  "info": {
+    "name": "Scénario 07 - Chatbot et Conversations",
+    "description": "Tests du chatbot IA : conversations, messages, intentions, suggestions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Créer Conversation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Conversation created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('conversation_id');",
+              "    pm.expect(jsonData.sujet).to.eql('Question sur le phishing');",
+              "    pm.environment.set('conversation_id', jsonData.conversation_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sujet\": \"Question sur le phishing\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations"]
+        },
+        "description": "Création d'une nouvelle conversation avec le chatbot"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Envoyer Message - Question Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Chatbot response received\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('reponse_bot');",
+              "    pm.expect(jsonData).to.have.property('intention_detectee');",
+              "    pm.expect(jsonData.reponse_bot).to.not.be.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Comment reconnaître un vrai email de ma banque ?\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations/{{conversation_id}}/messages",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations", "{{conversation_id}}", "messages"]
+        },
+        "description": "Envoi d'un message au chatbot"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Envoyer Message - Demande Module",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Module suggestions provided\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('modules_suggeres');",
+              "    pm.expect(jsonData.modules_suggeres).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Je veux apprendre à créer des mots de passe sécurisés\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations/{{conversation_id}}/messages",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations", "{{conversation_id}}", "messages"]
+        },
+        "description": "Demande de suggestion de modules"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Historique Conversation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Conversation history returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('messages');",
+              "    pm.expect(jsonData.messages).to.be.an('array');",
+              "    pm.expect(jsonData.messages.length).to.be.at.least(4);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations/{{conversation_id}}/history",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations", "{{conversation_id}}", "history"]
+        },
+        "description": "Historique d'une conversation"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Liste Conversations Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User conversations returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations"]
+        },
+        "description": "Liste des conversations de l'utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Évaluer Conversation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Conversation rated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.niveau_satisfaction).to.eql(5);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"niveau_satisfaction\": 5,\n  \"feedback\": \"Très utile, réponses claires et précises!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/conversations/{{conversation_id}}/rate",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "conversations", "{{conversation_id}}", "rate"]
+        },
+        "description": "Évaluation d'une conversation"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Statistiques Chatbot",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Chatbot stats returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_conversations');",
+              "    pm.expect(jsonData).to.have.property('satisfaction_moyenne');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "stats"]
+        },
+        "description": "Statistiques globales du chatbot"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Intentions Détectées",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Intentions stats returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/gamification/chatbot/intentions",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "gamification", "chatbot", "intentions"]
+        },
+        "description": "Statistiques des intentions détectées"
+      },
+      "response": []
+    }
+  ]
+}

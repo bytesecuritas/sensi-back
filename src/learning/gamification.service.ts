@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, LessThanOrEqual, Like, In } from 'typeorm';
 import { User } from '../users/users.entity';
 import { Badge, BadgeType, BadgeCategory } from './entities/badge.entity';
 import { UserBadge } from './entities/user-badge.entity';
@@ -184,8 +184,9 @@ export class GamificationService {
 
   /**
    * Attribue des points à un utilisateur
+   * @param skipBadgeCheck - Si true, ne vérifie pas les badges (pour éviter la récursion)
    */
-  async awardPoints(userId: number, points: number, reason: string): Promise<void> {
+  async awardPoints(userId: number, points: number, reason: string, skipBadgeCheck: boolean = false): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -212,14 +213,21 @@ export class GamificationService {
       const newLevel = this.calculateUserLevel(newPoints);
       if (newLevel !== oldLevel) {
         userLevel.niveau_actuel = newLevel;
-        userLevel.points_niveau_actuel = 0;
-        userLevel.points_pour_niveau_suivant = this.getNextLevelThreshold(newLevel);
+        userLevel.points_niveau_actuel = newPoints - this.LEVEL_THRESHOLDS[newLevel];
+        const nextThreshold = this.getNextLevelThreshold(newLevel);
+        userLevel.points_pour_niveau_suivant = nextThreshold > 0 ? nextThreshold - newPoints : 0;
+      } else {
+        // Mise à jour des points pour le niveau suivant même si pas de changement de niveau
+        const nextThreshold = this.getNextLevelThreshold(newLevel);
+        userLevel.points_pour_niveau_suivant = nextThreshold > 0 ? nextThreshold - newPoints : 0;
       }
 
       await queryRunner.manager.save(UserLevel, userLevel);
 
-      // Vérifier les badges débloqués
-      await this.checkAndAwardBadges(userId, newPoints, reason);
+      // Vérifier les badges débloqués (sauf si on vient d'attribuer un badge pour éviter la boucle)
+      if (!skipBadgeCheck) {
+        await this.checkAndAwardBadges(userId, newPoints, reason);
+      }
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -235,7 +243,7 @@ export class GamificationService {
    */
   async checkAndAwardBadges(userId: number, totalPoints: number, reason: string): Promise<Badge[]> {
     const badges = await this.badgeRepository.find({
-      where: { points_requis: { $lte: totalPoints } } as any,
+      where: { points_requis: LessThanOrEqual(totalPoints) },
     });
 
     const awardedBadges: Badge[] = [];
@@ -272,9 +280,9 @@ export class GamificationService {
 
     await this.userBadgeRepository.save(userBadge);
 
-    // Attribuer les points du badge
+    // Attribuer les points du badge (avec skipBadgeCheck=true pour éviter la boucle infinie)
     if (badge.points_attribues > 0) {
-      await this.awardPoints(userId, badge.points_attribues, `Badge: ${badge.nom}`);
+      await this.awardPoints(userId, badge.points_attribues, `Badge: ${badge.nom}`, true);
     }
   }
 
@@ -559,6 +567,30 @@ export class GamificationService {
         return reason.includes('simulation');
       
       case BadgeCategory.QUIZ:
+        // Badge strict pour score parfait sur quiz final
+        if (badge.nom === 'Quiz Parfait') {
+          // Récupérer toutes les réponses aux quiz finaux de l'utilisateur
+          const finalQuizResponses = await this.quizResponseRepository.find({
+            where: { utilisateur: { users_id: userId }, quiz: { type_quiz: 'parcours_final' as any } },
+            relations: ['quiz', 'quiz.questions'],
+          });
+
+          if (finalQuizResponses.length === 0) return false;
+
+          // Regrouper par quiz et vérifier si au moins un quiz final a 100%
+          const finalQuizIds = [...new Set(finalQuizResponses.map(r => r.quiz.quiz_id))];
+          for (const quizId of finalQuizIds) {
+            const responsesForQuiz = finalQuizResponses.filter(r => r.quiz.quiz_id === quizId);
+            const totalObtained = responsesForQuiz.reduce((sum, r) => sum + Number(r.points_obtenus || 0), 0);
+            const totalPoints = responsesForQuiz[0].quiz.questions ?
+              responsesForQuiz[0].quiz.questions.reduce((sum, q) => sum + Number(q.points || 0), 0) : 0;
+            const percentage = totalPoints > 0 ? (totalObtained / totalPoints) * 100 : 0;
+            if (percentage >= 100) {
+              return true;
+            }
+          }
+          return false;
+        }
         return reason.includes('quiz');
       
       case BadgeCategory.ASSIDUITE:
@@ -571,7 +603,7 @@ export class GamificationService {
         // Vérifier si l'utilisateur a complété tous les modules de phishing
         if (badge.nom === 'Expert Phishing') {
           const phishingModules = await this.learningModuleRepository.find({
-            where: { titre: { $like: '%phishing%' } } as any,
+            where: { titre: Like('%phishing%') },
           });
           
           if (phishingModules.length === 0) return false;
@@ -581,7 +613,7 @@ export class GamificationService {
           const completedModules = await this.progressRepository.count({
             where: {
               utilisateur: { users_id: userId },
-              module: { module_id: { $in: phishingModuleIds } } as any,
+              module: { module_id: In(phishingModuleIds) } as any,
               statut: ProgressStatus.TERMINE,
             } as any,
           });

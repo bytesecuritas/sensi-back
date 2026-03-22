@@ -1,0 +1,287 @@
+{
+  "info": {
+    "name": "Scénario 08 - Certifications",
+    "description": "Tests des certifications : génération, téléchargement PDF, validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Vérifier Éligibilité Certification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Eligibility checked\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('eligible');",
+              "    pm.expect(jsonData).to.have.property('criteres');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/parcours/{{parcours_id}}/eligibility",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "parcours", "{{parcours_id}}", "eligibility"]
+        },
+        "description": "Vérification de l'éligibilité à une certification"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Générer Certification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Certificate generated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('certification_id');",
+              "    pm.expect(jsonData).to.have.property('numero_unique');",
+              "    pm.expect(jsonData).to.have.property('url_certificat');",
+              "    pm.environment.set('certification_id', jsonData.certification_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"parcours_id\": {{parcours_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/generate",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "generate"]
+        },
+        "description": "Génération d'une certification"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Liste Certifications Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User certificates returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/user/{{user_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "user", "{{user_id}}"]
+        },
+        "description": "Liste des certifications d'un utilisateur"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Détails Certification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Certificate details returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('numero_unique');",
+              "    pm.expect(jsonData).to.have.property('date_emission');",
+              "    pm.expect(jsonData).to.have.property('date_expiration');",
+              "    pm.expect(jsonData.statut).to.eql('valide');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/{{certification_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "{{certification_id}}"]
+        },
+        "description": "Détails d'une certification"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Télécharger PDF Certification",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"PDF content type\", function () {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/{{certification_id}}/download",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "{{certification_id}}", "download"]
+        },
+        "description": "Téléchargement du PDF de certification"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Vérifier Certification par Numéro",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Certificate verified\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.valide).to.be.true;",
+              "    pm.expect(jsonData).to.have.property('utilisateur');",
+              "    pm.expect(jsonData).to.have.property('parcours');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/verify/:numero",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "verify", ":numero"],
+          "variable": [
+            {
+              "key": "numero",
+              "value": "CERT-2024-XXXXX"
+            }
+          ]
+        },
+        "description": "Vérification publique d'une certification par son numéro"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Statistiques Certifications",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Certificate stats returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total_certifications');",
+              "    pm.expect(jsonData).to.have.property('certifications_valides');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/certificates/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "certificates", "stats"]
+        },
+        "description": "Statistiques globales des certifications"
+      },
+      "response": []
+    }
+  ]
+}

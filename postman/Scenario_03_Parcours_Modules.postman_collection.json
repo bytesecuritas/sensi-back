@@ -1,0 +1,517 @@
+{
+  "info": {
+    "name": "Scénario 03 - Parcours et Modules d'Apprentissage",
+    "description": "Tests CRUD des parcours d'apprentissage, modules, contenus média, assignation aux organisations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Créer Parcours Débutant",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Parcours created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('parcours_id');",
+              "    pm.expect(jsonData.titre).to.eql('Sensibilisation Cybersécurité - Niveau Débutant');",
+              "    pm.environment.set('parcours_id', jsonData.parcours_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Sensibilisation Cybersécurité - Niveau Débutant\",\n  \"description\": \"Parcours d'introduction à la cybersécurité pour tous les collaborateurs\",\n  \"public_cible\": \"entreprise\",\n  \"duree_estimee_heures\": 10\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours"]
+        },
+        "description": "Création d'un parcours d'apprentissage"
+      },
+      "response": []
+    },
+    {
+      "name": "02. Créer Parcours Avancé",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Advanced parcours created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('parcours_id_2', jsonData.parcours_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Cybersécurité Avancée - Protection des Données\",\n  \"description\": \"Parcours approfondi sur la protection des données et le RGPD\",\n  \"public_cible\": \"entreprise\",\n  \"duree_estimee_heures\": 20\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours"]
+        },
+        "description": "Création d'un parcours avancé"
+      },
+      "response": []
+    },
+    {
+      "name": "03. Liste des Parcours",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Parcours list returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(2);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours"]
+        },
+        "description": "Liste de tous les parcours"
+      },
+      "response": []
+    },
+    {
+      "name": "04. Détails Parcours Débutant",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Parcours details correct\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.titre).to.eql('Sensibilisation Cybersécurité - Niveau Débutant');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours/{{parcours_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours", "{{parcours_id}}"]
+        },
+        "description": "Détails d'un parcours"
+      },
+      "response": []
+    },
+    {
+      "name": "05. Assigner Parcours à Organisation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Parcours assigned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include('success');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"organisation_id\": {{organisation_id}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours/{{parcours_id}}/assign",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours", "{{parcours_id}}", "assign"]
+        },
+        "description": "Assignation d'un parcours à une organisation"
+      },
+      "response": []
+    },
+    {
+      "name": "06. Créer Module Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Module created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('module_id');",
+              "    pm.expect(jsonData.titre).to.eql('Reconnaître les Emails de Phishing');",
+              "    pm.environment.set('module_id', jsonData.module_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Reconnaître les Emails de Phishing\",\n  \"description\": \"Apprendre à identifier les emails frauduleux et les tentatives de phishing\",\n  \"parcours_id\": {{parcours_id}},\n  \"public_cible\": \"tous\",\n  \"code_langue\": \"FR\",\n  \"niveau_difficulte\": \"facile\",\n  \"thematique_cyber\": \"phishing\",\n  \"ordre\": 1,\n  \"objectifs_apprentissage\": [\n    \"Identifier les emails suspects\",\n    \"Connaître les bonnes pratiques\",\n    \"Savoir réagir face à un email de phishing\"\n  ],\n  \"points_completion\": 50,\n  \"points_quiz_reussi\": 25,\n  \"badge_associe_id\": null,\n  \"simulation_requise\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules"]
+        },
+        "description": "Création d'un module sur le phishing"
+      },
+      "response": []
+    },
+    {
+      "name": "07. Créer Module Mots de Passe",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Password module created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('module_id_2', jsonData.module_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Créer et Gérer des Mots de Passe Sécurisés\",\n  \"description\": \"Bonnes pratiques pour la création et la gestion de mots de passe robustes\",\n  \"parcours_id\": {{parcours_id}},\n  \"public_cible\": \"tous\",\n  \"code_langue\": \"FR\",\n  \"niveau_difficulte\": \"facile\",\n  \"thematique_cyber\": \"mots_de_passe\",\n  \"ordre\": 2,\n  \"objectifs_apprentissage\": [\n    \"Comprendre l'importance des mots de passe forts\",\n    \"Utiliser un gestionnaire de mots de passe\",\n    \"Activer l'authentification à deux facteurs\"\n  ],\n  \"points_completion\": 50,\n  \"points_quiz_reussi\": 25\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules"]
+        },
+        "description": "Création d'un module sur les mots de passe"
+      },
+      "response": []
+    },
+    {
+      "name": "08. Créer Module Ransomware",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Ransomware module created\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set('module_id_3', jsonData.module_id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titre\": \"Comprendre et Prévenir les Ransomwares\",\n  \"description\": \"Tout savoir sur les ransomwares et comment s'en protéger\",\n  \"parcours_id\": {{parcours_id}},\n  \"public_cible\": \"tous\",\n  \"code_langue\": \"FR\",\n  \"niveau_difficulte\": \"moyen\",\n  \"thematique_cyber\": \"ransomware\",\n  \"ordre\": 3,\n  \"objectifs_apprentissage\": [\n    \"Identifier un ransomware\",\n    \"Connaître les vecteurs d'infection\",\n    \"Appliquer les mesures de prévention\"\n  ],\n  \"points_completion\": 75,\n  \"points_quiz_reussi\": 35\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules"]
+        },
+        "description": "Création d'un module sur les ransomwares"
+      },
+      "response": []
+    },
+    {
+      "name": "09. Liste des Modules du Parcours",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Modules list returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.eql(3);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours/{{parcours_id}}/modules",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours", "{{parcours_id}}", "modules"]
+        },
+        "description": "Liste des modules d'un parcours"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Détails Module Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Module details correct\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.titre).to.eql('Reconnaître les Emails de Phishing');",
+              "    pm.expect(jsonData.thematique_cyber).to.eql('phishing');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules/{{module_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules", "{{module_id}}"]
+        },
+        "description": "Détails d'un module"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Mise à Jour Module Phishing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Module updated\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.points_completion).to.eql(60);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_superadmin}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"points_completion\": 60,\n  \"points_quiz_reussi\": 30\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/modules/{{module_id}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "modules", "{{module_id}}"]
+        },
+        "description": "Mise à jour d'un module"
+      },
+      "response": []
+    },
+    {
+      "name": "12. Parcours Disponibles pour Utilisateur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Available parcours returned\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "    pm.expect(jsonData.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_user}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/learning/parcours/available",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{apiPrefix}}", "learning", "parcours", "available"]
+        },
+        "description": "Parcours disponibles pour l'utilisateur connecté"
+      },
+      "response": []
+    }
+  ]
+}
